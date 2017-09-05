@@ -8,6 +8,12 @@ const model = {
     historicalPriceData: {},
     historyGraphWidth: 400,
     historyGraphHeight: 250,
+    currencySigns: {
+        EUR: '&#8364;',
+        USD: '&#36;',
+        UAH: '&#8372;',
+        RUB: '&#8381;'
+    },
     startFetchingData() {
         this.requestCurrentPriceData();
         this.intervalID = setInterval(() => {
@@ -24,8 +30,9 @@ const model = {
             .catch(error => console.warn(error));
     },
     requestHistoricalPriceData(url, isGraphBeingUpdated) {
-        d3.json(url, (data) => {      
+        d3.json(url, (data) => {
             this.historicalPriceData = data;
+            console.log(data);
             controller.renderHistoryGraph(isGraphBeingUpdated)
         })
     }
@@ -35,8 +42,7 @@ const currentPriceView = {
     init() {
         this.valueHolderUSD = document.querySelector('.current-price__USD .value');
         this.valueHolderEUR = document.querySelector('.current-price__EUR .value');        
-        this.euroSign = '&euro;'
-        this.dollarSign = '&#36;'
+        
     },
     renderData({ rateUSD, rateEUR }) {
         this.valueHolderUSD.innerHTML = this.dollarSign + rateUSD;
@@ -142,9 +148,11 @@ const historyGraphView = {
                    .attrs({
                     cx: d => xScale(d.time.getTime()),
                     cy: d => yScale(d.currencyValue)           
-                   });
+                   })                               
     },
     buildLine({ dataset, width, height }) {
+        this.prevCurrency = 'USD';
+        this.currency = this.prevCurrency; // dollars by defaut
         const firstDate = dataset[0].time.getTime();
         const lastDate = dataset[dataset.length - 1].time.getTime();
         const xScale = d3.scaleLinear()
@@ -174,7 +182,7 @@ const historyGraphView = {
             width,
             height,
             id: 'historical-data',
-          })   
+          })
           .append('path')
             .attrs({
               'd': lineFunction(dataset),
@@ -222,10 +230,11 @@ const historyGraphView = {
                           }) // add tooltip on hover
                        .on('mouseover', function(d) {
                            // add some animation for dots later
+                         const currencySign = controller.getCurrencySign();                         
                          tooltip.transition()
                            .duration(100)
                            .style('opacity', 0.75)
-                         tooltip.html(`<strong>Price: $${d.currencyValue}</strong>`)
+                         tooltip.html(`<strong>Price: ${currencySign + d.currencyValue}</strong>`)
                            .style('left', (d3.event.pageX) + 'px')
                            .style('top', (d3.event.pageY) + 'px')                     
                        }) // remove tooltip on hover
@@ -234,25 +243,96 @@ const historyGraphView = {
                            .duration(300)
                            .style('opacity', 0);
                        })
-
-
     },
     attachEventsForFilters() {
+      // care about other filters!!
+      const formProperDateFormat = (year, month, day) => {        
+        const dateStr = `${year}-${month < 10 ? ('0' + month) : month}-${day < 10 ? ('0' + day) : day}`;        
+        return dateStr;
+      };
+      const formProperStartDate = (yearSubtr, monthSubtr,  daySubtr) => {
+        /*if(day < daySubtr) {
+
+        } else if(month < monthSubtr) {
+            month += subtractor;
+            year -= 1;
+        } else {
+            month -= subtractor;
+        }
+        return {
+            year,
+            month,
+            day
+        };*/
+      }
       d3.selectAll('.buttons button')
         .on('click', () => {
           d3.event.preventDefault();
+          const timeline = d3.event.target.getAttribute('data-timeline');          
+          const today = new Date();              
           
+          const year = today.getFullYear();
+          let month = today.getMonth();
+          let day = today.getDate();
+          let startDate;
+          switch(timeline) {
+            case 'all-time':
+              break;
+            case '1-year':
+              startDate = formProperStartDate(year, month, day, 1);
+              break;
+            case '6-month':
+              startDate = formProperStartDate(year, month, day, 3);
+              break;
+            case '3-month':
+              startDate = formProperStartDate(year, month, day, 3);
+              break;
+            case '1-month':
+              startDate = formProperStartDate(year, month, day, 1);
+              break;
+            case '1-week':
+              startDate = formProperStartDate(year, month, day, 7);
+              break;
+            /*case '1-day':
+              url = entryURL + '?for=yesterday';
+              this.start = 'yesterday';
+              break;*/
+            default:
+              console.warn(timeline)
+          }
+          // check if other filters applied
+          let currency = '';
+          if(this.prevCurrency !== this.currency) {
+            currency = `&currency=${this.currency}`
+          }
+          
+          const end = formProperDateFormat(year, month, day);
+          const start = formProperDateFormat(startDate.year,startDate.month,startDate.day);
+          const entryURL = controller.getHistoricalPriceURL();
+          this.end = end;
+          this.start = start;        
+          const url = entryURL + `?start=${start}&end=${end}${currency}`;
+
+          controller.updateHistoricalDataRequest(url);
         });
       
       d3.select('#currencies')
-        .on('change', () => {            
-            const url = controller.getHistoricalPriceURL() + '?currency=' + d3.event.target.value;            
+        .on('change', () => {
+            const newCurrency = d3.event.target.value;
+            // check if other filters applied
+            let timeline = '';
+            if(!!this.start || !!this.end) {                
+              timeline = `&start=${this.start}&end=${this.end}`;
+            }
+            const url = controller.getHistoricalPriceURL() + '?currency=' + newCurrency + timeline;
+            this.prevCurrency = this.currency;
+            this.currency = newCurrency;
             controller.updateHistoricalDataRequest(url);
         });
 
       d3.select('.manual-date')
         .on('submit', () => {
-            d3.event.preventDefault();            
+            d3.event.preventDefault();          
         });
     }
 
@@ -293,6 +373,9 @@ const controller = {
     getHistoricalPriceURL() {
       // this funtion will be called inside a view
       return model.historicalPriceURL;
+    },
+    getCurrencySign() {        
+      return model.currencySigns[historyGraphView.currency];
     }
 
 };
