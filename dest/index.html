@@ -31,7 +31,36 @@
     </setion>
 
     <section class="container">
-        <div class="controlls"></div>
+        <div class="filters">
+            <form>
+                <button>All time</button>
+                <button>Year</button>
+                <button>6 months</button>
+                <button>3 months</button>
+                <button>1 month</button>
+                <button>week</button>
+                <button>day</button>
+            </form>
+            <form>
+                <label>
+                    <span>From</span>
+                    <input type="text" placeholder="">                    
+                </label>
+                <label>
+                    <span>To</span>
+                    <input type="text" placeholder="">
+                </label>
+            </form>
+            <form>
+                <input type="text" list="currencies" placeholder="USD">
+                <datalist id="currencies">
+                    <option value="USD"></option>
+                    <option value="EUR"></option>
+                    <option value="UAH"></option>
+                    <option value="RUB"></option>                    
+                </datalist>
+            </form>
+        </div>
         <div class="graph"></div>
     </section>
 
