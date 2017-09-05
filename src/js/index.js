@@ -82,7 +82,7 @@ const historyGraphView = {
         }        
     },
     updateLine({ dataset, width, height }) {
-      // dataset has changd, need to update graph
+      // dataset has changd, need to update #historical-data graph
       this.graphSVG = d3.select('.graph').select('svg#historical-data');
 
       const firstDate = dataset[0].time.getTime();
@@ -105,23 +105,25 @@ const historyGraphView = {
                              .x(d => xScale(d.time.getTime()))
                              .y(d => yScale(d.currencyValue))
                              //.curve(d3.curveBasis);
-      // constructed basic graph
+      // update basic graph
       this.graphSVG
         .attrs({
           width,
           height
         })
         .select('path')
+          .transition()          
+          .ease(d3.easePoly)
+          .duration(1000)
           .attrs({
-            'd': lineFunction(dataset)           
+            'd': lineFunction(dataset)       
           });
-
-      // add axises
+      // update axises
       const yAxisGen = d3.axisLeft(yScale).ticks(4);
       const xAxisGen = d3.axisBottom(xScale).tickFormat(d3.timeFormat('%e')).ticks(dataset.length);
       
       const padding = 20; // random number    
-
+      
       const yAxis = this.graphSVG
                       .selectAll('g.y-axis')
                       .call(yAxisGen)
@@ -131,12 +133,15 @@ const historyGraphView = {
                       .call(xAxisGen)
       
         
-      console.log(this.graphSVG.selectAll('circle'));
+      // update dots' position
       this.graphSVG.selectAll('circle')
                    .data(dataset)
+                   .transition()          
+                   .ease(d3.easePoly)
+                   .duration(1000)
                    .attrs({
                     cx: d => xScale(d.time.getTime()),
-                    cy: d => yScale(d.currencyValue)            
+                    cy: d => yScale(d.currencyValue)           
                    });
     },
     buildLine({ dataset, width, height }) {
@@ -194,17 +199,17 @@ const historyGraphView = {
 
         const xAxis = this.graphSVG
                         .append('g')
-                        .call(xAxisGen)                        
+                        .call(xAxisGen)              
                         .attrs({
                             'transform': `translate(${padding}, ${height - padding})`,
                             'class': 'x-axis'
                         });
 
-        // dots represent single smallest time duration    
+        // dots represent single smallest time duration
         const tooltip = d3.select('body').append('div')
                           .attr('class', 'tooltip')
                           .style('opacity', 0);
-         
+        
         this.graphSVG.selectAll('circle')
                        .data(dataset)
                        .enter()
