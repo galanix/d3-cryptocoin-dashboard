@@ -37,3 +37,24 @@ circle:hover {
     font-family: sans-serif;
     font-size: 12px;
 }
+
+.buttons {
+    padding: 25px;
+}
+
+button {
+  padding: 7px 14px;
+  color: #248888;
+  background-color: #fff;
+  border: 1px solid #248888;
+  border-radius: 5px;
+  font-weight: bold;
+    
+  &.selected {
+    background-color: #248888;
+    color: #fff;
+  }
+  &:hover {
+      cursor: pointer;
+  }
+}

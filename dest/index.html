@@ -5,11 +5,7 @@
   <title>D3 Bitcoin Charts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-    <header class="header">
-        <h1>Bitcoin D3</h1>
-    </header>
-
+<body>   
     <setion class="current-price">
         <header class="header">
             <h2>Current Price For Bitcoin</h2>
@@ -30,35 +26,37 @@
         </div>
     </setion>
 
+     <!-- HISTORY GRAPH -->
     <section class="container">
         <div class="filters">
-            <form>
+            <form class="buttons">
                 <button>All time</button>
                 <button>Year</button>
                 <button>6 months</button>
                 <button>3 months</button>
-                <button>1 month</button>
+                <button class="selected">1 month</button>
                 <button>week</button>
                 <button>day</button>
             </form>
-            <form>
+            <form class="manual-date">
                 <label>
                     <span>From</span>
-                    <input type="text" placeholder="">                    
+                    <input type="text" placeholder="" value="">                    
                 </label>
                 <label>
                     <span>To</span>
                     <input type="text" placeholder="">
                 </label>
+                <!-- to submit on enter press! -->
+                <input type="submit" style="position: absolute; left: -9999px"/>
             </form>
-            <form>
-                <input type="text" list="currencies" placeholder="USD">
-                <datalist id="currencies">
-                    <option value="USD"></option>
-                    <option value="EUR"></option>
-                    <option value="UAH"></option>
-                    <option value="RUB"></option>                    
-                </datalist>
+            <form class="dropdown">                
+                <select id="currencies">
+                    <option value="USD" selected="selected">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="UAH">UAH</option>
+                    <option value="RUB">RUB</option>                    
+                </select>
             </form>
         </div>
         <div class="graph"></div>
