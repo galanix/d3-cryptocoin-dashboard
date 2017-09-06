@@ -36,26 +36,25 @@
                 <button data-timeline="3-month">3 months</button>
                 <button data-timeline="1-month" class="selected">1 month</button>
                 <button data-timeline="1-week">week</button>
-                <button data-timeline="1-day">day</button>
             </form>
             <form class="manual-date">
                 <label>
                     <span>From</span>
-                    <input type="text" placeholder="" value="">                    
+                    <input type="text"  placeholder="2017-08-06" required id="start-date" class="flatpickr-target">
                 </label>
                 <label>
                     <span>To</span>
-                    <input type="text" placeholder="">
+                    <input type="text"  placeholder="2017-08-06" required id="end-date" class="flatpickr-target">
                 </label>
                 <!-- to submit on enter press! -->
-                <input type="submit" style="position: absolute; left: -9999px"/>
+                <input type="submit" style="position: absolute; left: -9999px">
             </form>
             <form class="dropdown">                
                 <select id="currencies">
                     <option value="USD" selected="selected">USD</option>
                     <option value="EUR">EUR</option>
                     <option value="UAH">UAH</option>
-                    <option value="RUB">RUB</option>                    
+                    <option value="RUB">RUB</option>
                 </select>
             </form>
         </div>
@@ -63,7 +62,7 @@
     </section>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
-    <script src="bundle.js"></script>    
+    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>    
+    <script src="bundle.js"></script>
 </body>
 </html>
