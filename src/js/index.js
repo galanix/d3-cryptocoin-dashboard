@@ -67,8 +67,7 @@ const model = {
     },
     requestHistoricalPriceData(url, isGraphBeingUpdated) {
         d3.json(url, (data) => {
-            this.historicalPriceData = data;
-            console.log(data);
+            this.historicalPriceData = data;                
             controller.renderHistoryGraph(isGraphBeingUpdated)
         })
     }
@@ -90,17 +89,17 @@ const historyGraphView = {
     renderGraph({ width, height, data, isGraphBeingUpdated }) {
         // transforms a string into a Date object
         
-        const createDateObj = (dateStr) => {            
+        const createDateObj = (dateStr) => {
             const dateArr = dateStr.split('-');
             const year = dateArr[0];
             const month = dateArr[1] - 1;
-            const day =  dateArr[2];
+            const day =  dateArr[2]; // - 1            
             return new Date(year, month, day);
         }
         // create an array(dataset) from an object(data)
         const dataset = [];
         const keys = Object.keys(data);
-        keys.forEach(key => {   
+        keys.forEach(key => {
             dataset.push({
                 time: createDateObj(key),
                 currencyValue: data[key]
@@ -176,20 +175,20 @@ const historyGraphView = {
                       .call(xAxisGen);
       
         
-      // update dots' position --> how to make it work for the change of amount of circles?
+      //update dots' position --> how to make it work for the change of amount of circles?      
       /*this.graphSVG.selectAll('circle')
                    .data(dataset)                  
                    .transition()          
                    .ease(d3.easeLinear)
                    .duration(1000)
                    .attrs({
-                    cx: d => xScale(d.time.getTime()), // this.
-                    cy: d => yScale(d.currencyValue) // this
+                    cx: d => this.xScale(d.time.getTime()), // this.
+                    cy: d => this.yScale(d.currencyValue) // this
                    });*/
       
       this.graphSVG.selectAll('circle').remove();
       setTimeout(() => {
-        this.buildScatterPlot(dataset);
+        this.buildScatterPlot(dataset.slice());
         }, 1100);
     },
     buildScatterPlot(dataset) {
@@ -206,8 +205,12 @@ const historyGraphView = {
               }) // add tooltip on hover
           .on('mouseover', d => {
               // add some animation for dots later
-            const currencySign = controller.getCurrencySign(this.currency);
-            const { year, month, day } = this.formProperDateValue({});
+            const currencySign = controller.getCurrencySign(this.currency);           
+            const { year, month, day } = this.formProperDateValue({
+              year: d.time.getFullYear(),
+              month: d.time.getMonth(),
+              day: d.time.getDate()
+           });
           
             this.tooltip.transition()
               .duration(100)
@@ -287,8 +290,8 @@ const historyGraphView = {
         // build scatter plot
         
         this.tooltip = d3.select('body').append('div')
-        .attr('class', 'tooltip')
-        .style('opacity', 0);
+                         .attr('class', 'tooltip')
+                         .style('opacity', 0);
 
         this.buildScatterPlot(dataset);
     },
@@ -298,13 +301,35 @@ const historyGraphView = {
       this.xTickFormat = ticksDataObj.xTickFormat;
       this.yTicks = ticksDataObj.yTicks;
     },
-    formProperDateValue({ yearSubtr, monthSubtr,  daySubtr }) { // starts at current date a gets 1year, 1-3-6 montt, 7 days away from it (past)
+    createCurrDate(params) {
+      let today;
+      if(!!params) {
+        const { year, month, day } = params;
+        today = new Date(year, month, day);
+      } else {
+        today = new Date();
+      }
+
+      return {
+        year: today.getFullYear(),
+        month: today.getMonth(),
+        day: today.getDate()
+      };
+    },
+    formProperDateValue({ yearSubtr, monthSubtr,  daySubtr, year, month, day }) { // starts at current date a gets 1year, 1-3-6 montt, 7 days away from it (past)
       // Subtr === subtractor
-      const today = new Date();
-      
-      let year = today.getFullYear();
-      let month = today.getMonth();
-      let day = today.getDate();
+      const currentDate = this.createCurrDate();
+      if(!year) {
+        year = currentDate.year;
+      }
+      if(!month) {
+        month = currentDate.month;
+      }
+      if(!day) {
+        day = currentDate.day;
+      }
+
+
       if(!!yearSubtr) { // 1 year case
         year -= 1;
       }
@@ -336,91 +361,64 @@ const historyGraphView = {
       return {
           year,
           month: month + 1,
-          day: day + 1
+          day
       };
     },
-    // COMEBACK
     formProperDateFormat(year, month, day) { // example: turns (2017, 5, 14) into 2017-05-15    
       const dateStr = `${year}-${month < 10 ? ('0' + month) : month}-${day < 10 ? ('0' + day) : day}`;        
       return dateStr;
     },
     attachEventsForFilters() {
-      // button filters(timeline)
       d3.selectAll('.buttons button')
-        .on('click', () => {
-          d3.event.preventDefault();
-          const timeline = d3.event.target.getAttribute('data-timeline');
-          
-          //current day          
-          const { year, month, day } = this.formProperDateValue({});
-
-          let startDate;
-          switch(timeline) {
-            case 'all-time':
-              const creationDate = new Date(2010, 7, 17);
-              startDate = {
-                year: creationDate.getFullYear(),
-                month : creationDate.getMonth(),
-                day: creationDate.getDate(),
-              }
-              console.log(startDate.year, startDate.month, startDate.day);
-              break;
-            case '1-year':
-              startDate = this.formProperDateValue({ yearSubtr: 1 });
-              break;
-            case '6-month':
-              startDate = this.formProperDateValue({ monthSubtr: 6 });
-              break;
-            case '3-month':
-              startDate = this.formProperDateValue({ monthSubtr: 3 });
-              break;
-            case '1-month':
-              startDate = this.formProperDateValue({ monthSubtr: 1 });
-              break;
-            case '1-week':
-              startDate = this.formProperDateValue({ daySubtr: 7 });
-              break;
-            default:
-              console.warn('unknown timeline: ', timeline);
-          }
-
-          // change ticks specifiers
-          this.setTicksInfo(timeline)
-          // update timeline filter
-          this.end = this.formProperDateFormat(year, month, day); // current date
-          this.start = this.formProperDateFormat(startDate.year,startDate.month,startDate.day);
-          // apply all filters and get proper url
-          const url = this.applyFilters();
-          controller.updateHistoricalDataRequest(url);
-        });
-      // dropdown filter(currency)
+      .on('click', this.timelineButtonClick.bind(this));      
       d3.select('#currencies')
-        .on('change', () => {
-            this.currency  = d3.event.target.value;
-            // apply all filters and get proper url
-            const url = this.applyFilters();
-            controller.updateHistoricalDataRequest(url);           
-        });
-      // input filter (date range)
-      d3.select('.manual-date')
-        .on('submit', () => {
-            d3.event.preventDefault();
-            const inputs = d3.event.target.querySelectorAll('input[type="text"]');            
-            inputs[0].value = '';
-            inputs[1].value = '';
+      .on('change', this.currencyDropdownChange.bind(this));      
+      this.initCalendar();
+    },
+    timelineButtonClick() {
+      d3.event.preventDefault();
+      const timeline = d3.event.target.getAttribute('data-timeline');
+      
+      //current day          
+      const { year, month, day } = this.formProperDateValue({});
 
-        });
-        // let only numbers, - and /
-        d3.selectAll('.manual-date input[type="text"]')
-          .on('input', () => {
-            const validInputRegex = /[^0-9\/\-]+/;
-            const input = d3.event.target;
-            let value = d3.event.target.value;
-
-            if(validInputRegex.test(value)) {
-              input.value = value.substr(0, value.length - 1);
-            }
-          });
+      let startDate;
+      switch(timeline) {
+        case 'all-time':
+          startDate = this.createCurrDate({ year: 2010, month: 7, day: 17 });
+          break;
+        case '1-year':
+          startDate = this.formProperDateValue({ yearSubtr: 1 });
+          break;
+        case '6-month':
+          startDate = this.formProperDateValue({ monthSubtr: 6 });
+          break;
+        case '3-month':
+          startDate = this.formProperDateValue({ monthSubtr: 3 });
+          break;
+        case '1-month':
+          startDate = this.formProperDateValue({ monthSubtr: 1 });
+          break;
+        case '1-week':
+          startDate = this.formProperDateValue({ daySubtr: 7 });
+          break;
+        default:
+          console.warn('unknown timeline: ', timeline);
+      }
+      // change ticks specifiers
+      this.setTicksInfo(timeline)
+      // update timeline filter
+      this.end = this.formProperDateFormat(year, month, day); // current date
+      this.start = this.formProperDateFormat(startDate.year,startDate.month,startDate.day);
+      // apply all filters and get proper url
+      const url = this.applyFilters();
+      controller.updateHistoricalDataRequest(url);
+    },
+    currencyDropdownChange() {     
+        this.currency  = d3.event.target.value;
+        // apply all filters and get proper url
+        const url = this.applyFilters();
+        controller.updateHistoricalDataRequest(url);      
     },
     setDefaultFilters() {
       // set default filters( they are changed by buttons/drpdown/input)
@@ -434,17 +432,44 @@ const historyGraphView = {
     applyFilters() {
       const entryURL = controller.getHistoricalPriceURL();
       return entryURL + `?start=${this.start}&end=${this.end}&currency=${this.currency}`;
+    },
+    initCalendar() {
+      const { year, month, day } = this.createCurrDate();      
+      const inputs = document.querySelectorAll('.flatpickr-target');
+      inputs[0].placeholder = this.start;
+      inputs[1].placeholder = this.end;
+      flatpickr(inputs, {
+        allowInput: true,
+        enable: [
+          {
+              from: "2010-07-17",
+              to: this.formProperDateFormat(year,month + 1, day)
+          }
+        ],
+        onChange(selectedDates, dateStr, instance) {
+          const self = historyGraphView;
+          if(startInput === instance) {
+            self.start = dateStr;
+          } else { // endInpt === instance
+            self.end = dateStr;
+          }          
+          if(self.end > self.start) {
+            const url = self.applyFilters();
+            controller.updateHistoricalDataRequest(url);
+          }
+        }
+      });      
+      const startInput = inputs[0]._flatpickr;
+      const endInput = inputs[1]._flatpickr;      
     }
-}
+};
 
 const controller = {
-    init() {
-        //historyGraphView.init();
+    init() {       
         const url = historyGraphView.setDefaultFilters();
         model.requestHistoricalPriceData(url, false);
         model.startFetchingData();
-        currentPriceView.init();
-        this.initCalendar(); // calendar plugin       
+        currentPriceView.init();      
     },    
     updateHistoricalDataRequest(url) {
       // this funtion will be called inside a view
@@ -479,19 +504,7 @@ const controller = {
     },
     getHistoryGraphTicksInfo(timeline) {
       return model.historyGraphTicksInfo[timeline];
-    },
-    initCalendar() {
-      const { year, month, day } = historyGraphView.formProperDateValue({});
-      flatpickr('.flatpickr-target', {
-        allowInput: true,
-        enable: [
-          {
-              from: "2010-07-17",
-              to: historyGraphView.formProperDateFormat(year,month, day)
-          }
-        ]
-      });
-    }
+    }    
 };
 
 controller.init();
