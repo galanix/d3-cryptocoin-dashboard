@@ -336,7 +336,7 @@ const historyGraphView = {
       return {
           year,
           month: month + 1,
-          day
+          day: day + 1
       };
     },
     // COMEBACK
