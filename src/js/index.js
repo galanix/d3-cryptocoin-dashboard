@@ -1,3 +1,6 @@
+import * as d3 from 'd3';
+import { attrs } from 'd3-selection-multi';
+import { interpolatePath } from 'd3-interpolate-path';
 import flatpickr from 'flatpickr';
 import '../scss/index.scss';
 import 'flatpickr/dist/themes/material_green.css';
@@ -122,6 +125,70 @@ const historyGraphView = {
           this.attachEventsForFilters();
         }        
     },
+    buildLine({ dataset, width, height }) {
+      const firstDate = dataset[0].time.getTime();
+      const lastDate = dataset[dataset.length - 1].time.getTime();
+      this.xScale = d3.scaleLinear()
+                       .domain([
+                         firstDate,
+                         lastDate                           
+                       ])
+                       .range([0, width]);
+
+      this.yScale = d3.scaleLinear()
+                       .domain([
+                         d3.min(dataset, d => d.currencyValue),
+                         d3.max(dataset, d => d.currencyValue)
+                       ])
+                       .range([height, 0]);
+
+      const lineFunction = d3.line()
+                             .x(d => this.xScale(d.time.getTime()))
+                             .y(d => this.yScale(d.currencyValue))
+                             //.curve(d3.curveBasis);
+              
+
+      this.graphSVG = d3.select('.graph').append('svg');
+      // constructed basic graph
+      this.graphSVG
+        .attrs({
+          width,
+          height,
+          id: 'historical-data',
+        })
+        .append('path')
+          .attrs({
+            'd': lineFunction(dataset),
+            'stroke': '#C2390D',
+            'stroke-width': 2,
+            'fill': 'none',
+            'id': 'graph-line'
+          });
+
+      // add axises
+      this.setTicksInfo('1-month'); // timeline defalts to 1-month
+      const yAxisGen = d3.axisLeft(this.yScale).ticks(this.yTicks);
+      const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat(this.xTickFormat)).ticks(this.xTicks);
+      
+      const padding = 20; // random number
+
+      const yAxis = this.graphSVG
+                      .append('g')
+                      .call(yAxisGen)
+                      .attrs({
+                          'transform': `translate(${padding* 1.2}, ${-padding * (1.15)})`,
+                          'class': 'y-axis'
+                      });
+
+      const xAxis = this.graphSVG
+                      .append('g')
+                      .call(xAxisGen)
+                      .attrs({
+                          'transform': `translate(${padding}, ${height - padding})`,
+                          'class': 'x-axis'
+                      });       
+      this.addMovableParts(dataset, height);        
+    },
     updateLine({ dataset, width, height }) {
       // dataset has changed, need to update #historical-data graph
       this.graphSVG = d3.select('.graph').select('svg#historical-data');
@@ -147,20 +214,23 @@ const historyGraphView = {
                              .x(d => this.xScale(d.time.getTime()))
                              .y(d => this.yScale(d.currencyValue))
                              //.curve(d3.curveBasis);
-      // update basic graph
-      this.graphSVG
-        .attrs({
-          width,
-          height
-        })
-        .select('path')
-          .transition()
-          .ease(d3.easeLinear)
-          .duration(1000)
+      
+                             // update basic graph
+                  
+        this.graphSVG
           .attrs({
-            'd': lineFunction(dataset)
-          });
-
+            width,
+            height
+          })
+          .select('path')
+            .transition()            
+            .duration(1000)
+            .attrTween('d',  function() {            
+              const previous = d3.select(this).attr('d');
+              console.log(dataset);
+              const current = lineFunction(dataset);
+              return interpolatePath(previous, current);              
+            });           
       // update axises
       const yAxisGen = d3.axisLeft(this.yScale).ticks(this.yTicks);
       const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat(this.xTickFormat)).ticks(this.xTicks);
@@ -173,95 +243,8 @@ const historyGraphView = {
 
       const xAxis = this.graphSVG
                       .selectAll('g.x-axis')
-                      .call(xAxisGen);
-      
-        
-      //update dots' position --> how to make it work for the change of amount of circles?      
-      /*this.graphSVG.selectAll('circle')
-                   .data(dataset)                  
-                   .transition()          
-                   .ease(d3.easeLinear)
-                   .duration(1000)
-                   .attrs({
-                    cx: d => this.xScale(d.time.getTime()), // this.
-                    cy: d => this.yScale(d.currencyValue) // this
-                   });*/
-      
-
-      this.createHashTable(dataset);
-
-      /*this.graphSVG.selectAll('circle').remove();
-      setTimeout(() => {
-        //this.addMovableParts(dataset, height);
-        this.buildScatterPlot({ dataset, width, height});
-        }, 1100);*/
-    },
-    buildScatterPlot({ dataset, width, height }) {
-       // dots represent single smallest time duration       
-      const self = this; // for 'on' handlers - we need both this: d3 and dot
-       
-     /* this.graphSVG.append('g')
-        .attrs({
-          'id': 'grid'
-        });*/
-        
-      /*const gs = this.graphSVG.selectAll('g.dot')
-        .data(dataset)
-        .enter()
-        .append('g')
-        .attrs({
-          width : width / dataset.length,
-          height,
-          fill: '#f00',
-          class: "dot"
-        })
-        .append('circle')
-          .attrs({
-            cy: d => this.yScale(d.currencyValue),
-            cx: d => this.xScale(d.time.getTime()),
-            r: 5,
-           'fill': '#717A84',          
-          })
-          .style('opacity', 0);*/
-        /*.on('mouseover', function(d) {
-          console.log(d3.select(this));
-
-          d3.select(this)
-            .style('opacity', 0.9);
-
-            const currencySign = controller.getCurrencySign(self.currency);            
-            const { year, month, day } = self.formProperDateValue({
-              year: d.time.getFullYear(),
-              month: d.time.getMonth(),
-              day: d.time.getDate()
-          });
-        
-          self.tooltip.transition()
-            .duration(100)
-            .style('opacity', 0.75)
-          self.tooltip.html(
-            `<h4>${self.formProperDateFormat(year, month, day)}</h4>
-             <strong>Price: ${currencySign + d.currencyValue.toFixed(2)}</strong>`
-            )
-            .style('left', (d3.event.pageX - 50) + 'px')
-            .style('top', (d3.event.pageY - 55) + 'px')
-        })
-        .on('mouseout', function() {
-          self.tooltip
-            .style('opacity', 0);
-          d3.select(this)
-            .transition(1000)
-            .style('opacity', 0);
-        })*/
-        /*.append('circle')
-        .attrs({
-          cy: d => this.yScale(d.currencyValue),
-          cx: d => this.xScale(d.time.getTime()),
-          r: 5,
-         'fill': '#717A84',
-         'class': 'dot'
-        })
-        .style('opacity', 0);*/      
+                      .call(xAxisGen);      
+      this.createHashTable(dataset);     
     },
     createHashTable(dataset) {
       const hashTable = {};
@@ -358,8 +341,7 @@ const historyGraphView = {
           .duration(100)
           .style('opacity', 0.75)
 
-        const graph = d3.select('.graph').node();
-        console.dir(graph);
+        const graph = d3.select('.graph').node();        
         this.tooltip.html(
           `<h4>${this.formProperDateFormat(year, month, day)}</h4>
            <strong>Price: ${currencySign + currencyValue.toFixed(2)}</strong>`
@@ -376,81 +358,7 @@ const historyGraphView = {
       this.tooltip.transition()
         .duration(100)
         .style('opacity', 0)         
-    },
-    buildLine({ dataset, width, height }) {
-        const firstDate = dataset[0].time.getTime();
-        const lastDate = dataset[dataset.length - 1].time.getTime();
-        this.xScale = d3.scaleLinear()
-                         .domain([
-                           firstDate,
-                           lastDate                           
-                         ])
-                         .range([0, width]);
-
-        this.yScale = d3.scaleLinear()
-                         .domain([
-                           d3.min(dataset, d => d.currencyValue),
-                           d3.max(dataset, d => d.currencyValue)
-                         ])
-                         .range([height, 0]);
-
-        const lineFunction = d3.line()
-                               .x(d => this.xScale(d.time.getTime()))
-                               .y(d => this.yScale(d.currencyValue))
-                               //.curve(d3.curveBasis);
-                
-
-        this.graphSVG = d3.select('.graph').append('svg');
-        // constructed basic graph
-        this.graphSVG
-          .attrs({
-            width,
-            height,
-            id: 'historical-data',
-          })
-          .append('path')
-            .attrs({
-              'd': lineFunction(dataset),
-              'stroke': '#C2390D',
-              'stroke-width': 2,
-              'fill': 'none',
-              'id': 'graph-line'
-            });
-
-        // add axises
-        this.setTicksInfo('1-month'); // timeline defalts to 1-month
-        const yAxisGen = d3.axisLeft(this.yScale).ticks(this.yTicks);
-        const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat(this.xTickFormat)).ticks(this.xTicks);
-        
-        const padding = 20; // random number
-
-        const yAxis = this.graphSVG
-                        .append('g')
-                        .call(yAxisGen)
-                        .attrs({
-                            'transform': `translate(${padding* 1.2}, ${-padding * (1.15)})`,
-                            'class': 'y-axis'
-                        });
-
-        const xAxis = this.graphSVG
-                        .append('g')
-                        .call(xAxisGen)
-                        .attrs({
-                            'transform': `translate(${padding}, ${height - padding})`,
-                            'class': 'x-axis'
-                        });
-        // build scatter plot
-        /*this.dot = d3.select('body').append('circle')
-                     .attrs({
-                        x: d => this.xScale(d.time.getTime()),
-                        y: d => this.yScale(d.currencyValue),
-                        r: 5,
-                        'fill': '#1bbc9b', 
-                     })
-                     .style('opacity', 0);*/        
-        this.addMovableParts(dataset, height);
-        //this.buildScatterPlot({ dataset, width, height });
-    },
+    },    
     setTicksInfo(timeline) {
       const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);      
       this.xTicks = ticksDataObj.xTicks;
@@ -633,7 +541,6 @@ const historyGraphView = {
       const startInput = inputs[0]._flatpickr;
       const endInput = inputs[1]._flatpickr;      
     },
-
 };
 
 const controller = {

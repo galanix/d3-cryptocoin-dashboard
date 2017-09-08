@@ -1,1 +1,1 @@
-d3-cryptocoin-dashboard
+Run "npm start" in your console to start local dev server
