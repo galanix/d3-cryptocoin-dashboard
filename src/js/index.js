@@ -50,6 +50,7 @@ const model = {
         UAH: '&#8372;',
         RUB: '&#8381;'
     },
+    hashTable: {},
     startFetchingData() {
         this.requestCurrentPriceData();
         this.intervalID = setInterval(() => {
@@ -186,61 +187,100 @@ const historyGraphView = {
                     cy: d => this.yScale(d.currencyValue) // this
                    });*/
       
-      this.graphSVG.selectAll('circle').remove();
+
+      this.createHashTable(dataset);
+
+      /*this.graphSVG.selectAll('circle').remove();
       setTimeout(() => {
-        //this.addMovableParts(dataset);
-        this.buildScatterPlot(dataset, height);
-        }, 1100);
+        //this.addMovableParts(dataset, height);
+        this.buildScatterPlot({ dataset, width, height});
+        }, 1100);*/
     },
-    buildScatterPlot(dataset, height) {
+    buildScatterPlot({ dataset, width, height }) {
        // dots represent single smallest time duration       
       const self = this; // for 'on' handlers - we need both this: d3 and dot
        
-      this.graphSVG.selectAll('circle')
+     /* this.graphSVG.append('g')
+        .attrs({
+          'id': 'grid'
+        });*/
+        
+      /*const gs = this.graphSVG.selectAll('g.dot')
         .data(dataset)
         .enter()
+        .append('g')
+        .attrs({
+          width : width / dataset.length,
+          height,
+          fill: '#f00',
+          class: "dot"
+        })
         .append('circle')
-        .attrs({                      
+          .attrs({
+            cy: d => this.yScale(d.currencyValue),
+            cx: d => this.xScale(d.time.getTime()),
+            r: 5,
+           'fill': '#717A84',          
+          })
+          .style('opacity', 0);*/
+        /*.on('mouseover', function(d) {
+          console.log(d3.select(this));
+
+          d3.select(this)
+            .style('opacity', 0.9);
+
+            const currencySign = controller.getCurrencySign(self.currency);            
+            const { year, month, day } = self.formProperDateValue({
+              year: d.time.getFullYear(),
+              month: d.time.getMonth(),
+              day: d.time.getDate()
+          });
+        
+          self.tooltip.transition()
+            .duration(100)
+            .style('opacity', 0.75)
+          self.tooltip.html(
+            `<h4>${self.formProperDateFormat(year, month, day)}</h4>
+             <strong>Price: ${currencySign + d.currencyValue.toFixed(2)}</strong>`
+            )
+            .style('left', (d3.event.pageX - 50) + 'px')
+            .style('top', (d3.event.pageY - 55) + 'px')
+        })
+        .on('mouseout', function() {
+          self.tooltip
+            .style('opacity', 0);
+          d3.select(this)
+            .transition(1000)
+            .style('opacity', 0);
+        })*/
+        /*.append('circle')
+        .attrs({
           cy: d => this.yScale(d.currencyValue),
           cx: d => this.xScale(d.time.getTime()),
           r: 5,
-         'fill': '#717A84'
+         'fill': '#717A84',
+         'class': 'dot'
         })
-       .style('opacity', 0)
-       .on('mouseover', function(d) {
-            d3.select(this)
-              .style('opacity', 0.9);
-
-             const currencySign = controller.getCurrencySign(self.currency);            
-             const { year, month, day } = self.formProperDateValue({
-               year: d.time.getFullYear(),
-               month: d.time.getMonth(),
-               day: d.time.getDate()
-           });
-          
-            self.tooltip.transition()
-              .duration(100)
-              .style('opacity', 0.75)
-            self.tooltip.html(`<h4>${self.formProperDateFormat(year, month, day)}</h4>
-              <strong>Price: ${currencySign + d.currencyValue.toFixed(2)}</strong>`)
-              .style('left', (d3.event.pageX - 50) + 'px')
-              .style('top', (d3.event.pageY - 55) + 'px')
-
-          })
-          .on('mouseout', function() {
-            self.tooltip
-              .style('opacity', 0);
-            d3.select(this)
-              .transition(1000)
-              .style('opacity', 0);
-          });
+        .style('opacity', 0);*/      
     },
-    addMovableParts(dataset, width) {    
-      const lineFunction = 
+    createHashTable(dataset) {
+      const hashTable = {};
+      dataset.forEach(item => {
+        hashTable[Math.round(this.xScale(item.time.getTime()))] = {
+          currencyValue: item.currencyValue,
+          time: item.time,
+        }
+      });      
+      controller.setNewHashTable(hashTable);      
+    },
+    addMovableParts(dataset, height) {
+      this.createHashTable(dataset);        
+
+      const lineFunction =
         d3.line()
           .x(d => 0)
           .y(d => this.yScale(d.currencyValue));
-
+      
       this.graphSVG
         .append('path')
         .attrs({
@@ -251,22 +291,91 @@ const historyGraphView = {
           'id': 'movable',
           'transform': `translate(-50, 0)`,
         });
-      
-      const totalLength = d3.select('#graph-line').node().getTotalLength();
+
       this.graphSVG
         .on('mousemove', () => {
-          //console.log(d3.select('#movable').node().getPointAtLength(100), totalLength);          
+          const xPos = d3.event.clientX - d3.select('.graph').node().offsetLeft * 2 + 6; // 6 is added to exactly match cursor
+          const value = controller.getHashValue(xPos);
+          if(!!value) {         
+            this.showDotsAndTooltip(Object.assign(value));
+          } else {
+            this.hideDotsAndTooltip();   
+          }
           d3.select('#movable')
             .attrs({
-              'transform': `translate(${d3.event.clientX - d3.select('.graph').node().offsetLeft * 2 + 6}, 0)`,
+              'transform': `translate(${xPos}, 0)`,
             })
         })
         .on('mouseout', () => {
           d3.select('#movable')
           .attrs({
             'transform': `translate(-50, 0)`,
-          })
+          });
+          this.hideDotsAndTooltip();
+        });
+
+      this.tooltip = d3.select('body').append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0);
+
+      this.dot = d3.select('#historical-data').append('circle')
+        .attrs({
+          r: 5,
+          'class': 'dot',
+          'fill': '#1bbc9b'
+        })            
+        .style('opacity', 0);
+
+      /*this.dotLarge = d3.select('#historical-data').append('circle')
+        .attr('class', 'dot')
+        .attrs({
+          r: 6,
+          'class': 'dot',
+          'stroke': '#1bbc9b',
+          'stroke-width': 1,
+          'fill': 'none',
         })
+        .style('opacity', 0);*/
+    },
+    showDotsAndTooltip({ time, currencyValue }) {      
+      d3.selectAll('.dot')
+        .attrs({
+          cy: this.yScale(currencyValue),
+          cx: this.xScale(time.getTime())
+        })
+        .transition()
+        .duration(100)
+        .style('opacity', 0.9);
+        
+        const currencySign = controller.getCurrencySign(this.currency)
+        const { year, month, day } = this.formProperDateValue({
+          year: time.getFullYear(),
+          month: time.getMonth(),
+          day: time.getDate()
+        });
+
+        this.tooltip.transition()
+          .duration(100)
+          .style('opacity', 0.75)
+
+        const graph = d3.select('.graph').node();
+        console.dir(graph);
+        this.tooltip.html(
+          `<h4>${this.formProperDateFormat(year, month, day)}</h4>
+           <strong>Price: ${currencySign + currencyValue.toFixed(2)}</strong>`
+          )
+          .style('left', this.xScale(time.getTime()) + graph.offsetLeft - 30 + 'px')
+          .style('top', this.yScale(currencyValue) + graph.offsetTop - 35 + 'px')
+    },
+    hideDotsAndTooltip() {
+      d3.selectAll('.dot')         
+      .transition()
+      .duration(100)
+      .style('opacity', 0);                        
+    
+      this.tooltip.transition()
+        .duration(100)
+        .style('opacity', 0)         
     },
     buildLine({ dataset, width, height }) {
         const firstDate = dataset[0].time.getTime();
@@ -306,7 +415,7 @@ const historyGraphView = {
               'stroke-width': 2,
               'fill': 'none',
               'id': 'graph-line'
-            });        
+            });
 
         // add axises
         this.setTicksInfo('1-month'); // timeline defalts to 1-month
@@ -338,15 +447,9 @@ const historyGraphView = {
                         r: 5,
                         'fill': '#1bbc9b', 
                      })
-                     .style('opacity', 0);*/
-
-        this.tooltip = d3.select('body').append('div')
-                         .attr('class', 'tooltip')
-                         .style('opacity', 0);
-
-
-        this.addMovableParts(dataset);
-        this.buildScatterPlot(dataset, height);
+                     .style('opacity', 0);*/        
+        this.addMovableParts(dataset, height);
+        //this.buildScatterPlot({ dataset, width, height });
     },
     setTicksInfo(timeline) {
       const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);      
@@ -573,7 +676,14 @@ const controller = {
     },
     getHistoryGraphTicksInfo(timeline) {
       return model.historyGraphTicksInfo[timeline];
-    }    
+    },
+    setNewHashTable(hashTable) {
+      model.hashTable = {};
+      model.hashTable = Object.assign({}, hashTable);
+    },
+    getHashValue(key) {
+      return model.hashTable[key];
+    }
 };
 
 controller.init();
