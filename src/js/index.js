@@ -188,43 +188,85 @@ const historyGraphView = {
       
       this.graphSVG.selectAll('circle').remove();
       setTimeout(() => {
-        this.buildScatterPlot(dataset.slice());
+        //this.addMovableParts(dataset);
+        this.buildScatterPlot(dataset, height);
         }, 1100);
     },
-    buildScatterPlot(dataset) {
-       // dots represent single smallest time duration        
-        this.graphSVG.selectAll('circle')
-          .data(dataset)
-          .enter()
-          .append('circle')
-            .attrs({
-                cx: d => this.xScale(d.time.getTime()),
-                cy: d => this.yScale(d.currencyValue),
-                r: 5,
-                'fill': '#1bbc9b'
-              }) // add tooltip on hover
-          .on('mouseover', d => {
-              // add some animation for dots later
-            const currencySign = controller.getCurrencySign(this.currency);           
-            const { year, month, day } = this.formProperDateValue({
-              year: d.time.getFullYear(),
-              month: d.time.getMonth(),
-              day: d.time.getDate()
+    buildScatterPlot(dataset, height) {
+       // dots represent single smallest time duration       
+      const self = this; // for 'on' handlers - we need both this: d3 and dot
+       
+      this.graphSVG.selectAll('circle')
+        .data(dataset)
+        .enter()
+        .append('circle')
+        .attrs({                      
+          cy: d => this.yScale(d.currencyValue),
+          cx: d => this.xScale(d.time.getTime()),
+          r: 5,
+         'fill': '#717A84'
+        })
+       .style('opacity', 0)
+       .on('mouseover', function(d) {
+            d3.select(this)
+              .style('opacity', 0.9);
+
+             const currencySign = controller.getCurrencySign(self.currency);            
+             const { year, month, day } = self.formProperDateValue({
+               year: d.time.getFullYear(),
+               month: d.time.getMonth(),
+               day: d.time.getDate()
            });
           
-            this.tooltip.transition()
+            self.tooltip.transition()
               .duration(100)
               .style('opacity', 0.75)
-            this.tooltip.html(`<h4>${this.formProperDateFormat(year, month, day)}</h4>
+            self.tooltip.html(`<h4>${self.formProperDateFormat(year, month, day)}</h4>
               <strong>Price: ${currencySign + d.currencyValue.toFixed(2)}</strong>`)
-              .style('left', (d3.event.pageX) + 'px')
-              .style('top', (d3.event.pageY) + 'px')
-          }) // remove tooltip on hover
-          .on('mouseout', () => {
-            this.tooltip.transition()
-              .duration(300)
+              .style('left', (d3.event.pageX - 50) + 'px')
+              .style('top', (d3.event.pageY - 55) + 'px')
+
+          })
+          .on('mouseout', function() {
+            self.tooltip
               .style('opacity', 0);
+            d3.select(this)
+              .transition(1000)
+              .style('opacity', 0);
+          });
+    },
+    addMovableParts(dataset, width) {    
+      const lineFunction = 
+        d3.line()
+          .x(d => 0)
+          .y(d => this.yScale(d.currencyValue));
+
+      this.graphSVG
+        .append('path')
+        .attrs({
+          'd': lineFunction(dataset),
+          'stroke': '#717A84',
+          'stroke-width': 2,
+          'fill': 'none',
+          'id': 'movable',
+          'transform': `translate(-50, 0)`,
         });
+      
+      const totalLength = d3.select('#graph-line').node().getTotalLength();
+      this.graphSVG
+        .on('mousemove', () => {
+          //console.log(d3.select('#movable').node().getPointAtLength(100), totalLength);          
+          d3.select('#movable')
+            .attrs({
+              'transform': `translate(${d3.event.clientX - d3.select('.graph').node().offsetLeft * 2 + 6}, 0)`,
+            })
+        })
+        .on('mouseout', () => {
+          d3.select('#movable')
+          .attrs({
+            'transform': `translate(-50, 0)`,
+          })
+        })
     },
     buildLine({ dataset, width, height }) {
         const firstDate = dataset[0].time.getTime();
@@ -262,8 +304,9 @@ const historyGraphView = {
               'd': lineFunction(dataset),
               'stroke': '#C2390D',
               'stroke-width': 2,
-              'fill': 'none'
-            });
+              'fill': 'none',
+              'id': 'graph-line'
+            });        
 
         // add axises
         this.setTicksInfo('1-month'); // timeline defalts to 1-month
@@ -288,12 +331,22 @@ const historyGraphView = {
                             'class': 'x-axis'
                         });
         // build scatter plot
-        
+        /*this.dot = d3.select('body').append('circle')
+                     .attrs({
+                        x: d => this.xScale(d.time.getTime()),
+                        y: d => this.yScale(d.currencyValue),
+                        r: 5,
+                        'fill': '#1bbc9b', 
+                     })
+                     .style('opacity', 0);*/
+
         this.tooltip = d3.select('body').append('div')
                          .attr('class', 'tooltip')
                          .style('opacity', 0);
 
-        this.buildScatterPlot(dataset);
+
+        this.addMovableParts(dataset);
+        this.buildScatterPlot(dataset, height);
     },
     setTicksInfo(timeline) {
       const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);      
@@ -301,7 +354,7 @@ const historyGraphView = {
       this.xTickFormat = ticksDataObj.xTickFormat;
       this.yTicks = ticksDataObj.yTicks;
     },
-    createCurrDate(params) {
+    createCurrDate(params) { // JS DATE (0-INDEXED)
       let today;
       if(!!params) {
         const { year, month, day } = params;
@@ -316,9 +369,11 @@ const historyGraphView = {
         day: today.getDate()
       };
     },
-    formProperDateValue({ yearSubtr, monthSubtr,  daySubtr, year, month, day }) { // starts at current date a gets 1year, 1-3-6 montt, 7 days away from it (past)
+    formProperDateValue({ yearSubtr, monthSubtr,  daySubtr, year, month, day }) { // API DATE (1-INDEXED)
       // Subtr === subtractor
       const currentDate = this.createCurrDate();
+      let prevMonthsAmontOfDays;
+
       if(!year) {
         year = currentDate.year;
       }
@@ -329,12 +384,11 @@ const historyGraphView = {
         day = currentDate.day;
       }
 
-
       if(!!yearSubtr) { // 1 year case
         year -= 1;
       }
       else if(!!monthSubtr) { // 6,3,1 month case
-        if(month < monthSubtr) { 
+        if(month < monthSubtr) {
           month += monthSubtr; // this logic may be wrong/flawed
           year -= 1;
         } else {
@@ -350,18 +404,32 @@ const historyGraphView = {
             month = 12;
           }
           // get the amount of days in the previus month
-          const prevMonthsAmontOfDays = new Date(year, month, 0).getDate();
+          prevMonthsAmontOfDays = new Date(year, month, 0).getDate();
           const additionalDays = daySubtr - day;
           day = prevMonthsAmontOfDays - additionalDays;
         } else {
           day -= daySubtr;
         }
       }
-      
+
+      if(!prevMonthsAmontOfDays) {
+        prevMonthsAmontOfDays = new Date(year, month, 0).getDate();
+      }
+      if(day !== prevMonthsAmontOfDays) {
+        day += 1;
+      } else {
+        day = 1;
+      }
+      if(month  !== 12) {
+        month += 1;
+      } else {
+        month = 0;
+      }
+
       return {
           year,
-          month: month + 1,
-          day
+          month,
+          day,
       };
     },
     formProperDateFormat(year, month, day) { // example: turns (2017, 5, 14) into 2017-05-15    
@@ -461,11 +529,12 @@ const historyGraphView = {
       });      
       const startInput = inputs[0]._flatpickr;
       const endInput = inputs[1]._flatpickr;      
-    }
+    },
+
 };
 
 const controller = {
-    init() {       
+    init() {
         const url = historyGraphView.setDefaultFilters();
         model.requestHistoricalPriceData(url, false);
         model.startFetchingData();
