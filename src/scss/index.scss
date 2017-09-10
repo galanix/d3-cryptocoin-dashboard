@@ -7,7 +7,7 @@ body {
   height: 100%;
 }
 
-body {
+body {    
     margin: 0;
 }
 
@@ -15,15 +15,12 @@ body {
    TEMPORARY STYLES
 */
 
-.graph {
-    margin: 25px 0 0 25px;
-    svg {
-      padding: 20px;
-    }
+.container {
+    margin: 25px 0 0 25px;    
 }
 
-circle:hover {
-    cursor: pointer;
+#historical-data {
+    padding: 50px;
 }
 
 .tooltip {
@@ -43,35 +40,26 @@ circle:hover {
     }
 }
 
-.buttons {
+.button-group {
     padding: 25px;
 }
 
-button {
-  padding: 7px 14px;
-  color: $material-green;
-  background-color: #fff;
-  border: 1px solid $material-green;
+.button {
+  padding: 7px 14px;  
+  background-color: $material-green;  
+  color: #fff;
+  border: none;
   border-radius: 5px;
   font-weight: bold;
-    
-  &.selected {
-    background-color: $material-green;
-    color: #fff;
-  }
+  transition: background-color .3s linear;
+
   &:hover {
+      background-color: darken($material-green, 5%);
       cursor: pointer;
   }
-}
-
-.flatpickr-target {
-    padding-left: 2px;
-}
-
-#movable {
-    position: relative;
-}
-
-circle {
-    z-index: 100;
+  &.selected,
+  &.selected:hover {    
+    cursor: auto;
+    background-color: $selected;
+  }
 }
