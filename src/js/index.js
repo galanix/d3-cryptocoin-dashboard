@@ -21,23 +21,15 @@ const model = {
          xTickFormat: '%Y',
          yTicks: 4
       },
-      'from-year-to-3month': {
+      'from-year-to-3-month': {
         xTicks: 3,
         xTickFormat: "%b\'%y",
         yTicks: 3
       },
-      'from-3-month-to-month': {
+      'less-than-3-month': {
         xTicks: 3,
         xTickFormat: '%e\'%b',
-        yTicks: 3
-         /*xTicks: 3,
-         xTickFormat: '%d/%m/%y',
-         yTicks: 4*/
-      },
-      'less-than-month': {
-        xTicks: 3,
-        xTickFormat: '%e\'%b',
-        yTicks: 3
+        yTicks: 3        
       }
     },
     currencySigns: {
@@ -63,9 +55,12 @@ const model = {
             .catch(error => console.warn(error));
     },
     requestHistoricalPriceData(url, isGraphBeingUpdated) {
+        // start animation
+        controller.startAnimation();
         d3.json(url, (data) => {
             this.historicalPriceData = data;                
             controller.renderHistoryGraph(isGraphBeingUpdated)
+            controller.finishAnimation();
         })
     }
 };
@@ -80,6 +75,18 @@ const currentPriceView = {
         this.valueHolderUSD.innerHTML = controller.getCurrencySign('USD') + rateUSD;
         this.valueHolderEUR.innerHTML = controller.getCurrencySign('EUR') + rateEUR;
     }
+};
+
+const animationView = {
+  init() {
+    this.message = document.getElementsByClassName('waiting-message')[0];
+  },
+  start() {   
+    this.message.style.opacity = 0.75;    
+  },
+  finish() {
+    this.message.style.opacity = 0;    
+  }
 };
 
 const historyGraphView = {
@@ -159,7 +166,7 @@ const historyGraphView = {
             //'transform': `translate(${5}, 0)`
           })         
       // add axises
-      this.changeTicksInfo('less-than-month'); // timeline defalts to 1-month
+      this.changeTicksInfo('less-than-3-month'); // timeline defalts to 1-month
       const { yTicks, xTicks } = this.determineTicks(dataset);
       const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
       const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));
@@ -276,29 +283,21 @@ const historyGraphView = {
           outputArray = [ ...new Set([...outputArray, ...valuesUp]) ];
         }
         return outputArray;
-      }
+      }      
 
       let prevLarger = d3.max(dataset, d=> d.currencyValue);
-      let prevSmaller = d3.min(dataset, d => d.currencyValue);      
+      let prevSmaller = d3.min(dataset, d => d.currencyValue);
       const yTicks = formTicksArray({
-        finalLevel: this.yTicks,
+        finalLevel: this.yTicks || 0,
         level: 1,
         prevSm: prevSmaller,
         prevLg: prevLarger
       });
             
       prevSmaller = dataset[0].time.getTime();
-      prevLarger = dataset[dataset.length - 1].time.getTime();      
-      
-      let oneMonthAgo = new Date()
-      oneMonthAgo = new Date(oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1));      
-      
-      if(oneMonthAgo.getTime() < prevSmaller) {
-        console.log('indent!');
-      }
-      
+      prevLarger = dataset[dataset.length - 1].time.getTime();          
       const xTicks = formTicksArray({
-        finalLevel: this.xTicks,
+        finalLevel: this.xTicks || 0,
         level: 1,
         prevSm: prevSmaller,
         prevLg: prevLarger
@@ -442,10 +441,10 @@ const historyGraphView = {
     changeTicksInfo(timeline) {
       const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);
       if(!!ticksDataObj) {
-        this.xTicks = ticksDataObj.xTicks;      
+        this.xTicks = ticksDataObj.xTicks;
         this.xTickFormat = ticksDataObj.xTickFormat;
         this.yTicks = ticksDataObj.yTicks;
-      }      
+      }
     },
     formProperDateFormat(year, month, day) { // example: turns (2017, 5, 14) into 2017-05-15    
       const dateStr = `${year}-${month < 10 ? ('0' + month) : month}-${day < 10 ? ('0' + day) : day}`;        
@@ -483,23 +482,23 @@ const historyGraphView = {
           break;
         case '1-year':          
           startDate.setFullYear(startDate.getFullYear() - 1)
-          timeline = 'from-year-to-3month';
+          timeline = 'from-year-to-3-month';
           break;
         case '6-month':          
           startDate.setMonth(startDate.getMonth() - 6)
-          timeline = 'from-year-to-3month';
+          timeline = 'from-year-to-3-month';
           break;
         case '3-month':          
           startDate.setMonth(startDate.getMonth() - 3)
-          timeline = 'from-3-month-to-month';
+          timeline = 'less-than-3-month';
           break;
         case '1-month':          
           startDate.setMonth(startDate.getMonth() - 1)
-          timeline ='less-than-month';
+          timeline ='less-than-3-month';
           break;
         case '1-week':
           startDate.setDate(startDate.getDate() - 7);
-          timeline ='less-than-month';
+          timeline ='less-than-3-month';
           break;
         default:
           console.warn('unknown timeline: ', btnValue);
@@ -524,8 +523,7 @@ const historyGraphView = {
       const today = new Date();
       const startDate = new Date();      
       this.end = this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate());
-      this.start = this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-      console.log(this.end, this.start);
+      this.start = this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());     
       this.currency = 'USD';
       return this.applyFilters();
     },
@@ -552,7 +550,6 @@ const historyGraphView = {
         onChange(_selectedDates, dateStr, instance) {
           const self = historyGraphView;
 
-          self.changeTicksInfo('custom');
           self.prevBtn.classList.remove('selected');
           if(startInput === instance) {
             startDate = _selectedDates[0];
@@ -565,14 +562,11 @@ const historyGraphView = {
             let timeline;
             const monthDiff = endDate.getMonth() - startDate.getMonth();
             switch(monthDiff) {
-              case 0:
-                timeline = 'less-than-month';
-                break;
-              case 1: case 2: case 3:
-                timeline = 'from-3-month-to-month';
+              case 0: case 1: case 2: case 3:
+                timeline = 'less-than-3-month';
                 break;
               default:
-                timeline = 'from-year-to-3month';
+                timeline = 'from-year-to-3-month';
             }
             const yearDiff = endDate.getFullYear() - startDate.getFullYear();
             if(yearDiff > 0) {
@@ -592,11 +586,12 @@ const historyGraphView = {
 
 const controller = {
     init() {
+        animationView.init();
         const url = historyGraphView.setDefaultFilters();
         model.requestHistoricalPriceData(url, false);
         model.startFetchingData();
-        currentPriceView.init();      
-    },    
+        currentPriceView.init();
+    },
     updateHistoricalDataRequest(url) {
       // this funtion will be called inside a view
       model.requestHistoricalPriceData(url, true);
@@ -637,6 +632,12 @@ const controller = {
     },
     getHashValue(key) {
       return model.hashTable[key];
+    },
+    startAnimation() {
+      animationView.start();
+    },
+    finishAnimation() {
+      animationView.finish();
     }
 };
 
