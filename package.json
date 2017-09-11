@@ -16,6 +16,7 @@
     "d3": "^4.10.2",
     "d3-interpolate-path": "^2.0.0",
     "d3-selection-multi": "^1.0.1",
+    "d3-time": "^1.0.7",
     "extract-text-webpack-plugin": "^3.0.0",
     "flatpickr": "^3.0.7",
     "node-sass": "^4.5.3",

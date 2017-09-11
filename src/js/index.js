@@ -17,32 +17,32 @@ const model = {
     historyGraphHeight: 250,
     historyGraphTicksInfo: {
       'all-time': {
-         xTicks: 9,
+         xTicks: 4, // 9
          xTickFormat: '%Y',
          yTicks: 5
       },
       '1-year': {
-         xTicks: 12,
-         xTickFormat: '%b',
-         yTicks: 3
+         xTicks: 3, // 12
+         xTickFormat: '%b\'%y',
+         yTicks: 4
       },
       '6-month': {
-         xTicks: 6,
+         xTicks: 3, // 6
          xTickFormat: "%b\'%y",
          yTicks: 5
       },
       '3-month': {
-         xTicks: 3,
+         xTicks: 3, // 3
          xTickFormat: '%b\'%y',
-         yTicks: 4
+         yTicks: 5
       },
       '1-month': {
-         xTicks: 4,
+         xTicks: 3, // 4
          xTickFormat: '%e\'%b',
          yTicks: 4
       },
       '1-week': {
-         xTicks: 7,
+         xTicks: 3, // 7
          xTickFormat: '%e\'%b',
          yTicks: 4
       },
@@ -148,8 +148,7 @@ const historyGraphView = {
                              //.curve(d3.curveBasis);
               
 
-      this.graphSVG = d3.select('.graph').append('svg');
-      
+      this.graphSVG = d3.select('.graph').append('svg');      
       // constructed basic graph
       this.graphSVG
         .attrs({
@@ -166,11 +165,11 @@ const historyGraphView = {
             'id': 'graph-line',
             //'transform': `translate(${leftShift}, 0)`
           });
-
       // add axises
-      this.setTicksInfo('1-month'); // timeline defalts to 1-month
-      const yAxisGen = d3.axisLeft(this.yScale).ticks(this.yTicks);
-      const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat(this.xTickFormat)).ticks(this.xTicks);          
+      this.changeTicksInfo('1-month'); // timeline defalts to 1-month
+      const { yTicks, xTicks } = this.determineTicks(dataset);
+      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
+      const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));
 
       const yAxis = this.graphSVG
                       .append('g')
@@ -185,7 +184,7 @@ const historyGraphView = {
                       .attrs({
                           'transform': `translate(0, ${height})`,
                           'class': 'x-axis'
-                      });       
+                      });
       this.addMovableParts(dataset, height);        
     },
     updateLine({ dataset, width, height }) {
@@ -214,7 +213,7 @@ const historyGraphView = {
                              .y(d => this.yScale(d.currencyValue))
                              //.curve(d3.curveBasis);
       
-                             // update basic graph
+        // update basic graph
                   
         this.graphSVG
           .attrs({
@@ -222,25 +221,86 @@ const historyGraphView = {
             height
           })
           .select('path')
-            .transition()            
+            .transition()
             .duration(1000)
-            .attrTween('d',  function() {            
-              const previous = d3.select(this).attr('d');              
+            .attrTween('d',  function() {
+              const previous = d3.select(this).attr('d');
               const current = lineFunction(dataset);
-              return interpolatePath(previous, current);              
+              return interpolatePath(previous, current);
             });
-      // update axises      
-      const yAxisGen = d3.axisLeft(this.yScale).ticks(this.yTicks);
-      const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat(this.xTickFormat)).ticks(this.xTicks);
-      
+      // update axises
+      const { yTicks, xTicks } = this.determineTicks(dataset);
+      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
+      const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));
+
       const yAxis = this.graphSVG
                       .selectAll('g.y-axis')
-                      .call(yAxisGen);
+                      .transition()
+                      .duration(1000)
+                      .call(yAxisGen)
 
       const xAxis = this.graphSVG
                       .selectAll('g.x-axis')
+                      .transition()
+                      .duration(1000)
                       .call(xAxisGen);
+                      
       this.createHashTable(dataset);
+    },
+    determineTicks(dataset) {
+      // recursivly finds averages
+      const formTicksArray = ({ finalLevel, level, prevSm, prevLg }) => {
+        let outputArray = [ prevSm, prevLg ];
+
+        if(level >= finalLevel) {
+          return;
+        }
+        const currTick = (prevLg + prevSm) / 2;
+        outputArray.push(currTick);
+
+        ++level;
+        const  valuesDown = formTicksArray({
+          finalLevel,
+          level,
+          prevSm: currTick,
+          prevLg
+        });
+        const valuesUp = formTicksArray({
+          finalLevel,
+          level,
+          prevSm,
+          prevLg: currTick
+        })
+        if(valuesDown) {
+          outputArray = [ ...new Set([...outputArray, ...valuesDown]) ];
+        }
+        if(valuesUp) {
+          outputArray = [ ...new Set([...outputArray, ...valuesUp]) ];
+        }
+        return outputArray;
+      }
+
+      let prevLarger = d3.max(dataset, d=> d.currencyValue);
+      let prevSmaller = d3.min(dataset, d => d.currencyValue);
+      const yTicks = formTicksArray({
+        finalLevel: Math.round((this.yTicks - 2) / 2),
+        level: 0,
+        prevSm: prevSmaller,
+        prevLg: prevLarger
+      });
+      
+      prevSmaller = dataset[0].time.getTime();
+      prevLarger = dataset[dataset.length - 1].time.getTime();
+      const xTicks = formTicksArray({
+        finalLevel: this.xTicks,
+        level: 1,
+        prevSm: prevSmaller,
+        prevLg: prevLarger
+      }); 
+      return {
+        yTicks,
+        xTicks
+      };
     },
     createHashTable(dataset) {
       const hashTable = {};
@@ -279,9 +339,20 @@ const historyGraphView = {
           console.warn('cutLastNChars: n is to large!');
         }
       }
+      const hideMovablePart = () => {
+        d3.select('#movable')
+        .attrs({
+          'transform': `translate(-999, 0)`,          
+        })
+        /*.transition()
+        .duration(500)
+        .style('opacity', '0');*/
+        this.hideDotsAndTooltip();
+      }
+
 
       this.graphSVG
-        .on('mousemove', () => {          
+        .on('mousemove', () => {
           const marginLeft = d3.select('.graph').node().offsetLeft;
           const graphSVGStyles = getComputedStyle(this.graphSVG.node());
           let paddingLeft = graphSVGStyles.paddingLeft;
@@ -295,9 +366,10 @@ const historyGraphView = {
             this.hideDotsAndTooltip();
           }          
           d3.select('#movable')
-            .attrs({
+            .attrs({              
               'transform': `translate(${xPos}, 0)`,
-            })
+            })            
+            //.style('opacity', 1);
 
           let graphWidth = graphSVGStyles.width;  
           graphWidth = +(cutLastNChars(graphWidth, 2));          
@@ -305,12 +377,11 @@ const historyGraphView = {
           if(xPos > graphWidth ||
              xPos < 0
           ) {                      
-            d3.select('#movable')
-            .attrs({
-              'transform': `translate(-999, 0)`,
-            });
-            this.hideDotsAndTooltip();
+            hideMovablePart();
           }
+        })
+        .on('mouseout', () => {
+          hideMovablePart();
         });
 
       this.tooltip = d3.select('body').append('div')
@@ -342,18 +413,19 @@ const historyGraphView = {
           day: time.getDate()
         });
 
-        this.tooltip.transition()
+        this.tooltip
+          .transition()
           .duration(100)
           .style('opacity', 0.75)
 
-        const graph = d3.select('.graph').node();     
+        const graph = d3.select('.graph').node();
         
         this.tooltip.html(
           `<h4>${this.formProperDateFormat(year, month, day)}</h4>
            <strong>Price: ${currencySign + currencyValue.toFixed(2)}</strong>`
           )
           .style('left', this.xScale(time.getTime()) + graph.offsetLeft + 'px')
-          .style('top', this.yScale(currencyValue) + graph.offsetTop - 5 + 'px')       
+          .style('top', this.yScale(currencyValue) + graph.offsetTop - 5 + 'px')
     },
     hideDotsAndTooltip() {
       d3.selectAll('.dot')         
@@ -364,12 +436,15 @@ const historyGraphView = {
       this.tooltip.transition()
         .duration(100)
         .style('opacity', 0)         
-    },    
-    setTicksInfo(timeline) {      
-      const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);      
-      this.xTicks = ticksDataObj.xTicks;
-      this.xTickFormat = ticksDataObj.xTickFormat;
-      this.yTicks = ticksDataObj.yTicks;
+    },
+    changeTicksInfo(timeline) {
+      const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);
+      if(!!ticksDataObj) {
+        this.xTicks = ticksDataObj.xTicks;      
+        this.xTickFormat = ticksDataObj.xTickFormat;
+        this.yTicks = ticksDataObj.yTicks;
+      }
+      console.log(timeline, this.yTicks, this.xTickFormat, this.xTicks);
     },
     createCurrDate(params) { // JS DATE (0-INDEXED)
       let today;
@@ -454,22 +529,20 @@ const historyGraphView = {
       return dateStr;
     },
     attachEventsForFilters() {
+      this.prevBtn = d3.select('.button[data-timeline="1-month"]').node();
       d3.selectAll('.filters .button')
-        .on('click', (() => {
-          let prevBtn = d3.select('.button[data-timeline="1-month"]').node();
-          return () => {
-            d3.event.preventDefault();      
-            const btn = d3.event.target;
-            if(btn !== prevBtn) {
-              prevBtn.classList.remove('selected');
-              btn.classList.add('selected');
-              prevBtn = btn;
-              this.timelineButtonClick.call(this)
-            }
+        .on('click', () => {
+          d3.event.preventDefault();      
+          const btn = d3.event.target;
+          if(btn !== this.prevBtn) {
+            this.prevBtn.classList.remove('selected');
+            btn.classList.add('selected');
+            this.prevBtn = btn;
+            this.timelineButtonClick.call(this)
           }
-        })());
+        });
       d3.select('#currencies')
-        .on('change', this.currencyDropdownChange.bind(this));      
+        .on('change', this.currencyDropdownChange.bind(this));
       this.initCalendar();
     },
     timelineButtonClick() {
@@ -501,8 +574,8 @@ const historyGraphView = {
         default:
           console.warn('unknown timeline: ', timeline);
       }
-      // change ticks specifier      
-      this.setTicksInfo(timeline)
+      // change ticks specifier
+      this.changeTicksInfo(timeline)
       // update timeline filter
       this.end = this.formProperDateFormat(year, month, day); // current date
       this.start = this.formProperDateFormat(startDate.year,startDate.month,startDate.day);
@@ -544,6 +617,8 @@ const historyGraphView = {
         ],
         onChange(selectedDates, dateStr, instance) {
           const self = historyGraphView;
+          self.changeTicksInfo('custom');          
+          self.prevBtn.classList.remove('selected');
           if(startInput === instance) {
             self.start = dateStr;
           } else { // endInpt === instance
