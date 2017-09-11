@@ -51,15 +51,15 @@ body {
   border: none;
   border-radius: 5px;
   font-weight: bold;
-  transition: background-color .3s linear;
+  transition: background-color .3s linear;  
 
   &:hover {
       background-color: darken($material-green, 5%);
       cursor: pointer;
   }
   &.selected,
-  &.selected:hover {    
-    cursor: auto;
+  &.selected:hover {
+    cursor: auto;    
     background-color: $selected;
   }
 }
