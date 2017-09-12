@@ -71,9 +71,12 @@ const currentPriceView = {
         this.valueHolderEUR = document.querySelector('.current-price__EUR .value');        
         
     },
-    renderData({ rateUSD, rateEUR }) {
-        this.valueHolderUSD.innerHTML = controller.getCurrencySign('USD') + rateUSD;
-        this.valueHolderEUR.innerHTML = controller.getCurrencySign('EUR') + rateEUR;
+    renderData({ rateUSD, rateEUR }) {      
+      this.valueHolderUSD.innerHTML = controller.getCurrencySign('USD') + this.formatNumber(rateUSD);
+      this.valueHolderEUR.innerHTML = controller.getCurrencySign('EUR') + this.formatNumber(rateEUR);
+    },
+    formatNumber(number) {
+      return (+number.replace(',', '')).toFixed(2);
     }
 };
 
@@ -166,11 +169,11 @@ const historyGraphView = {
             'fill': 'none',
             'id': 'graph-line',            
             //'transform': `translate(${5}, 0)`
-          });  
+          });
       // add axises
-      this.changeTicksInfo('less-than-3-month'); // timeline defalts to 1-month
-      const { yTicks, xTicks } = this.determineTicks(dataset);
-      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
+      this.changeTicksInfo('less-than-3-month'); // timeline defalts to 1-month      
+      const { yTicks, xTicks } = this.determineTicks(dataset);      
+      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format('.2f'));
       const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));
 
       const yAxis = this.graphSVG
@@ -191,7 +194,7 @@ const historyGraphView = {
       this.addMovableParts(dataset, height);
     },
     updateLine({ dataset, width, height }) {
-      // dataset has changed, need to update #historical-data graph
+      // dataset has changed, need to update #historical-data graph      
       this.graphSVG = d3.select('.graph').select('svg#historical-data');
       // data is in chronological order
       const firstDate = dataset[0].time.getTime();
@@ -214,10 +217,8 @@ const historyGraphView = {
       const lineFunction = d3.line()
                              .x(d => this.xScale(d.time.getTime()))
                              .y(d => this.yScale(d.currencyValue))
-                             //.curve(d3.curveBasis);
-      
-        // update basic graph
-                  
+                             //.curve(d3.curveBasis);      
+        // update basic graph                  
         this.graphSVG
           .attrs({
             width,
@@ -233,7 +234,7 @@ const historyGraphView = {
             });
       // update axises
       const { yTicks, xTicks } = this.determineTicks(dataset);
-      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
+      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format('.2f'));
       const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));      
 
       const yAxis = this.graphSVG
@@ -247,16 +248,14 @@ const historyGraphView = {
                       .transition()
                       .duration(1000)
                       .call(xAxisGen);
-                                    
+
       this.drawCurrencySign();
       this.createHashTable(dataset);
     },
     drawCurrencySign() {
-      //d3.select('g.currency-sign').remove();
       const yAxis = d3.select('g.y-axis');
  
-      if(!yAxis.select('g.currency-sign').node()) {
-        console.log('here');
+      if(!yAxis.select('g.currency-sign').node()) {        
         yAxis
         .append('g')
         .attrs({
@@ -265,12 +264,11 @@ const historyGraphView = {
         .append('text')
           .attrs({
             'fill': '#000',
-            'font-size': '20',
+            'font-size': '18',
             'x': '4',
             'y': '-10'
           });
       }
-      
       const text = d3.select('.currency-sign text');      
       text
         .transition()
@@ -417,8 +415,8 @@ const historyGraphView = {
           let graphWidth = graphSVGStyles.width;
           graphWidth = +(cutLastNChars(graphWidth, 2));          
           // if movable reaches the end of a graph-line
-          if(xPos > graphWidth ||
-             xPos < 0
+          if(xPos > graphWidth + 5 || // 5s are added for padding
+             xPos < -5
           ) {
             hideMovablePart();
           }
@@ -552,8 +550,8 @@ const historyGraphView = {
     currencyDropdownChange() {
         this.currency  = d3.event.target.value;
         // apply all filters and get proper url
-        const url = this.applyFilters();
-        controller.updateHistoricalDataRequest(url);      
+        const url = this.applyFilters();     
+        controller.updateHistoricalDataRequest(url);
     },
     setDefaultFilters() {
       // set default filters( they are changed by buttons/dropdown/input)
@@ -615,7 +613,7 @@ const historyGraphView = {
             controller.updateHistoricalDataRequest(url);
           }
         }
-      });      
+      });
       const startInput = inputs[0]._flatpickr;
       const endInput = inputs[1]._flatpickr;      
     },

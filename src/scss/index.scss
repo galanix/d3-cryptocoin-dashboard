@@ -1,5 +1,6 @@
 @import './utilities/variables';
 @import url('https://unpkg.com/flatpickr/dist/flatpickr.min.css');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 
 html,
 body {    
@@ -9,6 +10,7 @@ body {
 
 body {    
     margin: 0;
+    font: 16px/1.5 'Open Sans', sans-serif;
 }
 
 /*
@@ -24,7 +26,7 @@ body {
 }
 
 #historical-data {
-    padding: 50px;
+    padding: 60px;
 }
 
 .tooltip {
