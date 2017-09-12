@@ -79,13 +79,15 @@ const currentPriceView = {
 
 const animationView = {
   init() {
-    this.message = document.getElementsByClassName('waiting-message')[0];
+    this.message = document.getElementsByClassName('waiting-message')[0];    
   },
-  start() {   
-    this.message.style.opacity = 0.75;    
+  start() {
+    this.message.style.pointerEvents = 'auto';
+    this.message.style.opacity = 0.75;
   },
   finish() {
-    this.message.style.opacity = 0;    
+    this.message.style.pointerEvents = 'none';
+    this.message.style.opacity = 0;
   }
 };
 
@@ -131,7 +133,7 @@ const historyGraphView = {
       this.xScale = d3.scaleLinear()
                        .domain([
                          firstDate,
-                         lastDate                           
+                         lastDate
                        ])
                        .range([0, width]);
 
@@ -164,7 +166,7 @@ const historyGraphView = {
             'fill': 'none',
             'id': 'graph-line',            
             //'transform': `translate(${5}, 0)`
-          })         
+          });  
       // add axises
       this.changeTicksInfo('less-than-3-month'); // timeline defalts to 1-month
       const { yTicks, xTicks } = this.determineTicks(dataset);
@@ -185,7 +187,8 @@ const historyGraphView = {
                           'transform': `translate(0, ${height})`,
                           'class': 'x-axis'
                       });
-      this.addMovableParts(dataset, height);        
+      this.drawCurrencySign();
+      this.addMovableParts(dataset, height);
     },
     updateLine({ dataset, width, height }) {
       // dataset has changed, need to update #historical-data graph
@@ -226,26 +229,64 @@ const historyGraphView = {
             .attrTween('d',  function() {
               const previous = d3.select(this).attr('d');
               const current = lineFunction(dataset);
-              return interpolatePath(previous, current);
+              return interpolatePath(previous, current); // adds/removes points from prev to match current => for better transition
             });
       // update axises
       const { yTicks, xTicks } = this.determineTicks(dataset);
       const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
-      const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));
+      const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));      
 
       const yAxis = this.graphSVG
                       .selectAll('g.y-axis')
                       .transition()
                       .duration(1000)
-                      .call(yAxisGen)
+                      .call(yAxisGen);
 
       const xAxis = this.graphSVG
                       .selectAll('g.x-axis')
                       .transition()
                       .duration(1000)
                       .call(xAxisGen);
-                      
+                                    
+      this.drawCurrencySign();
       this.createHashTable(dataset);
+    },
+    drawCurrencySign() {
+      //d3.select('g.currency-sign').remove();
+      const yAxis = d3.select('g.y-axis');
+ 
+      if(!yAxis.select('g.currency-sign').node()) {
+        console.log('here');
+        yAxis
+        .append('g')
+        .attrs({
+          'class': 'currency-sign',
+        })
+        .append('text')
+          .attrs({
+            'fill': '#000',
+            'font-size': '20',
+            'x': '4',
+            'y': '-10'
+          });
+      }
+      
+      const text = d3.select('.currency-sign text');      
+      text
+        .transition()
+        .duration(500)
+        .attrs({
+          y: '-100'
+        });
+      setTimeout(() => {
+        text
+         .transition()
+         .duration(500)
+         .attrs({
+           y: '-10'
+         })
+         .node().innerHTML = controller.getCurrencySign(this.currency);
+      }, 500);
     },
     determineTicks(dataset) {
       // recursivly finds averages
@@ -349,10 +390,7 @@ const historyGraphView = {
         d3.select('#movable')
         .attrs({
           'transform': `translate(-999, 0)`,          
-        })
-        /*.transition()
-        .duration(500)
-        .style('opacity', '0');*/
+        })       
         this.hideDotsAndTooltip();
       }
 
@@ -374,15 +412,14 @@ const historyGraphView = {
           d3.select('#movable')
             .attrs({              
               'transform': `translate(${xPos}, 0)`,
-            })            
-            //.style('opacity', 1);
+            });     
 
-          let graphWidth = graphSVGStyles.width;  
+          let graphWidth = graphSVGStyles.width;
           graphWidth = +(cutLastNChars(graphWidth, 2));          
           // if movable reaches the end of a graph-line
           if(xPos > graphWidth ||
              xPos < 0
-          ) {                      
+          ) {
             hideMovablePart();
           }
         })
@@ -412,7 +449,7 @@ const historyGraphView = {
         .duration(100)
         .style('opacity', 0.9);
         
-        const currencySign = controller.getCurrencySign(this.currency);        
+        const currencySign = controller.getCurrencySign(this.currency);
 
         this.tooltip
           .transition()
@@ -422,7 +459,7 @@ const historyGraphView = {
         const graph = d3.select('.graph').node();
         
         this.tooltip.html(
-          `<h4>${this.formProperDateFormat(time.getFullYear(), time.getMonth(), time.getDate())}</h4>
+          `<h4>${this.formProperDateFormat(time.getFullYear(), time.getMonth() + 1, time.getDate())}</h4>
            <strong>Price: ${currencySign + currencyValue.toFixed(2)}</strong>`
           )
           .style('left', this.xScale(time.getTime()) + graph.offsetLeft + 'px')
@@ -586,7 +623,7 @@ const historyGraphView = {
 
 const controller = {
     init() {
-        animationView.init();
+        animationView.init();        
         const url = historyGraphView.setDefaultFilters();
         model.requestHistoricalPriceData(url, false);
         model.startFetchingData();
