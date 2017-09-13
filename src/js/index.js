@@ -5,8 +5,6 @@ import flatpickr from 'flatpickr';
 import '../scss/index.scss';
 import 'flatpickr/dist/themes/material_green.css';
 
-
-
 const model = {
     currentPriceURL: 'https://api.coindesk.com/v1/bpi/currentprice.json',
     historicalPriceURL: 'https://api.coindesk.com/v1/bpi/historical/close.json',
@@ -19,7 +17,7 @@ const model = {
       'from-all-time-to-year': {
          xTicks: 4,
          xTickFormat: '%Y',
-         yTicks: 4
+         yTicks: 3
       },
       'from-year-to-3-month': {
         xTicks: 3,
@@ -41,8 +39,8 @@ const model = {
     hashTable: {},
     startFetchingData() {
         this.requestCurrentPriceData();
-        this.intervalID = setInterval(() => {
-            this.requestCurrentPriceData.bind(this);
+        this.intervalFetch = setInterval(() => {
+            this.requestCurrentPriceData.call(this);
         }, this.updateFrequency);        
     },
     requestCurrentPriceData() {
@@ -51,7 +49,8 @@ const model = {
             .then(data => {
                 this.currentPriceData = data;
                 controller.renderCurrentPrice();
-            })          
+                //setInterval(() => controller.renderCurrentPrice(), updateFrequency);                
+            })
             .catch(error => console.warn(error));
     },
     requestHistoricalPriceData(url, isGraphBeingUpdated) {
@@ -72,6 +71,41 @@ const currentPriceView = {
         
     },
     renderData({ rateUSD, rateEUR }) {      
+      this.valueHolderEUR.style.transition = 'all .5s ease-in';
+      this.valueHolderUSD.style.transition = 'all .5s ease-in';
+      
+      const highlightColor = '#C2390D';
+      const blackColor = '#000';
+
+      const setStyle = (styles) => {
+        const props = Object.keys(styles);
+
+        props.forEach(prop => {
+          this.valueHolderUSD.style[prop] = styles[prop]
+          this.valueHolderEUR.style[prop] = styles[prop];
+        })
+      };
+
+      setStyle({
+        fontWeight: 'bold',
+        color: highlightColor
+      });
+      /*this.valueHolderEUR.style.fontWeight = 'bold';
+      this.valueHolderUSD.style.fontWeight = 'bold';
+      this.valueHolderEUR.style.color = materialGreen;
+      this.valueHolderUSD.style.color = materialGreen;*/
+
+      setTimeout(() => {
+        setStyle({
+          fontWeight: 'normal',
+          color: blackColor
+        });
+        /*this.valueHolderEUR.style.color = blackColor;
+        this.valueHolderUSD.style.color = blackColor;
+        this.valueHolderEUR.style.fontWeight = 'normal';
+        this.valueHolderUSD.style.fontWeight = 'normal';*/
+      }, 2500);      
+
       this.valueHolderUSD.innerHTML = controller.getCurrencySign('USD') + this.formatNumber(rateUSD);
       this.valueHolderEUR.innerHTML = controller.getCurrencySign('EUR') + this.formatNumber(rateEUR);
     },
@@ -80,19 +114,19 @@ const currentPriceView = {
     }
 };
 
-const animationView = {
-  init() {
-    this.message = document.getElementsByClassName('waiting-message')[0];    
-  },
-  start() {
+const animationLoadView = {
+  showWaitMessage() {
+    if(!this.message) {
+      this.message = document.getElementsByClassName('waiting-message')[0];
+    }
     this.message.style.pointerEvents = 'auto';
     this.message.style.opacity = 0.75;
   },
-  finish() {
+  hideWaitMessage() {
     this.message.style.pointerEvents = 'none';
     this.message.style.opacity = 0;
   }
-};
+}
 
 const historyGraphView = {
     renderGraph({ width, height, data, isGraphBeingUpdated }) {
@@ -616,12 +650,12 @@ const historyGraphView = {
       });
       const startInput = inputs[0]._flatpickr;
       const endInput = inputs[1]._flatpickr;      
-    },
+    },    
 };
 
 const controller = {
     init() {
-        animationView.init();        
+        //animationView.init();     
         const url = historyGraphView.setDefaultFilters();
         model.requestHistoricalPriceData(url, false);
         model.startFetchingData();
@@ -669,10 +703,10 @@ const controller = {
       return model.hashTable[key];
     },
     startAnimation() {
-      animationView.start();
+      animationLoadView.showWaitMessage();
     },
     finishAnimation() {
-      animationView.finish();
+      animationLoadView.hideWaitMessage();
     }
 };
 
