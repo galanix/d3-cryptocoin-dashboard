@@ -22,10 +22,12 @@ body {
 }
 
 .graph {
-    position: relative;
+    box-sizing: border-box;
+    width: 620px; // 500 + 60 + 60
+    position: relative;    
 }
 
-.waiting-message {    
+.wait-message {    
     position: absolute;
     margin: auto;
     top: 0; right: 0; bottom: 0; left: 0;
@@ -91,3 +93,4 @@ body {
 /*
     FOR PAIR GRAPHS
 */
+

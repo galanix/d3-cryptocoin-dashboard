@@ -57,7 +57,7 @@
             </form>
         </div>
         <div class="graph graph--bitcoin-rate">
-            <p class="waiting-message">Wait, please...</p>
+            <p class="wait-message">Wait, please...</p>
         </div>
     </section>
     <section class="container">
@@ -74,18 +74,19 @@
                   <option value="LTC" selected="selected">LTC</option>
                   <option value="ETC">ETC</option>
               </select>
+              <span class="pair-name">BTC-LTC</span>
           </form>
 
           <form>
               <label for="hours">
                   <span>Hours :</span>
-                  <input type="text" id="hours">
+                  <input type="text" id="hours" placeholder='2'>
               </label>
           </form>
 
           <form  class="dropdown">
               <select id="data-points-frequency">
-                  <option value="1 min">1 min</option>
+                  <option value="1 min" selected="selected">1 min</option>
                   <option value="5 mins">5 mins</option>
                   <option value="10 mins">10 mins</option>
                   <option value="30 mins">30 mins</option>
@@ -111,7 +112,7 @@
 
         </div>
         <div class="graph pair-graph">
-          <p class="waiting-message">Wait, please...</p>
+          <p class="wait-message">Wait, please...</p>
         </div>
     </section>
     <script src="bundle.js"></script>
