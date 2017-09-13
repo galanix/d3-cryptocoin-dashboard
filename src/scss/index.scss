@@ -32,6 +32,7 @@ body {
     margin: auto;
     top: 0; right: 0; bottom: 0; left: 0;
 
+    pointer-events: none;
     color: #445252;
     letter-spacing: 1px;
     text-align: center;
@@ -41,13 +42,14 @@ body {
     transition: opacity .5s ease-in;
 }
 
+#historical-data,
+#currency-pair {
+    padding: 60px;
+}
+
 /*
     FOR BITCOIN RATE GRAPH
 */
-
-#historical-data {
-    padding: 60px;
-}
 
 .tooltip {
     position: absolute;
@@ -93,4 +95,3 @@ body {
 /*
     FOR PAIR GRAPHS
 */
-
