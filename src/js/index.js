@@ -646,7 +646,7 @@ const historyGraphView = {
   }
 };
 
-const currencyPairGraphView = {
+const currencyPairGraphsView = {
   init() {
     const pairName = 'BTCLTC';
     const hours = 2;
@@ -772,8 +772,18 @@ const currencyPairGraphView = {
                     });
   },
   attachEventsForFilters() {
-    
+    d3.selectAll('.displayed-graphs input')
+      .on('change', () => this.hideGraph());
   },
+  hideGraph() {    
+    const id = d3.event.target.id;
+    const opacityVal = d3.event.target.checked === true ? 1 : 0;
+    console.log();
+    d3.select('#graph-line--' + id)
+      .transition()
+      .duration(400)
+      .style('opacity', opacityVal);
+  }
 };
 
 const controller = {
@@ -787,7 +797,7 @@ const controller = {
       });
 
       // request data for currency pair graph
-      currencyPairGraphView.init();      
+      currencyPairGraphsView.init();      
       model.requestGraphData({
         url: this.createCurrencyPairURL(),
         isGraphBeingUpdated: false,
@@ -826,7 +836,7 @@ const controller = {
     },
     renderCurrencyPairGraph(isGraphBeingUpdated) {
       const { width, height, data } = model.currencyPair;      
-      currencyPairGraphView.renderGraph({
+      currencyPairGraphsView.renderGraph({
         width,
         height,
         data,
