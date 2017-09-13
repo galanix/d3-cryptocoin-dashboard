@@ -25,6 +25,24 @@ body {
     position: relative;
 }
 
+.waiting-message {    
+    position: absolute;
+    margin: auto;
+    top: 0; right: 0; bottom: 0; left: 0;
+
+    color: #445252;
+    letter-spacing: 1px;
+    text-align: center;
+    height: 25px;
+    font-weight: bold;
+    font-size: 20px;
+    transition: opacity .5s ease-in;
+}
+
+/*
+    FOR BITCOIN RATE GRAPH
+*/
+
 #historical-data {
     padding: 60px;
 }
@@ -70,16 +88,6 @@ body {
   }
 }
 
-.waiting-message {    
-    position: absolute;
-    margin: auto;
-    top: 0; right: 0; bottom: 0; left: 0;
-
-    color: #445252;
-    letter-spacing: 1px;
-    text-align: center;
-    height: 25px;
-    font-weight: bold;
-    font-size: 20px;
-    transition: opacity .5s ease-in;
-}
+/*
+    FOR PAIR GRAPHS
+*/

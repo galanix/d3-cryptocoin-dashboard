@@ -28,7 +28,7 @@
 
      <!-- HISTORY GRAPH -->
     <section class="container">
-        <div class="filters">
+        <div class="filters filters--bitcoin-rate">
             <form class="button-group">
                 <button data-timeline="all-time" class="button">All time</button>
                 <button data-timeline="1-year" class="button">Year</button>
@@ -38,13 +38,13 @@
                 <button data-timeline="1-week" class="button">week</button>
             </form>
             <form class="calendar-date">
-                <label>
+                <label for="start-date">
                     <span>From</span>
-                    <input type="text" required class="flatpickr-target">
+                    <input type="text" required class="flatpickr-target" id="start-date">
                 </label>
-                <label>
+                <label for="end-date">
                     <span>To</span>
-                    <input type="text" required class="flatpickr-target">
+                    <input type="text" required class="flatpickr-target" id="end-date">
                 </label>
             </form>
             <form class="dropdown">
@@ -56,8 +56,62 @@
                 </select>
             </form>
         </div>
-        <div class="graph">
+        <div class="graph graph--bitcoin-rate">
             <p class="waiting-message">Wait, please...</p>
+        </div>
+    </section>
+    <section class="container">
+        <div class="filters filters--pair">
+
+          <form class="dropdown">
+              <select id="cryptocoin-codes-first">
+                  <option value="BTC" selected="selected">BTC</option>
+                  <option value="LTC">LTC</option>
+                  <option value="ETC">ETC</option>
+              </select>
+              <select id="cryptocoin-codes-second">
+                  <option value="BTC">BTC</option>
+                  <option value="LTC" selected="selected">LTC</option>
+                  <option value="ETC">ETC</option>
+              </select>
+          </form>
+
+          <form>
+              <label for="hours">
+                  <span>Hours :</span>
+                  <input type="text" id="hours">
+              </label>
+          </form>
+
+          <form  class="dropdown">
+              <select id="data-points-frequency">
+                  <option value="1 min">1 min</option>
+                  <option value="5 mins">5 mins</option>
+                  <option value="10 mins">10 mins</option>
+                  <option value="30 mins">30 mins</option>
+                  <option value="1 hour">1 hour</option>
+                  <option value="3 hours">3 hours</option>
+                  <option value="6 hours">6 hours</option>
+                  <option value="12 hours">12 hours</option>
+                  <option value="24 hours">24 hours</option>
+              </select>
+          </form>
+
+          <form class="displayed-graphs">
+              <label for="ask">
+                  <input type="checkbox" id="ask" checked>
+              </label>
+              <label for="bid">
+                  <input type="checkbox" id="bid" checked>
+              </label>
+              <label for="spread">
+                  <input type="checkbox" id="spread" checked>
+              </label>
+          </form>
+
+        </div>
+        <div class="graph pair-graph">
+          <p class="waiting-message">Wait, please...</p>
         </div>
     </section>
     <script src="bundle.js"></script>
