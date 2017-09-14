@@ -42,12 +42,13 @@ const model = {
         xTickFormat: '%e\'%b',
         yTicks: 3
       }
-    }
+    },    
   },
   currencyPair: {
     data: {},
     width: 500,
     height: 250,
+    //waitMessageObj
   },
   // methods
   startFetchingData() {
@@ -65,12 +66,12 @@ const model = {
       })
       .catch(error => console.warn(error));
   },
-  requestGraphData({ url, isGraphBeingUpdated, callback, objectToAssignTo }) {
-    controller.startAnimation(); // shows something while data travels
+  requestGraphData({ url, isGraphBeingUpdated, callback, namespace }) {
+    controller.startAnimation(namespace); // shows something while data travels
     d3.json(url, (data) => {
-        objectToAssignTo.data = data;
+        namespace.data = data;
         callback(isGraphBeingUpdated);
-        controller.finishAnimation();
+        controller.finishAnimation(namespace);
     })
   }
 };
@@ -120,7 +121,7 @@ const historyGraphView = {
     const startDate = new Date();
     this.end = this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate());
     this.start = this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());     
-    this.currency = 'USD';  
+    this.currency = 'USD';
     return this.applyFilters();
   },
   renderGraph({ width, height, data, isGraphBeingUpdated }) {
@@ -557,7 +558,7 @@ const historyGraphView = {
     const url = this.applyFilters();
     controller.updateGraphData({ 
       url,
-      objectToAssignTo: model.history, 
+      namespace: model.history, 
       callback: controller.renderHistoryGraph 
     });
   },
@@ -567,7 +568,7 @@ const historyGraphView = {
       const url = this.applyFilters();     
       controller.updateGraphData({ 
         url,
-        objectToAssignTo: model.history, 
+        namespace: model.history, 
         callback: controller.renderHistoryGraph 
       });
   },
@@ -621,7 +622,7 @@ const historyGraphView = {
           const url = self.applyFilters();
           controller.updateGraphData({ 
             url,
-            objectToAssignTo: model.history, 
+            namespace: model.history, 
             callback: controller.renderHistoryGraph 
           });
         }
@@ -629,27 +630,29 @@ const historyGraphView = {
     });
     const startInput = inputs[0]._flatpickr;
     const endInput = inputs[1]._flatpickr;      
-  },
-  showWaitMessage() {
-    if(!this.message) {
-      this.message = document.querySelector('.graph--bitcoin-rate .wait-message');
-    }
+  }  
+};
+
+// WAIT MESSAGE CLASS
+const waitMessage = function(classModifier) {
+  this.message = document.querySelector(`.graph--${classModifier} .wait-message`);
+}
+waitMessage.prototype = {
+  show: function() {
     this.message.style.opacity = 0.75;
   },
-  hideWaitMessage() {
+  hide: function() {
     this.message.style.opacity = 0;
   }
-};
+}
 
 const currencyPairGraphsView = {
   init() {
-    const pairName = 'BTCLTC';
-    const hours = 2;
-    const dataPoints = 120;
     controller.setCurrencyPairFilters({
-      pairName,
-      hours,
-      dataPoints
+      pairName: 'BTCLTC',
+      hours: 2,
+      dataPoints: 120,
+      waitMessageObj: new waitMessage('currency-pair'),
     });
   },
   renderGraph({ width, height, data, isGraphBeingUpdated }) {
@@ -846,16 +849,16 @@ const currencyPairGraphsView = {
     let divider;
     switch(frequency) {
       case "1 min":
-        divider = 0.0167;
+        divider = 0.0167; // (1 / 60)
         break;
       case "5 mins":
-        divider = 0.0833;
+        divider = 0.0833; // (5 / 60)
         break;
       case "10 mins":
-        divider = 0.1667;
+        divider = 0.1667; // (10 / 60)
         break;
       case "30 mins":
-        divider = 0.5;
+        divider = 0.5; // (30 / 60)
         break;
       case "1 hour":
         divider = 1;
@@ -884,7 +887,7 @@ const currencyPairGraphsView = {
     const url =  controller.createCurrencyPairURL();    
     controller.updateGraphData({
       url,
-      objectToAssignTo: model.currencyPair,
+      namespace: model.currencyPair,
       callback: controller.renderCurrencyPairGraph
     });    
   }
@@ -892,11 +895,12 @@ const currencyPairGraphsView = {
 
 const controller = {
     init() {
+      model.history.waitMessageObj = new waitMessage('bitcoin-rate');
       // request data for history graph
       model.requestGraphData({
         url: historyGraphView.init(),
         isGraphBeingUpdated: false,
-        objectToAssignTo: model.history,
+        namespace: model.history,
         callback: this.renderHistoryGraph,
       });
 
@@ -905,19 +909,19 @@ const controller = {
       model.requestGraphData({
         url: this.createCurrencyPairURL(),
         isGraphBeingUpdated: false,
-        objectToAssignTo: model.currencyPair,
+        namespace: model.currencyPair,
         callback: this.renderCurrencyPairGraph,
       });
 
       model.startFetchingData();
       currentPriceView.init();
     },
-    updateGraphData({ url, objectToAssignTo, callback }) {
+    updateGraphData({ url, namespace, callback }) {
       // this funtion will be called inside a view
       model.requestGraphData({
         url,
         isGraphBeingUpdated: true,
-        objectToAssignTo,
+        namespace,
         callback
       });
     },
@@ -964,11 +968,11 @@ const controller = {
     getHashValue(key) {
       return model.history.hashTable[key];
     },
-    startAnimation() {
-      historyGraphView.showWaitMessage();
+    startAnimation(namespace) {
+      namespace.waitMessageObj.show();
     },
-    finishAnimation() {
-      historyGraphView.hideWaitMessage();
+    finishAnimation(namespace) {
+      namespace.waitMessageObj.hide();
     },
     setCurrencyPairFilters(params) {      
       const props = Object.keys(params);
