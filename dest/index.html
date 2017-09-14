@@ -64,20 +64,17 @@
         <div class="filters filters--pair">
 
           <form class="dropdown">
-              <select id="cryptocoin-codes-first">
-                  <option value="BTC" selected="selected">BTC</option>
-                  <option value="LTC">LTC</option>
-                  <option value="ETC">ETC</option>
+              <select id="cryptocoin-codes">
+                  <option value="BTCLTC" selected="selected">BTC - LTC</option>
+                  <option value="LTCBTC">LTC - BTC</option>
+                  <option value="ETHBTC">ETH - BTC</option>                  
+                  <option value="BTCETH">BTC - ETC</option>
+                  <option value="LTCETH">LTC - ETC</option>
+                  <option value="ETHLTC">ETH - LTC</option>
               </select>
-              <select id="cryptocoin-codes-second">
-                  <option value="BTC">BTC</option>
-                  <option value="LTC" selected="selected">LTC</option>
-                  <option value="ETC">ETC</option>
-              </select>
-              <span class="pair-name">BTC-LTC</span>
           </form>
 
-          <form>
+          <form class="hours-input">
               <label for="hours">
                   <span>Hours :</span>
                   <input type="text" id="hours" placeholder='2'>

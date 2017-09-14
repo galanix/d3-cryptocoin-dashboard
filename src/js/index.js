@@ -47,7 +47,7 @@ const model = {
   currencyPair: {
     data: {},
     width: 500,
-    height: 250,    
+    height: 250,
   },
   // methods
   startFetchingData() {
@@ -65,7 +65,7 @@ const model = {
       })
       .catch(error => console.warn(error));
   },
-  requestGraphData({ url, isGraphBeingUpdated, callback, objectToAssignTo }) {    
+  requestGraphData({ url, isGraphBeingUpdated, callback, objectToAssignTo }) {
     controller.startAnimation(); // shows something while data travels
     d3.json(url, (data) => {
         objectToAssignTo.data = data;
@@ -572,14 +572,22 @@ const historyGraphView = {
     this.start = this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate());
     // apply all filters and get proper url
     const url = this.applyFilters();
-    controller.updateHistoricalDataRequest(url);
+    controller.updateGraphData({ 
+      url,
+      objectToAssignTo: model.history, 
+      callback: controller.renderHistoryGraph 
+    });
   },
   currencyDropdownChange() {
       this.currency  = d3.event.target.value;
       // apply all filters and get proper url
       const url = this.applyFilters();     
-      controller.updateHistoricalDataRequest(url);
-  },    
+      controller.updateGraphData({ 
+        url,
+        objectToAssignTo: model.history, 
+        callback: controller.renderHistoryGraph 
+      });
+  },
   applyFilters() {
     const entryURL = controller.getHistoricalPriceURL();
     return entryURL + `?start=${this.start}&end=${this.end}&currency=${this.currency}`;
@@ -628,7 +636,11 @@ const historyGraphView = {
 
           self.changeTicksInfo(timeline);
           const url = self.applyFilters();
-          controller.updateHistoricalDataRequest(url);
+          controller.updateGraphData({ 
+            url,
+            objectToAssignTo: model.history, 
+            callback: controller.renderHistoryGraph 
+          });
         }
       }
     });
@@ -676,12 +688,13 @@ const currencyPairGraphsView = {
       this.attachEventsForFilters();
     }
   },
-  updateLines({ dataset, width, height }) {    
+  updateLines({ dataset, width, height }) {
+    console.log(dataset);
   },
   buildLines({ dataset, width, height }) {
     const firstDate = new Date(dataset[0].created_on).getTime();
     const lastDate = new Date(dataset[dataset.length - 1].created_on).getTime();
-    
+    console.log(dataset.length);
     this.graphSVG = d3.select('.graph--currency-pair').append('svg');
 
     /*
@@ -774,15 +787,89 @@ const currencyPairGraphsView = {
   attachEventsForFilters() {
     d3.selectAll('.displayed-graphs input')
       .on('change', () => this.hideGraph());
+
+    d3.selectAll('#cryptocoin-codes')
+      .on('change', () => this.changePairName());
+
+    d3.selectAll('.hours-input')
+      .on('submit', () => this.changeHours());
+
+    d3.selectAll('#data-points-frequency')
+      .on('change', () => this.changeDataPointsFreq());   
   },
-  hideGraph() {    
+  hideGraph() {
     const id = d3.event.target.id;
-    const opacityVal = d3.event.target.checked === true ? 1 : 0;
-    console.log();
+    const opacityVal = d3.event.target.checked === true ? 1 : 0;    
     d3.select('#graph-line--' + id)
       .transition()
       .duration(400)
       .style('opacity', opacityVal);
+  },
+  changePairName() {   
+    const pairName = d3.event.target.value;    
+    this.applyFilterChange({ pairName });
+  },
+  changeHours() {
+    d3.event.preventDefault();
+    const input = d3.event.target.querySelector('#hours');
+    const hours = input.value;
+    input.placeholder = hours;
+    input.value = '';
+    input.blur();
+
+    this.applyFilterChange({ hours });
+  },
+  changeDataPointsFreq() {
+    const hours = controller.getModelData({
+      namespace: 'currencyPair',
+      prop: 'hours'
+    })    
+    
+    const frequency = d3.event.target.value;
+    let divider;
+    switch(frequency) {
+      case "1 min":
+        divider = 0.0167;
+        break;
+      case "5 mins":
+        divider = 0.0833;
+        break;
+      case "10 mins":
+        divider = 0.1667;
+        break;
+      case "30 mins":
+        divider = 0.5;
+        break;
+      case "1 hour":
+        divider = 1;
+        break;
+      case "3 hours":
+        divider = 3;
+        break;
+      case "6 hours":
+        divider = 6;
+        break;
+      case "12 hours":
+        divider = 12;
+        break;
+      case "24 hours":
+        divider = 24;
+        break;
+      default:
+        console.warn('unknown frequency');
+    }
+    const dataPoints = Math.round(hours / divider);
+    this.applyFilterChange({ dataPoints });
+  },
+  applyFilterChange(propertiesToChange) {
+    controller.setCurrencyPairFilters(propertiesToChange);
+    
+    const url =  controller.createCurrencyPairURL();    
+    controller.updateGraphData({
+      url,
+      objectToAssignTo: model.currencyPair,
+      callback: controller.renderCurrencyPairGraph
+    });    
   }
 };
 
@@ -808,13 +895,13 @@ const controller = {
       model.startFetchingData();
       currentPriceView.init();
     },
-    updateHistoricalDataRequest(url) {
+    updateGraphData({ url, objectToAssignTo, callback }) {
       // this funtion will be called inside a view
       model.requestGraphData({
         url,
         isGraphBeingUpdated: true,
-        objectToAssignTo: model.history,
-        callback: this.renderHistoryGraph,
+        objectToAssignTo,
+        callback
       });
     },
     renderCurrentPrice() {
@@ -824,9 +911,9 @@ const controller = {
           rateEUR,
           rateUSD
       });
-    },    
+    },
     renderHistoryGraph(isGraphBeingUpdated) {
-       const { width, height , data } = model.history;       
+       const { width, height , data } = model.history;
        historyGraphView.renderGraph({
            width,
            height,
@@ -866,15 +953,20 @@ const controller = {
     finishAnimation() {
       historyGraphView.hideWaitMessage();
     },
-    setCurrencyPairFilters(params) {
+    setCurrencyPairFilters(params) {      
       const props = Object.keys(params);
       props.forEach(prop => {
         model.currencyPair[prop] = params[prop];
-      });      
+      });
     },
     createCurrencyPairURL() {
       const { pairName, dataPoints, hours } = model.currencyPair;
       return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
+    },
+    getModelData({ namespace, prop }) {
+      if(!!model[namespace]) {        
+        return model[namespace][prop];
+      }
     }
 };
 
