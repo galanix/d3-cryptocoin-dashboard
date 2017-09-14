@@ -158,23 +158,9 @@ const historyGraphView = {
       }
   },
   buildLine({ dataset, width, height }) {
-    const firstDate = dataset[0].time.getTime();
-    const lastDate = dataset[dataset.length - 1].time.getTime();
-    this.xScale = d3.scaleLinear()
-                      .domain([
-                        firstDate,
-                        lastDate
-                      ])
-                      .range([0, width]);
+    this.makeScales({ dataset, width, height });
 
-    this.yScale = d3.scaleLinear()
-                      .domain([
-                        d3.min(dataset, d => d.currencyValue),
-                        d3.max(dataset, d => d.currencyValue)
-                      ])
-                      .range([height, 0]);
-
-    const lineFunction = d3.line()
+    this.lineFunction = d3.line()
                             .x(d => this.xScale(d.time.getTime()))
                             .y(d => this.yScale(d.currencyValue))
                             //.curve(d3.curveBasis);              
@@ -190,7 +176,7 @@ const historyGraphView = {
       })
       .append('path')
         .attrs({
-          'd': lineFunction(dataset),
+          'd': this.lineFunction(dataset),
           'stroke': '#C2390D',
           'stroke-width': 2,
           'fill': 'none',
@@ -222,43 +208,22 @@ const historyGraphView = {
   },
   updateLine({ dataset, width, height }) {
     // dataset has changed, need to update #historical-data graph      
-    this.graphSVG = d3.select('.graph--bitcoin-rate').select('svg#historical-data');
+    this.graphSVG = d3.select('.graph--bitcoin-rate').select('#historical-data');
     // data is in chronological order
-    const firstDate = dataset[0].time.getTime();
-    const lastDate = dataset[dataset.length - 1].time.getTime();
-
-    this.xScale = d3.scaleLinear()
-                      .domain([
-                        firstDate,
-                        lastDate
-                      ])
-                      .range([0, width]);
-
-    this.yScale = d3.scaleLinear()
-                      .domain([
-                        d3.min(dataset, d => d.currencyValue),
-                        d3.max(dataset, d => d.currencyValue)
-                      ])
-                      .range([height, 0]);
-
-    const lineFunction = d3.line()
-                            .x(d => this.xScale(d.time.getTime()))
-                            .y(d => this.yScale(d.currencyValue))
-                            //.curve(d3.curveBasis);      
-      // update basic graph                  
-      this.graphSVG
-        .attrs({
-          width,
-          height
-        })
-        .select('path')
-          .transition()
-          .duration(1000)
-          .attrTween('d',  function() {
+    this.makeScales({ dataset, width, height }); 
+      // update basic graph       
+    this.graphSVG        
+      .select('path')
+        .transition()
+        .duration(1000)
+        .attrTween('d',  (() => {
+          const self = this;
+          return function() {
             const previous = d3.select(this).attr('d');
-            const current = lineFunction(dataset);
+            const current = self.lineFunction(dataset);
             return interpolatePath(previous, current); // adds/removes points from prev to match current => for better graph transformations
-          });
+          }
+        })());
     // update axises
     const { yTicks, xTicks } = this.determineTicks(dataset);
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format('.2f'));
@@ -278,6 +243,24 @@ const historyGraphView = {
 
     this.drawCurrencySign();
     this.createHashTable(dataset);
+  },
+  makeScales({ dataset, width, height }) {
+    const firstDate = dataset[0].time.getTime();
+    const lastDate = dataset[dataset.length - 1].time.getTime();
+
+    this.xScale = d3.scaleLinear()
+                      .domain([
+                        firstDate,
+                        lastDate
+                      ])
+                      .range([0, width]);
+
+    this.yScale = d3.scaleLinear()
+                      .domain([
+                        d3.min(dataset, d => d.currencyValue),
+                        d3.max(dataset, d => d.currencyValue)
+                      ])
+                      .range([height, 0]);
   },
   drawCurrencySign() {
     const yAxis = d3.select('g.y-axis');
@@ -688,36 +671,70 @@ const currencyPairGraphsView = {
       this.attachEventsForFilters();
     }
   },
-  updateLines({ dataset, width, height }) {
-    console.log(dataset);
-  },
-  buildLines({ dataset, width, height }) {
+  makeScales({ width, height, dataset }) {
     const firstDate = new Date(dataset[0].created_on).getTime();
     const lastDate = new Date(dataset[dataset.length - 1].created_on).getTime();
-    console.log(dataset.length);
-    this.graphSVG = d3.select('.graph--currency-pair').append('svg');
 
+    this.xScale = d3.scaleLinear()
+    .domain([
+      firstDate,
+      lastDate
+    ])
+    .range([0, width]);
+
+   this.yScale = d3.scaleLinear()
+    .domain([
+      d3.min(dataset, d => (+d.ticker.ask) - (+d.ticker.bid) - 100),
+      d3.max(dataset, d => +d.ticker.ask + 100) // 100 - TEMP
+    ])
+    .range([height, 0]);
+  },
+  updateLines({ dataset, width, height }) {
+     // dataset has changed, need to update #historical-data graph      
+    this.graphSVG = d3.select('.graph--currency-pair').select('#currency-pair');
+    // data is in chronological order    
+    this.makeScales({ dataset, width, height });    
+       // update basic graph
+    const appendLineOfType = (typeObj) => {
+      this.graphSVG
+        .select('path#graph-line--' + typeObj.type)
+          .transition()
+          .duration(1000)
+          .attrTween('d',  function() {
+            const previous = d3.select(this).attr('d');
+            const current = typeObj.lineFunction(dataset);
+            return interpolatePath(previous, current); // adds/removes points from prev to match current => for better graph transformations
+          });
+    }   
+
+    appendLineOfType(this.ask); // ask-graph
+    appendLineOfType(this.bid); // bid-graph
+    appendLineOfType(this.spread); // spread-graph
+
+    // update axises
+    const yAxisGen = d3.axisLeft(this.yScale);
+    const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat('%H:%M'));
+
+    const yAxis = this.graphSVG
+                    .select('g.y-axis')
+                    .call(yAxisGen);
+                    
+    const xAxis = this.graphSVG
+                    .select('g.x-axis')
+                    .call(xAxisGen);
+                      
+  },
+  buildLines({ dataset, width, height }) {
+    this.graphSVG = d3.select('.graph--currency-pair').append('svg');
     /*
        WIDTH, HEIGHT AS PARAMETERS OR THROUGH SEPARATE CONTROLLER FUNTION?
     */
-    this.xScale = d3.scaleLinear()
-                      .domain([
-                        firstDate,
-                        lastDate
-                      ])
-                      .range([0, width]);
-
-
-    this.yScale = d3.scaleLinear()
-                    .domain([
-                      d3.min(dataset, d => (+d.ticker.ask) - (+d.ticker.bid) - 100), // +d.ticker.bid
-                      d3.max(dataset, d => +d.ticker.ask + 100) // TEMP
-                    ])
-                    .range([height, 0]);
+    this.makeScales({ dataset, width, height });
 
     // encapsulate graph types in namespaces (objects)
-    // DO I NEED THESE IN OTHER METHODS?
+    
 
+    // EACH GRAPH'S UNIQUE DATA
     this.ask = {
       type: 'ask',
       color: '#3498DB',
@@ -795,7 +812,7 @@ const currencyPairGraphsView = {
       .on('submit', () => this.changeHours());
 
     d3.selectAll('#data-points-frequency')
-      .on('change', () => this.changeDataPointsFreq());   
+      .on('change', () => this.changeDataPointsFreq());
   },
   hideGraph() {
     const id = d3.event.target.id;
