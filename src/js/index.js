@@ -6,7 +6,7 @@ import '../scss/index.scss';
 import 'flatpickr/dist/themes/material_green.css';
 
 const model = {
-  // subobjects thatstore data
+  // namespaces
   general: {
     currencySigns: {
       EUR: '&#8364;',
@@ -18,7 +18,7 @@ const model = {
   currentPrice: {
     url: 'https://api.coindesk.com/v1/bpi/currentprice.json',
     updateFrequency: 60000,
-    data: {},
+    data: {},   
   },
   history: {
     url: 'https://api.coindesk.com/v1/bpi/historical/close.json',
@@ -28,9 +28,9 @@ const model = {
     height: 250,
     ticksInfo: {
       'from-all-time-to-year': {
-          xTicks: 4,
-          xTickFormat: '%Y',
-          yTicks: 3
+        xTicks: 4,
+        xTickFormat: '%Y',
+        yTicks: 3
       },
       'from-year-to-3-month': {
         xTicks: 3,
@@ -48,7 +48,17 @@ const model = {
     data: {},
     width: 500,
     height: 250,
-    //waitMessageObj
+    dataPointDivisors: { // to get data_point we need to divide hours by these values
+      "1 min": 0.0167, // (1 / 60)      
+      "5 mins": 0.0833,// (5 / 60)      
+      "10 mins": 0.1667, // (10 / 60)      
+      "30 mins": 0.5, // (30 / 60)      
+      "1 hour": 1,    
+      "3 hours": 3,
+      "6 hours": 6,
+      "12 hours": 12,
+      "24 hours": 24
+    },  
   },
   // methods
   startFetchingData() {
@@ -105,9 +115,10 @@ const currentPriceView = {
         color: blackColor
       })
     }, 2500);
-
-    this.valueHolderUSD.innerHTML = controller.getCurrencySign('USD') + this.formatNumber(rateUSD);
-    this.valueHolderEUR.innerHTML = controller.getCurrencySign('EUR') + this.formatNumber(rateEUR);
+    
+    const signsObj = controller.getModelData({ namespace: 'general', prop: 'currencySigns' });
+    this.valueHolderUSD.innerHTML = signsObj['USD'] + this.formatNumber(rateUSD);
+    this.valueHolderEUR.innerHTML = signsObj['EUR'] + this.formatNumber(rateEUR);
   },
   formatNumber(number) {
     return (+number.replace(',', '')).toFixed(2);
@@ -118,11 +129,16 @@ const historyGraphView = {
   init() {
     // set default filters( they are changed by buttons/dropdown/input)
     const today = new Date();
-    const startDate = new Date();
-    this.end = this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate());
-    this.start = this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());     
-    this.currency = 'USD';
-    return this.applyFilters();
+    //const startDate = new Date();  
+    controller.setModelData({
+      namespace: 'history',
+      params: {
+        end: this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+        start: this.formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()),
+        currency: 'USD',
+        waitMessageObj: new waitMessage('history'),
+      }
+    });
   },
   renderGraph({ width, height, data, isGraphBeingUpdated }) {
       // transforms a string into a Date object
@@ -130,7 +146,7 @@ const historyGraphView = {
           const dateArr = dateStr.split('-');
           const year = dateArr[0];
           const month = dateArr[1] - 1;
-          const day =  dateArr[2]; // - 1            
+          const day =  dateArr[2]; // - 1
           return new Date(year, month, day);
       }
       // create an array(dataset) from an object(data)      
@@ -155,19 +171,17 @@ const historyGraphView = {
           width,
           height
         });
-        this.attachEventsForFilters();
+        this.attachFiltersEvents();
       }
   },
   buildLine({ dataset, width, height }) {
     this.makeScales({ dataset, width, height });
-
     this.lineFunction = d3.line()
                             .x(d => this.xScale(d.time.getTime()))
                             .y(d => this.yScale(d.currencyValue))
                             //.curve(d3.curveBasis);              
 
-    this.graphSVG = d3.select('.graph--bitcoin-rate').append('svg');
-    
+    this.graphSVG = d3.select('.graph--history').append('svg');
     // constructed basic graph
     this.graphSVG
       .attrs({
@@ -182,19 +196,19 @@ const historyGraphView = {
           'stroke-width': 2,
           'fill': 'none',
           'id': 'graph-line--main',
-          //'transform': `translate(${5}, 0)`
         });
     // add axises
-    this.changeTicksInfo('less-than-3-month'); // timeline defalts to 1-month      
-    const { yTicks, xTicks } = this.determineTicks(dataset);      
+    // current timeline defaults to 1-month
+    controller.setModelData({ namespace: 'history', params: {'currentTimeline': 'less-than-3-month'} });
+    
+    const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);    
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format('.2f'));
-    const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));
+    const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
     const yAxis = this.graphSVG
                     .append('g')
                     .call(yAxisGen)
                     .attrs({
-                        //'transform': `translate(${leftShift}, 0)`,
                         'class': 'y-axis'
                     });
     const xAxis = this.graphSVG
@@ -205,15 +219,16 @@ const historyGraphView = {
                         'class': 'x-axis'
                     });
     this.drawCurrencySign();
+    this.createHashTable(dataset);
     this.addMovableParts(dataset, height);
   },
   updateLine({ dataset, width, height }) {
-    // dataset has changed, need to update #historical-data graph      
-    this.graphSVG = d3.select('.graph--bitcoin-rate').select('#historical-data');
+    // dataset has changed, need to update #historical-data graph
+    this.graphSVG = d3.select('.graph--history').select('#historical-data');
     // data is in chronological order
-    this.makeScales({ dataset, width, height }); 
-      // update basic graph       
-    this.graphSVG        
+    this.makeScales({ dataset, width, height });
+      // update basic graph
+    this.graphSVG
       .select('path')
         .transition()
         .duration(1000)
@@ -226,9 +241,9 @@ const historyGraphView = {
           }
         })());
     // update axises
-    const { yTicks, xTicks } = this.determineTicks(dataset);
+    const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format('.2f'));
-    const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(this.xTickFormat));      
+    const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
     const yAxis = this.graphSVG
                     .selectAll('g.y-axis')
@@ -266,7 +281,7 @@ const historyGraphView = {
   drawCurrencySign() {
     const yAxis = d3.select('g.y-axis');
 
-    if(!yAxis.select('g.currency-sign').node()) {        
+    if(!yAxis.select('g.currency-sign').node()) {
       yAxis
       .append('g')
       .attrs({
@@ -280,7 +295,7 @@ const historyGraphView = {
           'y': '-10'
         });
     }
-    const text = d3.select('.currency-sign text');      
+    const text = d3.select('.currency-sign text');
     text
       .transition()
       .duration(500)
@@ -288,13 +303,15 @@ const historyGraphView = {
         y: '-100'
       });
     setTimeout(() => {
+      const signsObj = controller.getModelData({ namespace: 'general', prop: 'currencySigns' });
+      const currencyCode = controller.getModelData({ namespace: 'history', prop: 'currency' });
       text
         .transition()
         .duration(500)
         .attrs({
           y: '-10'
         })
-        .node().innerHTML = controller.getCurrencySign(this.currency);
+        .node().innerHTML = signsObj[currencyCode];        
     }, 500);
   },
   determineTicks(dataset) {
@@ -318,10 +335,6 @@ const historyGraphView = {
       if(!!valuesDown) {
         outputArray = [ ...new Set([...outputArray, ...valuesDown]) ];
       }
-
-      /*if(level === finalLevel - 1 && finalLevel % 2 === 0) {
-        return outputArray;
-      }*/
       
       const valuesUp = formTicksArray({
         finalLevel,
@@ -333,29 +346,35 @@ const historyGraphView = {
         outputArray = [ ...new Set([...outputArray, ...valuesUp]) ];
       }
       return outputArray;
-    }      
+    };
+
+    const tickObj = controller.getModelData({ namespace: 'history', prop: 'ticksInfo' });
+    const currentTimeline = controller.getModelData({ namespace: 'history', prop: 'currentTimeline' });
+    const { xTicks, yTicks, xTickFormat } = tickObj[currentTimeline];
 
     let prevLarger = d3.max(dataset, d=> d.currencyValue);
     let prevSmaller = d3.min(dataset, d => d.currencyValue);
-    const yTicks = formTicksArray({
-      finalLevel: this.yTicks || 0,
+    const yTicksArray = formTicksArray({
+      finalLevel: yTicks || 0,
       level: 1,
       prevSm: prevSmaller,
       prevLg: prevLarger
     });
           
     prevSmaller = dataset[0].time.getTime();
-    prevLarger = dataset[dataset.length - 1].time.getTime();          
-    const xTicks = formTicksArray({
-      finalLevel: this.xTicks || 0,
+    prevLarger = dataset[dataset.length - 1].time.getTime();    
+
+    const xTicksArray = formTicksArray({
+      finalLevel: xTicks || 0,
       level: 1,
       prevSm: prevSmaller,
       prevLg: prevLarger
     });
 
     return {
-      yTicks,
-      xTicks
+      yTicks: yTicksArray,
+      xTicks: xTicksArray,
+      xTickFormat
     };
   },
   createHashTable(dataset) {
@@ -365,12 +384,13 @@ const historyGraphView = {
         currencyValue: item.currencyValue,
         time: item.time,
       }
-    });      
-    controller.setNewHashTable(hashTable);      
+    });
+    controller.setModelData({
+      namespace: 'history',
+      params: { hashTable }
+    });    
   },
   addMovableParts(dataset, height) {
-    this.createHashTable(dataset);        
-
     const lineFunction =
       d3.line()
         .x(d => 0)
@@ -403,16 +423,16 @@ const historyGraphView = {
       this.hideDotsAndTooltip();
     }
 
-
     this.graphSVG
       .on('mousemove', () => {
-        const marginLeft = d3.select('.graph--bitcoin-rate').node().offsetLeft;
+        const marginLeft = d3.select('.graph--history').node().offsetLeft;
         const graphSVGStyles = getComputedStyle(this.graphSVG.node());
         let paddingLeft = graphSVGStyles.paddingLeft;
         paddingLeft = +(cutLastNChars(paddingLeft, 2)); // getting rid of 'px' part
 
         const xPos = d3.event.clientX - marginLeft - paddingLeft;          
-        const value = controller.getHashValue(xPos);
+        const value = controller.getModelData({ namespace: 'history', prop: 'hashTable' })[xPos];
+        //controller.getHashValue(xPos);
         if(!!value) {
           this.showDotsAndTooltip(Object.assign(value));
         } else {
@@ -458,18 +478,19 @@ const historyGraphView = {
       .duration(100)
       .style('opacity', 0.9);
       
-      const currencySign = controller.getCurrencySign(this.currency);
+      const signsObj = controller.getModelData({ namespace: 'general', prop: 'currencySigns' });
+      const currencyCode = controller.getModelData({ namespace: 'history', prop: 'currency' });
 
       this.tooltip
         .transition()
         .duration(100)
         .style('opacity', 0.75)
 
-      const graph = d3.select('.graph--bitcoin-rate').node();
+      const graph = d3.select('.graph--history').node();
       
       this.tooltip.html(
         `<h4>${this.formProperDateFormat(time.getFullYear(), time.getMonth() + 1, time.getDate())}</h4>
-          <strong>Price: ${currencySign + currencyValue.toFixed(2)}</strong>`
+          <strong>Price: ${signsObj[currencyCode] + currencyValue.toFixed(2)}</strong>`
         )
         .style('left', this.xScale(time.getTime()) + graph.offsetLeft + 'px')
         .style('top', this.yScale(currencyValue) + graph.offsetTop - 5 + 'px')
@@ -484,21 +505,13 @@ const historyGraphView = {
       .duration(100)
       .style('opacity', 0)         
   },
-  changeTicksInfo(timeline) {
-    const ticksDataObj = controller.getHistoryGraphTicksInfo(timeline);
-    if(!!ticksDataObj) {
-      this.xTicks = ticksDataObj.xTicks;
-      this.xTickFormat = ticksDataObj.xTickFormat;
-      this.yTicks = ticksDataObj.yTicks;
-    }
-  },
   formProperDateFormat(year, month, day) { // example: turns (2017, 5, 14) into 2017-05-15    
     const dateStr = `${year}-${month < 10 ? ('0' + month) : month}-${day < 10 ? ('0' + day) : day}`;        
     return dateStr;
   },
-  attachEventsForFilters() {
+  attachFiltersEvents() {
     this.prevBtn = d3.select('.button[data-timeline="1-month"]').node();
-    d3.selectAll('.filters--bitcoin-rate .button')
+    d3.selectAll('.filters--history .button')
       .on('click', () => {
         d3.event.preventDefault();      
         const btn = d3.event.target;
@@ -515,8 +528,8 @@ const historyGraphView = {
   },
   timelineBtnClick() {
     const btnValue = d3.event.target.getAttribute('data-timeline'); // button value      
-    let timeline; // each of 6 buttons fall under 4 periods      
-    const today = new Date();
+    let timeline; // each of 6 buttons fall under 3 periods      
+    const today = new Date(); // endDate
     const startDate = new Date();
 
     switch(btnValue) {
@@ -550,39 +563,40 @@ const historyGraphView = {
         console.warn('unknown timeline: ', btnValue);
     }
     // change ticks specifier
-    this.changeTicksInfo(timeline)
-    // update timeline filter
-    this.end = this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()); // current date
-    this.start = this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate());
+    controller.setModelData({ 
+      namespace: 'history', 
+      params: {
+        currentTimeline: timeline,
+        end:             this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+        start:           this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate())
+      }
+    });
+    // update timeline filter   
     // apply all filters and get proper url
-    const url = this.applyFilters();
-    controller.updateGraphData({ 
+    const url = controller.createHistoryURL();
+    controller.updateGraphData({
       url,
       namespace: model.history, 
       callback: controller.renderHistoryGraph 
     });
   },
   currencyDropdownChange() {
-      this.currency  = d3.event.target.value;
+      controller.setModelData({ namespace: 'history', params: {currency: d3.event.target.value} });
       // apply all filters and get proper url
-      const url = this.applyFilters();     
+      const url = controller.createHistoryURL();
       controller.updateGraphData({ 
         url,
         namespace: model.history, 
         callback: controller.renderHistoryGraph 
       });
   },
-  applyFilters() {
-    const entryURL = controller.getHistoricalPriceURL();
-    return entryURL + `?start=${this.start}&end=${this.end}&currency=${this.currency}`;
-  },
   initCalendar() {
     const inputs = document.querySelectorAll('.flatpickr-target');
     let endDate = new Date();
     let startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, endDate.getDate);
     
-    inputs[0].placeholder = this.start;
-    inputs[1].placeholder = this.end;
+    inputs[0].placeholder = controller.getModelData({ namespace: 'history', prop: 'start' });
+    inputs[1].placeholder = controller.getModelData({ namespace: 'history', prop: 'start' });
 
     flatpickr(inputs, {
       allowInput: true,
@@ -597,13 +611,17 @@ const historyGraphView = {
 
         self.prevBtn.classList.remove('selected');
         if(startInput === instance) {
-          startDate = _selectedDates[0];
-          self.start = dateStr;
+          startDate = _selectedDates[0];          
+          controller.setModelData({ namespace: 'history', params: { start: dateStr } });
         } else { // endInpt === instance
           endDate = _selectedDates[0];
-          self.end = dateStr;
+          controller.setModelData({ namespace: 'history', params: { end: dateStr } });
         }
-        if(self.end > self.start) {
+        
+        const start = controller.getModelData({ namespace: 'history', prop: 'start'});
+        const end = controller.getModelData({ namespace: 'history', prop: 'end'});
+        
+        if(end > start) {
           let timeline;
           const monthDiff = endDate.getMonth() - startDate.getMonth();
           switch(monthDiff) {
@@ -617,26 +635,27 @@ const historyGraphView = {
           if(yearDiff > 0) {
             timeline = 'from-all-time-to-year';
           }
+          
+          controller.setModelData({ namespace: 'history', params: {'currentTimeline': timeline} });
 
-          self.changeTicksInfo(timeline);
-          const url = self.applyFilters();
-          controller.updateGraphData({ 
+          const url = controller.createHistoryURL();
+          controller.updateGraphData({
             url,
-            namespace: model.history, 
-            callback: controller.renderHistoryGraph 
+            namespace: model.history,
+            callback: controller.renderHistoryGraph
           });
         }
       }
     });
     const startInput = inputs[0]._flatpickr;
     const endInput = inputs[1]._flatpickr;      
-  }  
+  }
 };
 
 // WAIT MESSAGE CLASS
 const waitMessage = function(classModifier) {
   this.message = document.querySelector(`.graph--${classModifier} .wait-message`);
-}
+};
 waitMessage.prototype = {
   show: function() {
     this.message.style.opacity = 0.75;
@@ -644,15 +663,19 @@ waitMessage.prototype = {
   hide: function() {
     this.message.style.opacity = 0;
   }
-}
+};
 
 const currencyPairGraphsView = {
   init() {
-    controller.setCurrencyPairFilters({
-      pairName: 'BTCLTC',
-      hours: 2,
-      dataPoints: 120,
-      waitMessageObj: new waitMessage('currency-pair'),
+    controller.setModelData({
+      namespace: 'currencyPair', 
+      params: {
+        pairName: 'BTCLTC',
+        hours: 2,
+        dataPoints: 120, // === 1 min
+        waitMessageObj: new waitMessage('currency-pair'),
+        currentDivisor: 0.0167,
+      }
     });
   },
   renderGraph({ width, height, data, isGraphBeingUpdated }) {
@@ -671,7 +694,7 @@ const currencyPairGraphsView = {
         width,
         height
       });
-      this.attachEventsForFilters();
+      this.attachFiltersEvents();
     }
   },
   makeScales({ width, height, dataset }) {
@@ -693,7 +716,7 @@ const currencyPairGraphsView = {
     .range([height, 0]);
   },
   updateLines({ dataset, width, height }) {
-     // dataset has changed, need to update #historical-data graph      
+     // dataset has changed, need to update #historical-data graph    
     this.graphSVG = d3.select('.graph--currency-pair').select('#currency-pair');
     // data is in chronological order    
     this.makeScales({ dataset, width, height });    
@@ -725,18 +748,10 @@ const currencyPairGraphsView = {
     const xAxis = this.graphSVG
                     .select('g.x-axis')
                     .call(xAxisGen);
-                      
   },
   buildLines({ dataset, width, height }) {
-    this.graphSVG = d3.select('.graph--currency-pair').append('svg');
-    /*
-       WIDTH, HEIGHT AS PARAMETERS OR THROUGH SEPARATE CONTROLLER FUNTION?
-    */
+    this.graphSVG = d3.select('.graph--currency-pair').append('svg');    
     this.makeScales({ dataset, width, height });
-
-    // encapsulate graph types in namespaces (objects)
-    
-
     // EACH GRAPH'S UNIQUE DATA
     this.ask = {
       type: 'ask',
@@ -804,7 +819,7 @@ const currencyPairGraphsView = {
                         'class': 'x-axis'
                     });
   },
-  attachEventsForFilters() {
+  attachFiltersEvents() {
     d3.selectAll('.displayed-graphs input')
       .on('change', () => this.hideGraph());
 
@@ -825,80 +840,58 @@ const currencyPairGraphsView = {
       .duration(400)
       .style('opacity', opacityVal);
   },
-  changePairName() {   
+  changePairName() {
     const pairName = d3.event.target.value;    
     this.applyFilterChange({ pairName });
   },
   changeHours() {
     d3.event.preventDefault();
     const input = d3.event.target.querySelector('#hours');
-    const hours = input.value;
+    const hours = +input.value;
     input.placeholder = hours;
     input.value = '';
     input.blur();
 
-    this.applyFilterChange({ hours });
+    const divider = controller.getModelData({ namespace: 'currencyPair', prop: 'currentDivisor' });
+    const dataPoints = Math.floor(hours / divider);
+    this.applyFilterChange({ hours, dataPoints });    
   },
   changeDataPointsFreq() {
-    const hours = controller.getModelData({
-      namespace: 'currencyPair',
-      prop: 'hours'
-    })    
+    const hours = controller.getModelData({ namespace: 'currencyPair', prop: 'hours' });
     
-    const frequency = d3.event.target.value;
-    let divider;
-    switch(frequency) {
-      case "1 min":
-        divider = 0.0167; // (1 / 60)
-        break;
-      case "5 mins":
-        divider = 0.0833; // (5 / 60)
-        break;
-      case "10 mins":
-        divider = 0.1667; // (10 / 60)
-        break;
-      case "30 mins":
-        divider = 0.5; // (30 / 60)
-        break;
-      case "1 hour":
-        divider = 1;
-        break;
-      case "3 hours":
-        divider = 3;
-        break;
-      case "6 hours":
-        divider = 6;
-        break;
-      case "12 hours":
-        divider = 12;
-        break;
-      case "24 hours":
-        divider = 24;
-        break;
-      default:
-        console.warn('unknown frequency');
+    const frequency = d3.event.target.value || '';    
+    const divider = controller.getModelData({
+      namespace: 'currencyPair',
+      prop: 'dataPointDivisors'
+    })[frequency];
+
+    controller.setModelData({ 
+      namespace: 'currencyPair', 
+      params: {'currentDivisor': divider}
+    });
+    
+    const dataPoints = Math.floor(hours / divider);
+    if(dataPoints !== 0) {
+      this.applyFilterChange({ dataPoints });
     }
-    const dataPoints = Math.round(hours / divider);
-    this.applyFilterChange({ dataPoints });
   },
   applyFilterChange(propertiesToChange) {
-    controller.setCurrencyPairFilters(propertiesToChange);
-    
-    const url =  controller.createCurrencyPairURL();    
+    controller.setModelData({ namespace: 'currencyPair', params: propertiesToChange });    
+    const url =  controller.createCurrencyPairURL();
     controller.updateGraphData({
       url,
       namespace: model.currencyPair,
       callback: controller.renderCurrencyPairGraph
-    });    
+    });
   }
 };
 
-const controller = {
+const controller = {    
     init() {
-      model.history.waitMessageObj = new waitMessage('bitcoin-rate');
       // request data for history graph
+      historyGraphView.init(),
       model.requestGraphData({
-        url: historyGraphView.init(),
+        url: this.createHistoryURL(),
         isGraphBeingUpdated: false,
         namespace: model.history,
         callback: this.renderHistoryGraph,
@@ -916,6 +909,7 @@ const controller = {
       model.startFetchingData();
       currentPriceView.init();
     },
+    // general methods
     updateGraphData({ url, namespace, callback }) {
       // this funtion will be called inside a view
       model.requestGraphData({
@@ -924,6 +918,31 @@ const controller = {
         namespace,
         callback
       });
+    },
+    startAnimation(namespace) {
+      namespace.waitMessageObj.show();
+    },
+    finishAnimation(namespace) {
+      namespace.waitMessageObj.hide();
+    },   
+    setModelData({ namespace, params }) {
+      const props = Object.keys(params);
+      props.forEach(prop => {
+        model[namespace][prop] = params[prop];
+      });
+    },
+    getModelData({ namespace, prop }) {
+      return model[namespace][prop];
+    },
+    // class specific methods
+    createCurrencyPairURL() {
+      const { pairName, dataPoints, hours } = model.currencyPair;
+      console.log(`https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`);
+      return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
+    },
+    createHistoryURL() {
+      const { url, start, end, currency } = model.history;
+      return url + `?start=${start}&end=${end}&currency=${currency}`;
     },
     renderCurrentPrice() {
       const rateEUR = model.currentPrice.data.bpi.EUR.rate;
@@ -943,52 +962,14 @@ const controller = {
        });
     },
     renderCurrencyPairGraph(isGraphBeingUpdated) {
-      const { width, height, data } = model.currencyPair;      
+      const { width, height, data } = model.currencyPair;
       currencyPairGraphsView.renderGraph({
         width,
         height,
         data,
         isGraphBeingUpdated
       });
-    },
-    getHistoricalPriceURL() {
-      // this funtion will be called inside a view
-      return model.history.url;
-    },
-    getCurrencySign(currencyName) {
-      return model.general.currencySigns[currencyName];
-    },
-    getHistoryGraphTicksInfo(timeline) {
-      return model.history.ticksInfo[timeline];
-    },
-    setNewHashTable(hashTable) {
-      //model.history.hashTable = {};
-      model.history.hashTable = Object.assign({}, hashTable);
-    },
-    getHashValue(key) {
-      return model.history.hashTable[key];
-    },
-    startAnimation(namespace) {
-      namespace.waitMessageObj.show();
-    },
-    finishAnimation(namespace) {
-      namespace.waitMessageObj.hide();
-    },
-    setCurrencyPairFilters(params) {      
-      const props = Object.keys(params);
-      props.forEach(prop => {
-        model.currencyPair[prop] = params[prop];
-      });
-    },
-    createCurrencyPairURL() {
-      const { pairName, dataPoints, hours } = model.currencyPair;
-      return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
-    },
-    getModelData({ namespace, prop }) {
-      if(!!model[namespace]) {        
-        return model[namespace][prop];
-      }
-    }
+    },    
 };
 
 controller.init();
