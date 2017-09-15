@@ -697,31 +697,32 @@ const currencyPairGraphsView = {
       this.attachFiltersEvents();
     }
   },
-  makeScales({ width, height, dataset }) {
+  makeScales({ dataset, width, height }) {   
     const firstDate = new Date(dataset[0].created_on).getTime();
     const lastDate = new Date(dataset[dataset.length - 1].created_on).getTime();
 
     this.xScale = d3.scaleLinear()
-    .domain([
-      firstDate,
-      lastDate
-    ])
-    .range([0, width]);
+      .domain([
+        firstDate,
+        lastDate
+      ])
+      .range([0, width]);
 
-   this.yScale = d3.scaleLinear()
-    .domain([
-      d3.min(dataset, d => (+d.ticker.ask) - (+d.ticker.bid) - 100),
-      d3.max(dataset, d => +d.ticker.ask + 100) // 100 - TEMP
-    ])
-    .range([height, 0]);
+    this.yScale = d3.scaleLinear()
+      .domain([
+        d3.min(dataset, d => this.minFuncForY(d)),
+        d3.max(dataset, d => +d.ticker.ask)
+      ])
+      .range([height, 0]);
   },
   updateLines({ dataset, width, height }) {
-     // dataset has changed, need to update #historical-data graph    
+     // dataset has changed, need to update #historical-data graph
     this.graphSVG = d3.select('.graph--currency-pair').select('#currency-pair');
-    // data is in chronological order    
-    this.makeScales({ dataset, width, height });    
+    // data is in chronological order
+    this.makeScales({ dataset, width, height });
        // update basic graph
     const appendLineOfType = (typeObj) => {
+      const opacityVal = typeObj.hidden ? 0 : 1;      
       this.graphSVG
         .select('path#graph-line--' + typeObj.type)
           .transition()
@@ -730,8 +731,9 @@ const currencyPairGraphsView = {
             const previous = d3.select(this).attr('d');
             const current = typeObj.lineFunction(dataset);
             return interpolatePath(previous, current); // adds/removes points from prev to match current => for better graph transformations
-          });
-    }   
+          })
+          .style('opacity', opacityVal);
+    }
 
     appendLineOfType(this.ask); // ask-graph
     appendLineOfType(this.bid); // bid-graph
@@ -743,19 +745,32 @@ const currencyPairGraphsView = {
 
     const yAxis = this.graphSVG
                     .select('g.y-axis')
+                    .transition()
+                    .duration(1000)
                     .call(yAxisGen);
                     
     const xAxis = this.graphSVG
                     .select('g.x-axis')
+                    .transition()
+                    .duration(1000)
                     .call(xAxisGen);
   },
   buildLines({ dataset, width, height }) {
     this.graphSVG = d3.select('.graph--currency-pair').append('svg');    
     this.makeScales({ dataset, width, height });
+
+    this.graphSVG
+    .attrs({
+      width,
+      height,
+      id: 'currency-pair',
+    }) 
+
     // EACH GRAPH'S UNIQUE DATA
     this.ask = {
       type: 'ask',
       color: '#3498DB',
+      hidden: false,
       lineFunction:  d3.line()
                        .x(d => this.xScale(new Date(d.created_on).getTime()))
                        .y(d => this.yScale(+d.ticker.ask)),
@@ -763,7 +778,8 @@ const currencyPairGraphsView = {
 
     this.bid = {
       type: 'bid',
-      color: '#E74C3C',      
+      color: '#E74C3C',
+      hidden: false,
       lineFunction: d3.line()
                       .x(d => this.xScale(new Date(d.created_on).getTime()))
                       .y(d => this.yScale(+d.ticker.bid))
@@ -771,13 +787,15 @@ const currencyPairGraphsView = {
 
     this.spread = {
       type: 'spread',
-      color: '#2ECC71',              
+      color: '#2ECC71',
+      hidden: true,
       lineFunction: d3.line()
                       .x(d => this.xScale(new Date(d.created_on).getTime()))
                       .y(d => this.yScale((+d.ticker.ask) - (+d.ticker.bid)))
     };
  
     const appendLineOfType = (typeObj) => {
+      const opacityVal = typeObj.hidden ? 0 : 1;
       this.graphSVG
         .append('path')
           .attrs({
@@ -786,16 +804,11 @@ const currencyPairGraphsView = {
             'stroke-width': 2,
             'fill': 'none',
             'id': 'graph-line--' + typeObj.type,
-          });
+          })
+          .style('opacity', opacityVal);
     };
-
-    this.graphSVG
-      .attrs({
-        width,
-        height,
-        id: 'currency-pair',
-      }) // construct 3 basic graphs
-    
+  
+    // construct 3 basic graphs    
     appendLineOfType(this.ask); // ask-graph
     appendLineOfType(this.bid); // bid-graph
     appendLineOfType(this.spread); // spread-graph
@@ -821,7 +834,7 @@ const currencyPairGraphsView = {
   },
   attachFiltersEvents() {
     d3.selectAll('.displayed-graphs input')
-      .on('change', () => this.hideGraph());
+      .on('change', () => this.toggleGraph());
 
     d3.selectAll('#cryptocoin-codes')
       .on('change', () => this.changePairName());
@@ -831,17 +844,40 @@ const currencyPairGraphsView = {
 
     d3.selectAll('#data-points-frequency')
       .on('change', () => this.changeDataPointsFreq());
+
+    d3.select('#spread')
+      .on('change', () => this.adjustForSpreadGraph());
   },
-  hideGraph() {
-    const id = d3.event.target.id;
-    const opacityVal = d3.event.target.checked === true ? 1 : 0;    
+  toggleGraph() {
+    const id =  d3.event.target.id;
+    const opacityVal = d3.event.target.checked === true ? 1 : 0;
     d3.select('#graph-line--' + id)
       .transition()
       .duration(400)
       .style('opacity', opacityVal);
   },
+  minFuncForY(d) {
+    return +d.ticker.bid;
+  },
+  adjustForSpreadGraph() {
+    console.log(this.minFuncForY);
+    const checked = !!d3.event ? d3.event.target.checked : false;
+    if(!!checked) {
+      this.minFuncForY = d => (+d.ticker.ask) - (+d.ticker.bid);
+    }
+    else {
+      this.minFuncForY = d => (+d.ticker.bid);
+    }
+    this.spread.hidden = !checked;
+    
+    const dataset = controller.getModelData({ namespace: 'currencyPair', prop: 'data' });
+    const width = controller.getModelData({ namespace: 'currencyPair', prop:'width' });
+    const height = controller.getModelData({ namespace: 'currencyPair', prop:'height' });
+    //console.log(this.minFuncForY);
+    this.updateLines({ dataset, width, height });
+  },
   changePairName() {
-    const pairName = d3.event.target.value;    
+    const pairName = d3.event.target.value;
     this.applyFilterChange({ pairName });
   },
   changeHours() {
@@ -870,8 +906,11 @@ const currencyPairGraphsView = {
       params: {'currentDivisor': divider}
     });
     
-    const dataPoints = Math.floor(hours / divider);
+    let dataPoints = Math.floor(hours / divider);
     if(dataPoints !== 0) {
+      if(dataPoints === 1) {
+        dataPoints++;
+      }
       this.applyFilterChange({ dataPoints });
     }
   },
@@ -924,7 +963,7 @@ const controller = {
     },
     finishAnimation(namespace) {
       namespace.waitMessageObj.hide();
-    },   
+    },
     setModelData({ namespace, params }) {
       const props = Object.keys(params);
       props.forEach(prop => {
@@ -937,7 +976,6 @@ const controller = {
     // class specific methods
     createCurrencyPairURL() {
       const { pairName, dataPoints, hours } = model.currencyPair;
-      console.log(`https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`);
       return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
     },
     createHistoryURL() {
@@ -969,7 +1007,7 @@ const controller = {
         data,
         isGraphBeingUpdated
       });
-    },    
+    },
 };
 
 controller.init();

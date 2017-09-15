@@ -95,3 +95,18 @@ body {
 /*
     FOR PAIR GRAPHS
 */
+
+.displayed-graphs {
+    label {       
+        margin: 15px;
+    }
+    label[for="ask"] {
+         border-bottom: 4px solid #3498DB;
+    }
+    label[for="bid"] {
+        border-bottom: 4px solid #E74C3C;  
+    }
+    label[for="spread"] {
+        border-bottom: 4px solid #2ECC71;
+    }
+}
