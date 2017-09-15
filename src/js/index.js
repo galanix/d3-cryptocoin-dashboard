@@ -347,10 +347,13 @@ const historyGraphView = {
       }
       return outputArray;
     };
+    
+    const { ticksInfo , currentTimeline } = controller.getModelData({
+      namespace: 'history',
+      props: ['ticksInfo', 'currentTimeline']
+    });        
 
-    const tickObj = controller.getModelData({ namespace: 'history', prop: 'ticksInfo' });
-    const currentTimeline = controller.getModelData({ namespace: 'history', prop: 'currentTimeline' });
-    const { xTicks, yTicks, xTickFormat } = tickObj[currentTimeline];
+    const { xTicks, yTicks, xTickFormat } = ticksInfo[currentTimeline];
 
     let prevLarger = d3.max(dataset, d=> d.currencyValue);
     let prevSmaller = d3.min(dataset, d => d.currencyValue);
@@ -360,9 +363,9 @@ const historyGraphView = {
       prevSm: prevSmaller,
       prevLg: prevLarger
     });
-          
+    
     prevSmaller = dataset[0].time.getTime();
-    prevLarger = dataset[dataset.length - 1].time.getTime();    
+    prevLarger = dataset[dataset.length - 1].time.getTime();
 
     const xTicksArray = formTicksArray({
       finalLevel: xTicks || 0,
@@ -595,8 +598,9 @@ const historyGraphView = {
     let endDate = new Date();
     let startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, endDate.getDate);
     
-    inputs[0].placeholder = controller.getModelData({ namespace: 'history', prop: 'start' });
-    inputs[1].placeholder = controller.getModelData({ namespace: 'history', prop: 'start' });
+    const placeHolderVal = controller.getModelData({ namespace: 'history', prop: 'start' });
+    inputs[0].placeholder = placeHolderVal;
+    inputs[1].placeholder = placeHolderVal;
 
     flatpickr(inputs, {
       allowInput: true,
@@ -617,9 +621,8 @@ const historyGraphView = {
           endDate = _selectedDates[0];
           controller.setModelData({ namespace: 'history', params: { end: dateStr } });
         }
-        
-        const start = controller.getModelData({ namespace: 'history', prop: 'start'});
-        const end = controller.getModelData({ namespace: 'history', prop: 'end'});
+               
+        const { start, end } = controller.getModelData({ namespace: 'history', props: ['start', 'end'] });
         
         if(end > start) {
           let timeline;
@@ -853,14 +856,13 @@ const currencyPairGraphsView = {
     const opacityVal = d3.event.target.checked === true ? 1 : 0;
     d3.select('#graph-line--' + id)
       .transition()
-      .duration(400)
+      .duration(600)
       .style('opacity', opacityVal);
   },
   minFuncForY(d) {
     return +d.ticker.bid;
   },
   adjustForSpreadGraph() {
-    console.log(this.minFuncForY);
     const checked = !!d3.event ? d3.event.target.checked : false;
     if(!!checked) {
       this.minFuncForY = d => (+d.ticker.ask) - (+d.ticker.bid);
@@ -869,12 +871,10 @@ const currencyPairGraphsView = {
       this.minFuncForY = d => (+d.ticker.bid);
     }
     this.spread.hidden = !checked;
+       
+    const { data , width, height } = controller.getModelData({ namespace: 'currencyPair', props: ['data', 'width', 'height'] });
     
-    const dataset = controller.getModelData({ namespace: 'currencyPair', prop: 'data' });
-    const width = controller.getModelData({ namespace: 'currencyPair', prop:'width' });
-    const height = controller.getModelData({ namespace: 'currencyPair', prop:'height' });
-    //console.log(this.minFuncForY);
-    this.updateLines({ dataset, width, height });
+    this.updateLines({ dataset: data, width, height });
   },
   changePairName() {
     const pairName = d3.event.target.value;
@@ -925,7 +925,7 @@ const currencyPairGraphsView = {
   }
 };
 
-const controller = {    
+const controller = {
     init() {
       // request data for history graph
       historyGraphView.init(),
@@ -970,7 +970,14 @@ const controller = {
         model[namespace][prop] = params[prop];
       });
     },
-    getModelData({ namespace, prop }) {
+    getModelData({ namespace, prop, props }) {      
+      if(!!props) {
+        const output = {};
+        props.forEach(prop => {
+          output[prop] = model[namespace][prop];
+        });        
+        return output;
+      }
       return model[namespace][prop];
     },
     // class specific methods
