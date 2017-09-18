@@ -4,7 +4,7 @@ import '../scss/index.scss';
 
 import * as d3 from 'd3';
 import { attrs } from 'd3-selection-multi';
-import { interpolatePath } from 'd3-interpolate-path';
+//import { interpolatePath } from 'd3-interpolate-path';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/material_green.css';
 
@@ -105,10 +105,8 @@ const currentPriceView = {
       this.valueHolderUSD = document.querySelector('.current-price__USD .value');
       this.valueHolderEUR = document.querySelector('.current-price__EUR .value');      
   },
-  renderData({ rateUSD, rateEUR }) {
-    this.valueHolderEUR.style.transition = 'all .5s ease-in';
-    this.valueHolderUSD.style.transition = 'all .5s ease-in';
-    
+  renderData({ rateUSD, rateEUR, signsObj }) {
+    const transition = 'all .5s ease-in';    
     const highlightColor = '#C2390D';
     const blackColor = '#000';
 
@@ -120,7 +118,8 @@ const currentPriceView = {
       })
     };
 
-    setStyle({      
+    setStyle({
+      transition,
       color: highlightColor
     });
     
@@ -129,8 +128,7 @@ const currentPriceView = {
         color: blackColor
       })
     }, 2500);
-    
-    const signsObj = controller.getModelData({ namespace: 'general', prop: 'currencySigns' });
+        
     this.valueHolderUSD.innerHTML = signsObj['USD'] + this.formatNumber(rateUSD);
     this.valueHolderEUR.innerHTML = signsObj['EUR'] + this.formatNumber(rateEUR);
   },
@@ -142,7 +140,7 @@ const currentPriceView = {
 const historyGraphView = {
   init() {
     // set default filters( they are changed by buttons/dropdown/input)
-    const today = new Date();    
+    const today = new Date();
     controller.setModelData({
       namespace: 'history',
       params: {
@@ -185,6 +183,7 @@ const historyGraphView = {
           height
         });
         this.attachFiltersEvents();
+        controller.initCalendar();
       }
   },
   buildLine({ dataset, width, height }) {
@@ -199,7 +198,7 @@ const historyGraphView = {
       lineFunction:  d3.line()
                         .x(d => this.xScale(d.time.getTime()))
                         .y(d => this.yScale(d.currencyValue)),
-      graphSVG: this.graphSVG,
+      container: this.graphSVG,
     });
 
     controller.setModelData({
@@ -530,145 +529,25 @@ const historyGraphView = {
   },
   attachFiltersEvents() {
     this.prevBtn = d3.select('.button[data-timeline="1-month"]').node();
+
     d3.selectAll('.filters--history .button')
-      .on('click', () => {
-        d3.event.preventDefault();      
-        const btn = d3.event.target;
-        if(btn !== this.prevBtn) {
-          this.prevBtn.classList.remove('selected');
-          btn.classList.add('selected');
-          this.prevBtn = btn;
-          this.timelineBtnClick.call(this)
-        }
-      });
+      .on('click', () => { 
+        this.changeSelectedButton();
+        controller.timelineBtnClick();
+      });      
+
     d3.select('#currencies')
-      .on('change', this.currencyDropdownChange.bind(this));
-    this.initCalendar();
+      .on('change', () => controller.currencyDropdownChange());
   },
-  timelineBtnClick() {
-    const btnValue = d3.event.target.getAttribute('data-timeline'); // button value      
-    let timeline; // each of 6 buttons fall under 3 periods      
-    const today = new Date(); // endDate
-    const startDate = new Date();
-
-    switch(btnValue) {
-      case 'all-time':
-        startDate.setFullYear(2010);
-        startDate.setMonth(7);
-        startDate.setDate(17);
-        timeline = 'from-all-time-to-year';
-        break;
-      case '1-year':          
-        startDate.setFullYear(startDate.getFullYear() - 1)
-        timeline = 'from-year-to-3-month';
-        break;
-      case '6-month':          
-        startDate.setMonth(startDate.getMonth() - 6)
-        timeline = 'from-year-to-3-month';
-        break;
-      case '3-month':          
-        startDate.setMonth(startDate.getMonth() - 3)
-        timeline = 'less-than-3-month';
-        break;
-      case '1-month':          
-        startDate.setMonth(startDate.getMonth() - 1)
-        timeline ='less-than-3-month';
-        break;
-      case '1-week':
-        startDate.setDate(startDate.getDate() - 7);
-        timeline ='less-than-3-month';
-        break;
-      default:
-        console.warn('unknown timeline: ', btnValue);
+  changeSelectedButton() {
+    d3.event.preventDefault();      
+    const btn = d3.event.target;
+    if(btn !== this.prevBtn) {
+      this.prevBtn.classList.remove('selected');
+      btn.classList.add('selected');
+      this.prevBtn = btn;   
     }
-    // change ticks specifier
-    controller.setModelData({ 
-      namespace: 'history', 
-      params: {
-        currentTimeline: timeline,
-        end:             this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-        start:           this.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate())
-      }
-    });
-    // update timeline filter   
-    // apply all filters and get proper url
-    const url = controller.createHistoryURL();
-    controller.updateGraphData({
-      url,
-      namespace: model.history, 
-      callback: controller.renderHistoryGraph 
-    });
-  },
-  currencyDropdownChange() {
-      controller.setModelData({ namespace: 'history', params: {currency: d3.event.target.value} });
-      // apply all filters and get proper url
-      const url = controller.createHistoryURL();
-      controller.updateGraphData({ 
-        url,
-        namespace: model.history, 
-        callback: controller.renderHistoryGraph 
-      });
-  },
-  initCalendar() {
-    const inputs = document.querySelectorAll('.flatpickr-target');
-    let endDate = new Date();
-    let startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, endDate.getDate);
-    
-    const placeHolderVal = controller.getModelData({ namespace: 'history', prop: 'start' });
-    inputs[0].placeholder = placeHolderVal;
-    inputs[1].placeholder = placeHolderVal;
-
-    flatpickr(inputs, {
-      allowInput: true,
-      enable: [
-        {
-            from: "2010-07-17",
-            to: this.formProperDateFormat(endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate())
-        }
-      ],
-      onChange(_selectedDates, dateStr, instance) {
-        const self = historyGraphView;
-
-        self.prevBtn.classList.remove('selected');
-        if(startInput === instance) {
-          startDate = _selectedDates[0];          
-          controller.setModelData({ namespace: 'history', params: { start: dateStr } });
-        } else { // endInpt === instance
-          endDate = _selectedDates[0];
-          controller.setModelData({ namespace: 'history', params: { end: dateStr } });
-        }
-               
-        const { start, end } = controller.getModelData({ namespace: 'history', props: ['start', 'end'] });
-        
-        if(end > start) {
-          let timeline;
-          const monthDiff = endDate.getMonth() - startDate.getMonth();
-          switch(monthDiff) {
-            case 0: case 1: case 2: case 3:
-              timeline = 'less-than-3-month';
-              break;
-            default:
-              timeline = 'from-year-to-3-month';
-          }
-          const yearDiff = endDate.getFullYear() - startDate.getFullYear();
-          if(yearDiff > 0) {
-            timeline = 'from-all-time-to-year';
-          }
-          
-          controller.setModelData({ namespace: 'history', params: {'currentTimeline': timeline} });
-
-          const url = controller.createHistoryURL();
-          controller.updateGraphData({
-            url,
-            namespace: model.history,
-            callback: controller.renderHistoryGraph
-          });
-        }
-      }
-    });
-    const startInput = inputs[0]._flatpickr;
-    const endInput = inputs[1]._flatpickr;      
-  }
+  }  
 };
 
 const currencyPairGraphsView = {
@@ -704,15 +583,16 @@ const currencyPairGraphsView = {
     }
   },
   buildLines({ dataset, width, height }) {
-    this.graphSVG = d3.select('.graph--currency-pair').append('svg');    
+    //debugger;
+    this.graphSVG = d3.select('.graph--currency-pair').append('svg');
     this.makeScales({ dataset, width, height });
 
     this.graphSVG
-    .attrs({
-      width,
-      height,
-      id: 'currency-pair',
-    });
+      .attrs({
+        width,
+        height,
+        id: 'currency-pair',
+      });
 
     //INSTANTIATE GRAPH OBJECTS
     this.createGraphInstances(dataset);
@@ -734,8 +614,12 @@ const currencyPairGraphsView = {
                         'transform': `translate(0, ${height})`,
                         'class': 'x-axis'
                     });
-  },  
-  updateLines({ dataset, width, height }) {  
+  },
+  updateLines({ dataset, width, height }) {
+    if(!dataset) {
+      return;
+    }
+    
     this.graphSVG = d3.select('.graph--currency-pair').select('#currency-pair');
     // dataset has changed, need to update #historical-data graph
     // data is in chronological order
@@ -764,19 +648,19 @@ const currencyPairGraphsView = {
   },
   attachFiltersEvents() {
     d3.selectAll('.displayed-graphs input')
-      .on('change', () => this.toggleGraph());
+      .on('change', () => this.toggleGraph()); // pure view 
 
     d3.selectAll('#cryptocoin-codes')
-      .on('change', () => this.changePairName());
+      .on('change', () => controller.changePairName());
 
     d3.selectAll('.hours-input')
-      .on('submit', () => this.changeHours());
+      .on('submit', () => controller.changeHours());
 
     d3.selectAll('#data-points-frequency')
-      .on('change', () => this.changeDataPointsFreq());
+      .on('change', () => controller.changeDataPointsFreq());
 
     d3.select('#spread')
-      .on('change', () => this.adjustForSpreadGraph());
+      .on('change', () => controller.adjustForSpreadGraph());
   },
   makeScales({ dataset, width, height }) {
     const firstDate = new Date(dataset[0].created_on).getTime();
@@ -788,15 +672,33 @@ const currencyPairGraphsView = {
         lastDate
       ])
       .range([0, width]);
+      
+    const graphInstances = controller.getModelData({ namespace: 'currencyPair', prop: 'graphs' });
+    const spread = !!graphInstances ? graphInstances['spread'] : null;
+        
+    if(!spread || !!spread.hidden) {
+      const askMin = d3.min(dataset, d => +d.ticker.ask);
+      const bidMin = d3.min(dataset, d => +d.ticker.bid);
+
+      this.minFuncForY = askMin < bidMin ? d => +d.ticker.ask : d => +d.ticker.bid;    
+    } else {
+      this.minFuncForY = d => Math.abs((+d.ticker.ask) - (+d.ticker.bid));
+    }
+
+    const askMax = d3.max(dataset, d => +d.ticker.ask);    
+    const bidMax = d3.max(dataset, d => +d.ticker.bid);    
+    this.maxFuncForY = askMax > bidMax ? d => +d.ticker.ask : d => +d.ticker.bid;
 
     this.yScale = d3.scaleLinear()
       .domain([
         d3.min(dataset, d => this.minFuncForY(d)),
-        d3.max(dataset, d => +d.ticker.ask)
+        d3.max(dataset, d => this.maxFuncForY(d))
       ])
       .range([height, 0]);
-  },
+  },  
+  minFuncForY(d) {},
   createGraphInstances(dataset) {
+  
     const ask = new Graph({
       type: 'ask',
       color: '#3498DB',
@@ -804,7 +706,7 @@ const currencyPairGraphsView = {
       lineFunction:  d3.line()
                        .x(d => this.xScale(new Date(d.created_on).getTime()))
                        .y(d => this.yScale(+d.ticker.ask)),
-      graphSVG: this.graphSVG
+      container: this.graphSVG
     });
     ask.append(dataset);
 
@@ -815,9 +717,9 @@ const currencyPairGraphsView = {
       lineFunction: d3.line()
                       .x(d => this.xScale(new Date(d.created_on).getTime()))
                       .y(d => this.yScale(+d.ticker.bid)),
-      graphSVG: this.graphSVG
+      container: this.graphSVG
     });
-    bid.append(dataset);
+    bid.append(dataset,);
 
     const spread = new Graph({
       type: 'spread',
@@ -826,18 +728,18 @@ const currencyPairGraphsView = {
       lineFunction: d3.line()
                       .x(d => this.xScale(new Date(d.created_on).getTime()))
                       .y(d => this.yScale((+d.ticker.ask) - (+d.ticker.bid))),
-      graphSVG: this.graphSVG
+      container: this.graphSVG
     });
     spread.append(dataset);
     
     controller.setModelData({
       namespace: 'currencyPair',
-      params: { 
-        graphs:  {
+      params: {
+        graphs: {
           [ask.type]: ask,
           [bid.type]: bid,
           [spread.type]: spread
-        } 
+        }
       }
     });
   },
@@ -848,72 +750,6 @@ const currencyPairGraphsView = {
       .transition()
       .duration(600)
       .style('opacity', opacityVal);
-  },
-  minFuncForY(d) {
-    return +d.ticker.bid;
-  },
-  adjustForSpreadGraph() {
-    const checked = !!d3.event ? d3.event.target.checked : false;
-    if(!!checked) {
-      this.minFuncForY = d => (+d.ticker.ask) - (+d.ticker.bid);
-    }
-    else {
-      this.minFuncForY = d => (+d.ticker.bid);
-    }
-    
-    const allInstances = controller.getModelData({ namespace: 'currencyPair', prop: 'graphs' });
-    allInstances['spread'].hidden = !checked;
-
-    const { data , width, height } = controller.getModelData({ namespace: 'currencyPair', props: ['data', 'width', 'height'] });
-    
-    this.updateLines({ dataset: data, width, height });
-  },
-  changePairName() {
-    const pairName = d3.event.target.value;
-    this.applyFilterChange({ pairName });
-  },
-  changeHours() {
-    d3.event.preventDefault();
-    const input = d3.event.target.querySelector('#hours');
-    const hours = +input.value;
-    input.placeholder = hours;
-    input.value = '';
-    input.blur();
-
-    const divider = controller.getModelData({ namespace: 'currencyPair', prop: 'currentDivisor' });
-    const dataPoints = Math.floor(hours / divider);
-    this.applyFilterChange({ hours, dataPoints });    
-  },
-  changeDataPointsFreq() {
-    const hours = controller.getModelData({ namespace: 'currencyPair', prop: 'hours' });
-    
-    const frequency = d3.event.target.value || '';    
-    const divider = controller.getModelData({
-      namespace: 'currencyPair',
-      prop: 'dataPointDivisors'
-    })[frequency];
-
-    controller.setModelData({ 
-      namespace: 'currencyPair', 
-      params: {'currentDivisor': divider}
-    });
-    
-    let dataPoints = Math.floor(hours / divider);
-    if(dataPoints !== 0) {
-      if(dataPoints === 1) {
-        dataPoints++;
-      }
-      this.applyFilterChange({ dataPoints });
-    }
-  },
-  applyFilterChange(propertiesToChange) {
-    controller.setModelData({ namespace: 'currencyPair', params: propertiesToChange });    
-    const url =  controller.createCurrencyPairURL();
-    controller.updateGraphData({
-      url,
-      namespace: model.currencyPair,
-      callback: controller.renderCurrencyPairGraph
-    });
   }
 };
 
@@ -941,8 +777,14 @@ const controller = {
       currentPriceView.init();
     },
     // general methods
-    updateGraphData({ url, namespace, callback }) {
-      // this funtion will be called inside a view
+    updateGraphData({ namespace, callback }) {
+      let url;
+      if(namespace === model.currencyPair) {
+        url = this.createCurrencyPairURL();
+      } else {
+        url = this.createHistoryURL();
+      }
+
       model.requestGraphData({
         url,
         isGraphBeingUpdated: true,
@@ -982,11 +824,10 @@ const controller = {
       return url + `?start=${start}&end=${end}&currency=${currency}`;
     },
     renderCurrentPrice() {
-      const rateEUR = model.currentPrice.data.bpi.EUR.rate;
-      const rateUSD = model.currentPrice.data.bpi.USD.rate;
       currentPriceView.renderData({
-          rateEUR,
-          rateUSD
+          rateEUR: model.currentPrice.data.bpi.EUR.rate,
+          rateUSD: model.currentPrice.data.bpi.USD.rate,
+          signsObj: model.general.currencySigns      
       });
     },
     renderHistoryGraph(isGraphBeingUpdated) {
@@ -1007,6 +848,176 @@ const controller = {
         isGraphBeingUpdated
       });
     },
+    // event handlers : currencyPairGraphView
+    changePairName() {
+      model.currencyPair.pairName = d3.event.target.value;
+
+      this.updateGraphData({
+        namespace: model.currencyPair,
+        callback: this.renderCurrencyPairGraph
+      });
+    },
+    changeHours() {
+      d3.event.preventDefault();
+
+      const input = d3.event.target.querySelector('#hours');
+      const hours = +input.value;
+      const divisor = model.currencyPair.currentDivisor;
+      
+      input.placeholder = hours;
+      input.value = '';
+      input.blur();      
+      
+      model.currencyPair.hours = hours;
+      model.currencyPair.dataPoints = Math.floor(hours / divisor);
+
+      controller.updateGraphData({
+        namespace: model.currencyPair,
+        callback: controller.renderCurrencyPairGraph
+      });
+    },
+    changeDataPointsFreq() {
+      const frequency = d3.event.target.value || '';
+      // getting data from model
+      const hours = model.currencyPair.hours;
+      const divisor = model.currencyPair.dataPointDivisors[frequency];
+      // changing model data
+      model.currencyPair.currentDivisor = divisor;
+
+      let dataPoints = Math.floor(hours / divisor);
+      if(dataPoints !== 0) {
+        if(dataPoints === 1) {
+          dataPoints++;
+        }
+        
+        model.currencyPair.dataPoints = dataPoints;
+        controller.updateGraphData({
+          namespace: model.currencyPair,
+          callback: controller.renderCurrencyPairGraph
+        });
+      }
+    },
+    adjustForSpreadGraph() {
+      const self = currencyPairGraphsView;
+      const checked = !!d3.event ? d3.event.target.checked : false;
+      model.currencyPair.graphs['spread'].hidden = !checked;
+      const { data, width, height } = model.currencyPair;
+      self.updateLines({ dataset: data, width, height });
+    },
+    // event handlers : historyGraphView
+    timelineBtnClick() {
+      const btnValue = d3.event.target.getAttribute('data-timeline'); // button value         
+      const today = new Date(); // endDate
+      const startDate = new Date();
+      let timeline; // each of 6 buttons fall under 3 periods   
+  
+      switch(btnValue) {
+        case 'all-time':
+          startDate.setFullYear(2010);
+          startDate.setMonth(7);
+          startDate.setDate(17);
+          timeline = 'from-all-time-to-year';
+          break;
+        case '1-year':
+          startDate.setFullYear(startDate.getFullYear() - 1)
+          timeline = 'from-year-to-3-month';
+          break;
+        case '6-month':
+          startDate.setMonth(startDate.getMonth() - 6)
+          timeline = 'from-year-to-3-month';
+          break;
+        case '3-month':
+          startDate.setMonth(startDate.getMonth() - 3)
+          timeline = 'less-than-3-month';
+          break;
+        case '1-month':      
+          startDate.setMonth(startDate.getMonth() - 1)
+          timeline ='less-than-3-month';
+          break;
+        case '1-week':
+          startDate.setDate(startDate.getDate() - 7);
+          timeline ='less-than-3-month';
+          break;
+        default:
+          console.warn('unknown timeline: ', btnValue);
+      }
+
+      model.history.currentTimeline = timeline;
+      model.history.end = historyGraphView.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      model.history.start = historyGraphView.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()); 
+      
+      // update timeline filter   
+      // apply all filters and get proper url      
+      controller.updateGraphData({       
+        namespace: model.history, 
+        callback: controller.renderHistoryGraph 
+      });
+    },
+    currencyDropdownChange() {
+        model.history.currency = d3.event.target.value;    
+        controller.updateGraphData({     
+          namespace: model.history, 
+          callback: controller.renderHistoryGraph
+        });
+    },
+    initCalendar() {
+      const inputs = document.querySelectorAll('.flatpickr-target');
+      let endDate = new Date();
+      let startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, endDate.getDate);
+      
+      const placeHolderVal = model.history.start;
+      inputs[0].placeholder = placeHolderVal;
+      inputs[1].placeholder = placeHolderVal;
+  
+      flatpickr(inputs, {
+        allowInput: true,
+        enable: [
+          {
+              from: "2010-07-17",
+              to: historyGraphView.formProperDateFormat(endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate())
+          }
+        ],
+        onChange(_selectedDates, dateStr, instance) {
+          historyGraphView.prevBtn.classList.remove('selected');
+
+          if(startInput === instance) {
+            startDate = _selectedDates[0];
+            model.history.start = dateStr;            
+          } else { // endInpt === instance
+            endDate = _selectedDates[0];
+            model.history.end = dateStr;            
+          }
+                 
+          const { start, end } = model.history; 
+          
+          if(end > start) {
+            let timeline;
+            const monthDiff = endDate.getMonth() - startDate.getMonth();
+            switch(monthDiff) {
+              case 0: case 1: case 2: case 3:
+                timeline = 'less-than-3-month';
+                break;
+              default:
+                timeline = 'from-year-to-3-month';
+            }
+            const yearDiff = endDate.getFullYear() - startDate.getFullYear();
+            if(yearDiff > 0) {
+              timeline = 'from-all-time-to-year';
+            }
+            
+            //controller.setModelData({ namespace: 'history', params: {'currentTimeline': timeline} });
+            model.history.currentTimeline = timeline;
+              
+            controller.updateGraphData({
+              namespace: model.history,
+              callback: controller.renderHistoryGraph
+            });
+          }
+        }
+      });
+      const startInput = inputs[0]._flatpickr;
+      const endInput = inputs[1]._flatpickr;
+    }
 };
 
 controller.init();
