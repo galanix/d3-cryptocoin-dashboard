@@ -74,6 +74,14 @@ const model = {
     // waitMessageObj,
     // currentDivisor,
   },
+  cryptoBoard: {
+    url: 'https://api.coinmarketcap.com/v1/ticker/',
+    data: {},
+    width: 500,
+    height: 250,
+    hashTable: {},
+    // chartData
+  },
   // methods
   startFetchingData() {
       this.requestCurrentPriceData();
@@ -90,14 +98,21 @@ const model = {
       })
       .catch(error => console.warn(error));
   },
-  requestGraphData({ url, isGraphBeingUpdated, callback, namespace }) {
+  requestModuleData({ url, isModuleBeingUpdated, callback, namespace }) {    
     controller.startAnimation(namespace); // shows something while data travels
     d3.json(url, (data) => {
-        namespace.data = data;
-        callback(isGraphBeingUpdated);
-        controller.finishAnimation(namespace);
-    })
+      namespace.data = data;
+      controller.finishAnimation(namespace);  
+      callback(isModuleBeingUpdated);    
+    });
+  },
+  requestChartData({ url, callback }) {
+    d3.json(url, (data) => {      
+      this.cryptoBoard.chartData = data;
+      callback();    
+    });
   }
+
 };
 
 const currentPriceView = {
@@ -137,7 +152,7 @@ const currentPriceView = {
   }
 };
 
-const historyGraphView = {
+const historyView = {
   init() {
     // set default filters( they are changed by buttons/dropdown/input)
     const today = new Date();
@@ -151,7 +166,7 @@ const historyGraphView = {
       }
     });    
   },
-  renderGraph({ width, height, data, isGraphBeingUpdated }) {
+  renderGraph({ width, height, data, isModuleBeingUpdated }) {
       // transforms a string into a Date object
       const createDateObj = (dateStr) => {
           const dateArr = dateStr.split('-');
@@ -170,7 +185,7 @@ const historyGraphView = {
           });
       });
 
-      if(isGraphBeingUpdated) { // substitute dataset and update current graph
+      if(isModuleBeingUpdated) { // substitute dataset and update current graph
         this.updateLine({
           dataset,
           width,
@@ -550,7 +565,7 @@ const historyGraphView = {
   }
 };
 
-const currencyPairGraphsView = {
+const currencyPairView = {
   init() {
     controller.setModelData({
       namespace: 'currencyPair', 
@@ -563,11 +578,11 @@ const currencyPairGraphsView = {
       }
     });
   },
-  renderGraph({ width, height, data, isGraphBeingUpdated }) {
-    const dataset = data;
+  renderGraph({ width, height, dataset, isModuleBeingUpdated }) {
+    //const dataset = data;
 
     // NOT DRY
-    if(isGraphBeingUpdated) { // substitute dataset and update current graphs(max3)
+    if(isModuleBeingUpdated) { // substitute dataset and update current graphs(max3)
       this.updateLines({
         dataset,
         width,
@@ -752,24 +767,109 @@ const currencyPairGraphsView = {
   }
 };
 
+const cryptoBoardView = {
+  init() {
+    this.subMenu = document.getElementsByClassName('modal-window')[0];
+    this.modalBtn = document.getElementsByClassName('modal-button')[0];
+    this.cancelBtn = document.getElementsByClassName('cancel-button')[0];
+    this.boardBody = document.getElementsByClassName('board-body')[0];
+
+    controller.setModelData({
+      namespace: 'cryptoBoard',
+      params: {
+        currency: 'USD',
+        limit: 100,
+        waitMessageObj: new WaitMessage('crypto-board'),        
+      }
+    });
+
+    this.attachFiltersEvents();
+  },
+  renderTable({ dataset, currency }) {
+    this.boardBody.innerHTML = '';
+    dataset.forEach((item, index) => {      
+      const tr = document.createElement('tr');
+      tr.className = 'board-row';
+      tr.innerHTML = `
+        <td class="cell">
+          <label>
+            <input type="checkbox" data-index=${index}>
+          </label>
+        </td>
+        <td class="cell">${index + 1}</td>
+        <td class="cell">${item.name}</td>
+        <td class="cell">${item['market_cap_' + currency.toLowerCase()]}</td>
+        <td class="cell">${(+item['price_' + currency.toLowerCase()]).toFixed(5)}</td>
+        <td class="cell">${item.available_supply}</td>
+        <td class="cell">${item['24h_volume_' + currency.toLowerCase()]}</td>
+        <td class="cell">${item.percent_change_1h}</td>
+        <td class="cell">${item.percent_change_24h}</td>
+        <td class="cell">${item.percent_change_7d}</td>
+      `;
+      this.boardBody.appendChild(tr);
+    });
+    d3.selectAll('.cell input')
+      .on('change', () => controller.toggleItemForGraphDraw());
+  },
+  attachFiltersEvents() {
+    d3.selectAll('.filters--board .table-length button')
+      .on('click', () => controller.changeTableLength());
+
+    d3.select('.filters--board .board-currencies')
+      .on('change', () => controller.changeTableCurrency());
+
+    this.modalBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.subMenu.style.maxHeight = 250 + 'px';
+    });
+
+    this.cancelBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.subMenu.style.maxHeight = 0 + 'px';
+    });
+
+    d3.select('#graph-currencies')
+      .on('change', () => controller.changeGraphCurrency());
+
+    d3.selectAll('.filters--board .button-group button')
+      .on('click', () => controller.determineChartCompareData());
+  },
+  hideModalBtn() {
+    this.modalBtn.style.opacity = 0;
+    this.subMenu.style.maxHeight = 0 + 'px';
+  },
+  showModalBtn() {
+    this.modalBtn.style.opacity = 1;
+  }
+};
+
 const controller = {
     init() {
       // request data for history graph
-      historyGraphView.init(),
-      model.requestGraphData({
+      historyView.init(),
+      model.requestModuleData({
         url: this.createHistoryURL(),
-        isGraphBeingUpdated: false,
+        isModuleBeingUpdated: false,
         namespace: model.history,
         callback: this.renderHistoryGraph,
       });
 
       // request data for currency pair graph
-      currencyPairGraphsView.init();      
-      model.requestGraphData({
+      currencyPairView.init();   
+      model.requestModuleData({
         url: this.createCurrencyPairURL(),
-        isGraphBeingUpdated: false,
+        isModuleBeingUpdated: false,
         namespace: model.currencyPair,
         callback: this.renderCurrencyPairGraph,
+      });
+
+      // request data for cryptoboard graph
+      cryptoBoardView.init();
+      model.requestModuleData({
+        url: this.createCryptoBoardURL(),
+        // isModuleBeingUpdated: false,
+        namespace: model.cryptoBoard,
+        callback: this.renderCryptoBoardTable,
       });
 
       model.startFetchingData();
@@ -784,9 +884,9 @@ const controller = {
         url = this.createHistoryURL();
       }
 
-      model.requestGraphData({
+      model.requestModuleData({
         url,
-        isGraphBeingUpdated: true,
+        isModuleBeingUpdated: true,
         namespace,
         callback
       });
@@ -822,6 +922,10 @@ const controller = {
       const { url, start, end, currency } = model.history;
       return url + `?start=${start}&end=${end}&currency=${currency}`;
     },
+    createCryptoBoardURL() {
+      const { url, currency, limit } = model.cryptoBoard;
+      return url + `?convert=${currency}&limit=${limit}`;
+    },
     renderCurrentPrice() {
       currentPriceView.renderData({
           rateEUR: model.currentPrice.data.bpi.EUR.rate,
@@ -829,22 +933,29 @@ const controller = {
           signsObj: model.general.currencySigns      
       });
     },
-    renderHistoryGraph(isGraphBeingUpdated) {
+    renderHistoryGraph(isModuleBeingUpdated) {
        const { width, height , data } = model.history;
-       historyGraphView.renderGraph({
+       historyView.renderGraph({
            width,
            height,
            data: data.bpi,
-           isGraphBeingUpdated
+           isModuleBeingUpdated
        });
     },
-    renderCurrencyPairGraph(isGraphBeingUpdated) {
+    renderCurrencyPairGraph(isModuleBeingUpdated) {
       const { width, height, data } = model.currencyPair;
-      currencyPairGraphsView.renderGraph({
+      currencyPairView.renderGraph({
         width,
         height,
-        data,
-        isGraphBeingUpdated
+        dataset: data,
+        isModuleBeingUpdated
+      });
+    },
+    renderCryptoBoardTable() {
+      const { data, currency } = model.cryptoBoard;
+      cryptoBoardView.renderTable({
+        dataset: data,
+        currency,
       });
     },
     // event handlers : currencyPairGraphView
@@ -897,13 +1008,13 @@ const controller = {
       }
     },
     adjustForSpreadGraph() {
-      const self = currencyPairGraphsView;
+      const self = currencyPairView;
       const checked = !!d3.event ? d3.event.target.checked : false;
       model.currencyPair.graphs['spread'].hidden = !checked;
       const { data, width, height } = model.currencyPair;
       self.updateLines({ dataset: data, width, height });
     },
-    // event handlers : historyGraphView
+    // event handlers : historyView
     timelineBtnClick() {
       const btnValue = d3.event.target.getAttribute('data-timeline'); // button value         
       const today = new Date(); // endDate
@@ -942,8 +1053,8 @@ const controller = {
       }
 
       model.history.currentTimeline = timeline;
-      model.history.end = historyGraphView.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate());
-      model.history.start = historyGraphView.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()); 
+      model.history.end = historyView.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      model.history.start = historyView.formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()); 
       
       // update timeline filter   
       // apply all filters and get proper url      
@@ -973,11 +1084,11 @@ const controller = {
         enable: [
           {
               from: "2010-07-17",
-              to: historyGraphView.formProperDateFormat(endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate())
+              to: historyView.formProperDateFormat(endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate())
           }
         ],
         onChange(_selectedDates, dateStr, instance) {
-          historyGraphView.prevBtn.classList.remove('selected');
+          historyView.prevBtn.classList.remove('selected');
 
           if(startInput === instance) {
             startDate = _selectedDates[0];
@@ -1016,6 +1127,96 @@ const controller = {
       });
       const startInput = inputs[0]._flatpickr;
       const endInput = inputs[1]._flatpickr;
+    },
+    // event handlest : cryptoBoardView
+    changeTableLength() {
+      d3.event.preventDefault();
+      model.cryptoBoard.limit = +(d3.event.target.getAttribute('data-value'));
+      model.requestModuleData({
+        url: this.createCryptoBoardURL(),        
+        namespace: model.cryptoBoard,
+        callback: this.renderCryptoBoardTable,
+      });
+    },
+    changeTableCurrency() {
+      model.cryptoBoard.currency = d3.event.target.value;
+
+      model.requestModuleData({
+        url: this.createCryptoBoardURL(),        
+        namespace: model.cryptoBoard,
+        callback: this.renderCryptoBoardTable,
+      });
+    },
+    toggleItemForGraphDraw() {
+      const key = +d3.event.target.getAttribute('data-index');
+      const checked =  d3.event.target.checked;
+      if(!!checked) {
+        // add
+        model.cryptoBoard.hashTable[key] = model.cryptoBoard.data[key];
+      } else {
+        // remove
+        delete model.cryptoBoard.hashTable[key];
+      }
+      const selectionLength = Object.keys(model.cryptoBoard.hashTable).length;
+      if(selectionLength > 1) {
+        // display that submenu        
+        cryptoBoardView.showModalBtn();
+      } else {
+        // hide thatsubmenu
+        cryptoBoardView.hideModalBtn();
+      }
+    },
+    changeGraphCurrency() {
+      if(prevCurrencyVal === d3.event.target.value) {        
+        return;
+      }
+
+      const prevCurrencyVal = model.cryptoBoard.currency;
+      model.cryptoBoard.currency = d3.event.target.value;
+      model.requestChartData({
+        url: this.createCryptoBoardURL(),
+        callback: this.changeHashTableCurrency.bind(this, prevCurrencyVal),
+      });     
+    },
+    changeHashTableCurrency(prevCurrencyVal) {
+      let dataset = model.cryptoBoard.chartData;
+      const keys = Object.keys(model.cryptoBoard.hashTable);
+
+      keys.forEach(key => {
+        model.cryptoBoard.hashTable[key] = dataset[key];
+      });
+
+      model.cryptoBoard.chartData = null;
+      model.cryptoBoard.currency = prevCurrencyVal;      
+    },
+    determineChartCompareData() {
+      d3.event.preventDefault();
+      const btnVal = d3.event.target.textContent;
+      const currency = model.cryptoBoard.currency;
+      let  comparisionField;
+      
+      switch(btnVal) {
+        case "Price":
+          comparisionField = 'price_' + currency.toLowerCase();
+          break;
+        case "Volume(24h)":
+          comparisionField = '24h_volume_' + currency.toLowerCase();
+          break;
+        case "Market Cap":
+          comparisionField = 'market_cap_' + currency.toLowerCase();
+          break;
+        case "%1h":
+          comparisionField = 'percent_change_1h';
+          break;
+        case "%24h":
+          comparisionField = 'percent_change_24h';
+          break;
+        case "%7d":
+          comparisionField = 'percent_change_7d';
+          break;
+      }
+
+      model.cryptoBoard.comparisionField = comparisionField;
     }
 };
 

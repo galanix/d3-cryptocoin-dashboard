@@ -110,3 +110,30 @@ body {
         border-bottom: 4px solid #2ECC71;
     }
 }
+
+/*
+    CRYPTO BOARD
+*/
+
+.crypto-currency-board {
+    table-layout: fixed;
+}
+
+.cell {
+    background-color: #eee;
+    padding: 5px 10px;
+    text-align: center;
+}
+
+.modal-button {
+    transition: opacity .5s ease;
+    opacity: 0;
+}
+
+.modal-window {
+    padding: 0;
+    border: none;
+    overflow-y: hidden;
+    transition: max-height .5s ease;
+    max-height: 0;
+}
