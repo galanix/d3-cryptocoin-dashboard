@@ -547,7 +547,7 @@ const historyGraphView = {
       btn.classList.add('selected');
       this.prevBtn = btn;   
     }
-  }  
+  }
 };
 
 const currencyPairGraphsView = {
@@ -619,7 +619,7 @@ const currencyPairGraphsView = {
     if(!dataset) {
       return;
     }
-    
+
     this.graphSVG = d3.select('.graph--currency-pair').select('#currency-pair');
     // dataset has changed, need to update #historical-data graph
     // data is in chronological order
