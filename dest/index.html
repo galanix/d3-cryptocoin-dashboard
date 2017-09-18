@@ -60,6 +60,7 @@
             <p class="wait-message">Wait, please...</p>
         </div>
     </section>
+
     <section class="container">
         <div class="filters filters--pair">
 
@@ -111,6 +112,78 @@
         <div class="graph graph--currency-pair">
           <p class="wait-message">Wait, please...</p>
         </div>
+    </section>
+
+    <section class="container">
+        <div class="filters filters--board">
+            <form>
+                <button>Build Graphs</button>
+                <fieldset class="modal-window">
+                    <label for="">
+                        Currencies
+                        <select name="" id="">
+                            <option value=""></option>
+                            <option value=""></option>
+                            <option value=""></option>
+                            <option value=""></option>
+                            <option value=""></option>
+                            <option value=""></option>
+                        </select>
+                    </label>
+                    <label>
+                        Comparison data
+                        <button>Price</button>
+                        <button>Volume 24h</button>
+                        <button>Market Cap</button>
+                        <button>%1h</button>
+                        <button>%24h</button>
+                        <button>%7d</button>
+                    </label>
+                    <label>
+                        Graph Types
+                        <button>Bar Chart</button>
+                        <button>Pie Chart</button>
+                    </label>
+                </fieldset>
+                <button>Cancel</button>
+                <button>Build</button>
+            </form>
+            <form>
+                <select name="board-currencies">
+                    <option value="USD" selected="selected">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="UAH">UAH</option>
+                    <option value="RUB">RUB</option>
+                    <option value="BTC">BTC</option>
+                    <option value="ETH">ETH</option>
+                    <option value="RUB">RUB</option>
+                </select>
+            </form>
+            <form>
+                <button>Top 100</button>
+                <button>All</button>
+            </form>
+        </div>
+        <table class="crypto-currency-board">
+            <thead>
+                <tr class="board-head">
+                    <th>Check</th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Symbol</th>
+                    <th>Market Cap</th>
+                    <th>Price</th>
+                    <th>Circulating Supply</th>
+                    <th>Volume(24h)</th>
+                    <th>%1h</th>
+                    <th>%24h</th>
+                    <th>%7d</th>
+                </tr>
+            </thead>
+            <tbody class="board-body">
+                
+            </tbody>
+        </table>
     </section>
     <script src="bundle.js"></script>
 </body>

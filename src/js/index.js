@@ -275,7 +275,7 @@ const historyGraphView = {
     this.drawCurrencySign();
     this.createHashTable(dataset);
   },
-  makeScales({ dataset, width, height }) {
+  makeScales({ dataset, width, height }) { 
     const firstDate = dataset[0].time.getTime();
     const lastDate = dataset[dataset.length - 1].time.getTime();
 
@@ -582,8 +582,7 @@ const currencyPairGraphsView = {
       this.attachFiltersEvents();
     }
   },
-  buildLines({ dataset, width, height }) {
-    //debugger;
+  buildLines({ dataset, width, height }) {    
     this.graphSVG = d3.select('.graph--currency-pair').append('svg');
     this.makeScales({ dataset, width, height });
 
