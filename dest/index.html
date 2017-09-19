@@ -116,8 +116,8 @@
 
     <section class="container">
         <div class="filters filters--board">
-            <form>
-                <button class="modal-button">Build Graphs</button>
+            <section>
+                <button class="modal-button">Make Graphs</button>
                 <fieldset class="modal-window">
                     <label for="graph-currencies">
                         Currencies
@@ -131,24 +131,30 @@
                             <option value="ETH">ETH</option>
                         </select>
                     </label>
-                    <label class="button-group">
+                    <div class="button-group category">
                         Comparison data
                         <button>Price</button>
-                        <button>Volume 24h</button>
+                        <button>Volume(24h)</button>
                         <button>Market Cap</button>
                         <button>%1h</button>
                         <button>%24h</button>
                         <button>%7d</button>
-                    </label>
-                    <label>
+                    </div>
+                    <div class="button-group type">
                         Graph Types
-                        <button>Bar Chart</button>
-                        <button>Pie Chart</button>
-                    </label>
+                        <button data-type="bar">Bar Chart</button>
+                        <button data-type="pie">Pie Chart</button>
+                    </div>
+
+                    <div class="button-group controlls">
+                        <button class="cancel-button">Cancel</button>
+                        <button class="build-button">Build</button>
+                    </div>
                 </fieldset>
-                <button class="cancel-button">Cancel</button>
-                <button>Build</button>
-            </form>
+                <div class="graph graph--crypto-chart">
+                    <p class="wait-message">Wait, please...</p>
+                </div>            
+            </section>
             <form>
                 <select class="board-currencies">
                     <option value="USD" selected="selected">USD</option>
@@ -183,10 +189,7 @@
             <tbody class="board-body">
                 
             </tbody>
-        </table>
-        <div class="graph graph--crypto-board">
-            <p class="wait-message">Wait, please...</p>
-        </div>
+        </table>        
     </section>
     <script src="bundle.js"></script>
 </body>
