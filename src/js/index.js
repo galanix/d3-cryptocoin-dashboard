@@ -37,7 +37,7 @@ const model = {
       },
       'from-year-to-3-month': {
         xTicks: 3,
-        xTickFormat: "%b\'%y",
+        xTickFormat: '%b\'%y',
         yTicks: 3
       },
       'less-than-3-month': {
@@ -57,15 +57,15 @@ const model = {
     width: 500,
     height: 250,
     dataPointDivisors: { // to get data_point we need to divide hours by these values
-      "1 min": 0.0167, // (1 / 60)      
-      "5 mins": 0.0833,// (5 / 60)      
-      "10 mins": 0.1667, // (10 / 60)      
-      "30 mins": 0.5, // (30 / 60)      
-      "1 hour": 1,    
-      "3 hours": 3,
-      "6 hours": 6,
-      "12 hours": 12,
-      "24 hours": 24
+      '1 min': 0.0167, // (1 / 60)      
+      '5 mins': 0.0833,// (5 / 60)      
+      '10 mins': 0.1667, // (10 / 60)      
+      '30 mins': 0.5, // (30 / 60)      
+      '1 hour': 1,    
+      '3 hours': 3,
+      '6 hours': 6,
+      '12 hours': 12,
+      '24 hours': 24
     },
     // graphs
     // pairName,
@@ -822,7 +822,7 @@ const cryptoBoardView = {
 
     this.modalBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      this.subMenu.style.maxHeight = 250 + 'px';
+      this.subMenu.style.maxHeight = 2000 + 'px';
     });
 
     this.cancelBtn.addEventListener('click', (e) => {
@@ -856,85 +856,126 @@ const cryptoBoardView = {
     const stylesSVG = getComputedStyle(this.chartSVG.node());
     const width = parseInt(stylesSVG.width);
     const height = parseInt(stylesSVG.height);
+    this.chartSVG.selectAll('*').remove();
     
     switch(type) {
       case 'pie':
         this.renderPieChart({ hashTable, width, height, comparisionField });
         break;
       case 'bar':
-              
+        this.renderBarChart({ hashTable, width, height, comparisionField });
         break;
       default:
-        console.warn('something went wrong with chart type - renderChart');
-    }       
+        console.warn('something went wrong with chart type');
+    }
   },
   renderPieChart({ hashTable, width, height, comparisionField }) {
     const radius = Math.min(width, height) / 2;
     const keys = Object.keys(hashTable);
-    const colors = keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16));
-    const dataset = keys.map(key => hashTable[key]);
-        
-    const scaleOrdinal = d3.scaleOrdinal(colors);
-    const g = this.chartSVG.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+    const dataset = keys.map(key => hashTable[key]);    
     const pie = d3.pie()
-                  .sort(null)
-                  .value(d => d[comparisionField]);
+      .sort(null)
+      .value(d => +d[comparisionField]);
+    
+    const scaleOrdinal = d3.scaleOrdinal()
+      .domain(keys)
+      .range(keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16)));    
+    
+    const g = this.chartSVG.append('g')
+      .attrs({
+        'transform': `translate(${width / 2}, ${height / 2})`,
+        'class': 'pie'
+      });
+    
+    const slices = g.append('g').attr('class', 'slices');
+    console.log(slices);
+    g.append('g').attr('class', 'labels');
+    g.append('g').attr('class', 'lines');
+        
+    //const slice = this.chartData.select('.slices')
+
     const path = d3.arc()
-                 .outerRadius(radius - 10)
-                 .innerRadius(0);
+      .outerRadius(radius - 10)
+      .innerRadius(0);
 
     const label = d3.arc()
-                  .outerRadius(radius - 40)
-                  .innerRadius(radius - 40);
-      
-    const arc = g.selectAll(".arc")
-      .data(pie(data))
-      .enter().append("g")
-      .attr("class", "arc");
+      .outerRadius(radius - 10)
+      .innerRadius(radius - 10);
 
-    arc.append("path")
-      .attr("d", path)
-      .attr("fill", d => color(d.data.age));
+    
+    const arc = g.selectAll('.arc')
+      .data(pie(dataset))
+      .enter().append('g')
+      .attr('class', 'arc');        
 
-    arc.append("text")
-      .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
-      .attr("dy", "0.35em")
-      .text(function(d) { return d.data.age; });
+    arc.append('path')
+      .attrs({
+        d: path,
+        fill: d => scaleOrdinal(d.data[comparisionField]),
+      });
 
+    arc.append('text')
+      .attrs({
+        transform: d => `translate(${label.centroid(d)})`,
+        dy: '0.35em',
+        'text-anchor': d => (d.endAngle + d.startAngle) / 2 > Math.PI ? 'end' : 'start',
+      })
+      .text(d => d.data[comparisionField]);
   },
-  renderBarChart() {
-    const margin = {top: 20, right: 20, bottom: 30, left: 40};
-    const x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
-    const y = d3.scaleLinear().rangeRound([height, 0]);
-    const g = svg.append("g")
-                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    x.domain(data.map(function(d) { return d.letter; }));
-    y.domain([0, d3.max(data, function(d) { return d.frequency; })]);
+  renderBarChart({ hashTable, width, height, comparisionField }) {    
+    const keys = Object.keys(hashTable);
+    const dataset = keys.map(key => hashTable[key]);    
+
+    const xScale = d3.scaleBand()
+      .range([0, width])
+      .padding(0.05)
+      .domain([0, d3.max(dataset, d => +d[comparisionField])]);
+    
+    const yScale = d3.scaleLinear()
+      .range([height, 0])
+      .domain([ 0, d3.max(dataset, d => +d[comparisionField]) ]);
+      
+    const g = this.chartSVG.append('g')
+      .attrs({
+        'transform': 'translate(40, 20)',
+        'class': 'bar'
+      });
+
+
+    g.append('g')
+      .attrs({
+        'class': 'chart-axis chart-axis--x',
+        'transform': `translate(0, ${height})`
+      })
+      .call(d3.axisBottom(xScale));
   
-    g.append("g")
-        .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
-  
-    g.append("g")
-        .attr("class", "axis axis--y")
-        .call(d3.axisLeft(y).ticks(10, "%"))
-      .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .text("Frequency");
-  
-    g.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
-        .attr("class", "bar")
-        .attr("x", function(d) { return x(d.letter); })
-        .attr("y", function(d) { return y(d.frequency); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return height - y(d.frequency); });                 
-  }  
+    g.append('g')
+        .attr('class', 'chart-axis chart-axis--y')
+        .call(d3.axisLeft(yScale).ticks(10, '%'))
+      .append('text')
+        .text('yoyoyo')
+        .attrs({
+          transform: 'rotate(-90)',
+          y: 6,
+          dy: '0.71em',
+          'text-anchor': 'middle',
+        });
+      
+    let rectWidth = 50;
+    const items = Math.floor(width / rectWidth);    
+
+    g.selectAll('.bar__item')
+      .data(dataset)
+      .enter().append('rect')
+        .attrs({
+          'class': 'bar__item',
+          'x': ((d, index) => xScale(+d[comparisionField])),
+          'y': d => yScale(+d[comparisionField]),
+          'width': Math.floor(width / keys.length), //width / rectWidth > keys.length ? rectWidth : width / rectWidth,
+          'height': d => height - yScale(+d[comparisionField]),
+          'fill': '#0B90AA'
+        });
+  }
 };
 
 const controller = {
@@ -1184,7 +1225,7 @@ const controller = {
         allowInput: true,
         enable: [
           {
-              from: "2010-07-17",
+              from: '2010-07-17',
               to: historyView.formProperDateFormat(endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate())
           }
         ],
@@ -1290,22 +1331,22 @@ const controller = {
       let comparisionField;
       
       switch(btnVal) {
-        case "Price":
+        case 'Price':
           comparisionField = 'price_' + currency.toLowerCase();
           break;
-        case "Volume(24h)":
+        case 'Volume(24h)':
           comparisionField = '24h_volume_' + currency.toLowerCase();
           break;
-        case "Market Cap":
+        case 'Market Cap':
           comparisionField = 'market_cap_' + currency.toLowerCase();
           break;
-        case "%1h":
+        case '%1h':
           comparisionField = 'percent_change_1h';
           break;
-        case "%24h":
+        case '%24h':
           comparisionField = 'percent_change_24h';
           break;
-        case "%7d":
+        case '%7d':
           comparisionField = 'percent_change_7d';
           break;
       }
@@ -1317,19 +1358,18 @@ const controller = {
       model.cryptoBoard.chart.type = d3.event.target.getAttribute('data-type');
     },
     buildChart() {
-      d3.event.preventDefault();     
-      const currency = model.cryptoBoard.chart.currency;
-      const limit = Object.keys(model.cryptoBoard.chart.hashTable).length;
+      d3.event.preventDefault();      
+      const { currency, hashTable, type, comparisionField } = model.cryptoBoard.chart;
 
       model.requestModuleData({
         url: this.createCryptoBoardURL(currency),
         namespace: model.cryptoBoard.chart,
         callback: () => {
           this.changeHashTableCurrency();
-          cryptoBoardView.renderChart({ 
-            hashTable: Object.assign({}, model.cryptoBoard.chart.hashTable),
-            type: model.cryptoBoard.chart.type,
-            comparisionField : model.cryptoBoard.chart.comparisionField
+          cryptoBoardView.renderChart({
+            hashTable: Object.assign({}, hashTable),
+            type,
+            comparisionField
           });
         }
       });
