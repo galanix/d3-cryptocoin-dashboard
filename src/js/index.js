@@ -871,64 +871,90 @@ const cryptoBoardView = {
   },
   renderPieChart({ hashTable, width, height, comparisionField }) {
     const radius = Math.min(width, height) / 2;
+    const labelr = radius + 20; // label radius
     const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);    
-    const pie = d3.pie()
-      .sort(null)
-      .value(d => +d[comparisionField]);
-    
-    const scaleOrdinal = d3.scaleOrdinal()
-      .domain(keys)
-      .range(keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16)));    
-    
+    const dataset = keys.map(key => hashTable[key]);
+    const color = d3.scaleOrdinal(keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16)));    
+    const midAngle = d => d.startAngle + (d.endAngle - d.startAngle) / 2;
+
     const g = this.chartSVG.append('g')
       .attrs({
         'transform': `translate(${width / 2}, ${height / 2})`,
         'class': 'pie'
       });
-    
-    const slices = g.append('g').attr('class', 'slices');
-    console.log(slices);
-    g.append('g').attr('class', 'labels');
-    g.append('g').attr('class', 'lines');
-        
-    //const slice = this.chartData.select('.slices')
+
+    const pie = d3.pie()
+      .sort(null)
+      .value(d => +d[comparisionField]);
 
     const path = d3.arc()
       .outerRadius(radius - 10)
       .innerRadius(0);
 
     const label = d3.arc()
-      .outerRadius(radius - 10)
-      .innerRadius(radius - 10);
+      .outerRadius(labelr)
+      .innerRadius(labelr);
 
-    
     const arc = g.selectAll('.arc')
       .data(pie(dataset))
-      .enter().append('g')
-      .attr('class', 'arc');        
+      .enter()
+      .append('g')
+      .attr('class', 'arc');
 
     arc.append('path')
       .attrs({
         d: path,
-        fill: d => scaleOrdinal(d.data[comparisionField]),
-      });
+        fill: d => color(d.data[comparisionField]),
+        stroke: '#fff'
+      });    
 
     arc.append('text')
       .attrs({
-        transform: d => `translate(${label.centroid(d)})`,
+        transform: d => {
+          const pos = label.centroid(d);
+          const direction = midAngle(d) < Math.PI ? 1 : -1;
+          // determine polyline width and padd it          
+          pos[0] = labelr * direction;
+          // determine the amount of space needed for word and padd it
+          if(direction <  1) {            
+            if(!this.wordLengthTest) {
+              d3.select('body')
+                .append('div')
+                .attr('id', 'word-length-tester');
+              this.wordLengthTest = d3.select('#word-length-tester').node();
+            }
+            
+            this.wordLengthTest.textContent = d.data.name;
+            const wordLength = parseInt(getComputedStyle(this.wordLengthTest).width) + 1;
+            pos[0] -= wordLength;
+          }
+          
+          return `translate(${pos})`;
+        },
         dy: '0.35em',
-        'text-anchor': d => (d.endAngle + d.startAngle) / 2 > Math.PI ? 'end' : 'start',
+        'text-anchor': d => midAngle(d) / 2 > Math.PI ? 'end' : 'start',
       })
-      .text(d => d.data[comparisionField]);
+      .text(d => d.data.name);
+                
+    arc.append('polyline')
+      .attrs({
+        points: d => {
+          const pos = label.centroid(d);
+          pos[0] = labelr * (midAngle(d) < Math.PI ? 1 : -1);
+          return [ path.centroid(d), label.centroid(d), pos ];
+        },
+        stroke: '#333',
+        'stroke-width': 2,
+        fill: 'none'
+      });    
   },
-  renderBarChart({ hashTable, width, height, comparisionField }) {    
+  renderBarChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);    
 
-    const xScale = d3.scaleBand()
+    const xScale = d3.scaleLinear() // scaleBand()
       .range([0, width])
-      .padding(0.05)
+      //.padding(0.05)
       .domain([0, d3.max(dataset, d => +d[comparisionField])]);
     
     const yScale = d3.scaleLinear()
@@ -940,7 +966,6 @@ const cryptoBoardView = {
         'transform': 'translate(40, 20)',
         'class': 'bar'
       });
-
 
     g.append('g')
       .attrs({
@@ -961,9 +986,6 @@ const cryptoBoardView = {
           'text-anchor': 'middle',
         });
       
-    let rectWidth = 50;
-    const items = Math.floor(width / rectWidth);    
-
     g.selectAll('.bar__item')
       .data(dataset)
       .enter().append('rect')
@@ -971,7 +993,15 @@ const cryptoBoardView = {
           'class': 'bar__item',
           'x': ((d, index) => xScale(+d[comparisionField])),
           'y': d => yScale(+d[comparisionField]),
-          'width': Math.floor(width / keys.length), //width / rectWidth > keys.length ? rectWidth : width / rectWidth,
+          'width': () => {
+            let itemsWidth = 50;
+            const itemsAmount = keys.length;
+            if(width / itemsWidth < itemsAmount) {
+              return width / itemsAmount;
+            }
+        
+            return itemsWidth;
+          },
           'height': d => height - yScale(+d[comparisionField]),
           'fill': '#0B90AA'
         });
@@ -1373,7 +1403,7 @@ const controller = {
           });
         }
       });
-    }    
+    }
 };
 
 controller.init();
