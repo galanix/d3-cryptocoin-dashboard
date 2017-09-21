@@ -851,9 +851,8 @@ const cryptoBoardView = {
     this.modalBtn.style.opacity = 1;
   },
   renderChart({ hashTable, type, comparisionField, chartIsBeingUpdated }) {
-    if(!this.chartSVG) {
-      this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');
-    }
+    if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');
+
     const stylesSVG = getComputedStyle(this.chartSVG.node());
     const width = parseInt(stylesSVG.width);
     const height = parseInt(stylesSVG.height);           
@@ -877,93 +876,94 @@ const cryptoBoardView = {
         console.warn('something went wrong with chart type');
     }
   },
+  midAngle(d) {
+    return d.startAngle + (d.endAngle - d.startAngle) / 2;
+  },
   updatePieChart({ hashTable, width, height, comparisionField }) {
-    // CMBCK
-    const midAngle = d => d.startAngle + (d.endAngle - d.startAngle) / 2;
-    const radius = Math.min(width, height) / 2;
-    const labelr = radius + 20; // label radius
     const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);
-    const color = d3.scaleOrdinal(keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16)));        
-    
-    const arc = this.g.selectAll('.arc')
-      .data(this.pie(dataset));
-    
-    arc.exit().remove();        
-
-    arc.enter()
-      .append('g')
-      .attr('class', 'arc')
-    
-    arc.selectAll('path')
-      .transition()
-      .duration(1000)
-      .attrs({
-        d: this.path,
-        fill: d => color(d.data[comparisionField]),
-        stroke: '#fff'
-      });
-    
-    arc.append('path')
-      .enter()
-      .transition()
-      .duration(1000)
-      .attrs({
-        d: this.path,
-        fill: d => color(d.data[comparisionField]),
-        stroke: '#fff'
-      });
+    const dataset = keys.map(key => hashTable[key]);    
+    const colorValues = keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16));
+    this.color = d3.scaleOrdinal(colorValues);
+    const self = this;
       
+    let arc = this.g.selectAll('.arc')
+      .data(this.pie(dataset));
 
-    arc.append('text')
-      .attrs({
-        transform: d => {
-          const pos = this.label.centroid(d);
-          const direction = midAngle(d) < Math.PI ? 1 : -1;
-          // determine polyline width and padd it
-          pos[0] = labelr * direction;
-          // determine the amount of space needed for word and padd it
-          if(direction <  1) {
-            if(!this.wordLengthTest) {
-              d3.select('body')
-                .append('div')
-                .attr('id', 'word-length-tester');
-              this.wordLengthTest = d3.select('#word-length-tester').node();
-            }
-            
-            this.wordLengthTest.textContent = d.data.name;
-            const wordLength = parseInt(getComputedStyle(this.wordLengthTest).width) + 1;
-            pos[0] -= wordLength;
-          }
-          
-          return `translate(${pos})`;
-        },
-        dy: '0.35em',
-        'text-anchor': d => midAngle(d) / 2 > Math.PI ? 'end' : 'start',
-        stroke: d => color(d.data[comparisionField])
+    arc.exit().remove();
+    
+    arc
+      .enter()
+      .append('g')
+      .each(function(d) { this._current = d; }) // store the initial angles
+      .attr('class', 'arc')
+        .append('path')
+        .attrs({
+          d: this.path,
+          fill: d => this.color(d.data[comparisionField]),
+          stroke: '#fff'
+        });
+
+    this.appendSlice(arc.enter(), comparisionField);    
+
+    // reselect to target new nodes aswell
+    arc = this.g.selectAll('.arc');    
+
+    arc.select('path')
+      .transition().duration(750)
+      .attrTween('d', function(a) {
+        const i = d3.interpolate(this.parentElement._current, a);
+        this.parentElement._current = i(0);
+        return function(t) {
+          return self.path(i(t));
+        };
+      });
+
+    arc.select('text')
+      .transition().duration(750)
+      .attrTween("transform", function(d) {
+        this.parentElement._current = this.parentElement._current || d;
+        const interpolate = d3.interpolate(this.parentElement._current, d);
+        this.parentElement._current = interpolate(0);
+        return function(t) {
+          const d2 = interpolate(t);
+          const pos = self.label.centroid(d2);
+          pos[0] = self.radius * (self.midAngle(d2) < Math.PI ? 1 : -1);
+          return "translate("+ pos +")";
+        };
       })
-      .text(d => d.data.name);
-                
-    arc.append('polyline')      
-      .attrs({
-        points: d => {
-          const pos = this.label.centroid(d);
-          pos[0] = labelr * (midAngle(d) < Math.PI ? 1 : -1);
-          return [ this.path.centroid(d), this.label.centroid(d), pos ];
-        },
-        stroke: d => color(d.data[comparisionField]),
-        'stroke-width': 2,
-        fill: 'none'
-      });    
+      .styleTween("text-anchor", function(d) {
+        this._current = this.parentElement._current || d;
+        const interpolate = d3.interpolate(this.parentElement._current, d);
+        this.parentElement._current = interpolate(0);
+        return function(t) {
+          const d2 = interpolate(t);
+          return self.midAngle(d2) < Math.PI ? "start":"end";
+        };
+      });
 
+    arc.select('polyline')
+      .transition().duration(750)
+      .attrTween("points", function(d){
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function(t) {
+          var d2 = interpolate(t);
+          var pos = self.label.centroid(d2);
+          pos[0] = self.radius * 0.95 * (self.midAngle(d2) < Math.PI ? 1 : -1);
+          return [self.path.centroid(d2), self.label.centroid(d2), pos];
+        };			
+      });
+		
   },
   renderPieChart({ hashTable, width, height, comparisionField }) {
-    const radius = Math.min(width, height) / 2;
-    const labelr = radius + 20; // label radius
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
-    const color = d3.scaleOrdinal(keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16)));    
-    const midAngle = d => d.startAngle + (d.endAngle - d.startAngle) / 2;
+    const colorValues = keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16));
+
+    this.radius = Math.min(width, height) / 2;
+    this.labelr = this.radius + 20; // label radius    
+    this.color = d3.scaleOrdinal(colorValues);
 
     this.g = this.chartSVG.append('g')
       .attrs({
@@ -971,42 +971,44 @@ const cryptoBoardView = {
         'class': 'pie'
       });
 
-    this.pie = d3.pie() // this.pie
+    this.pie = d3.pie()
       .sort(null)
       .value(d => +d[comparisionField]);
 
-    this.path = d3.arc() // this.path
-      .outerRadius(radius - 10)
+    this.path = d3.arc()
+      .outerRadius(this.radius - 10)
       .innerRadius(0);
 
-    this.label = d3.arc() // this.label
-      .outerRadius(labelr)
-      .innerRadius(labelr);
+    this.label = d3.arc()
+      .outerRadius(this.labelr)
+      .innerRadius(this.labelr);
 
     const arc = this.g.selectAll('.arc')
       .data(this.pie(dataset))
       .enter()
       .append('g')
-      .attr('class', 'arc');
+      .attr('class', 'arc')
+      .each(function(d) { this._current = d; }); // store the initial angles     
 
-    arc.append('path')
-      .transition()
-      .duration(1000)
+    this.appendSlice(arc, comparisionField);    
+  },
+  appendSlice(selection, comparisionField) {
+    selection
+      .append('path')      
       .attrs({
         d: this.path,
-        fill: d => color(d.data[comparisionField]),
+        fill: d => this.color(d.data[comparisionField]),
         stroke: '#fff'
-      });    
+      })     
 
-    arc.append('text')
-      //.transition()
-      //.duration(1000)
+    selection
+      .append('text')
       .attrs({
         transform: d => {
           const pos = this.label.centroid(d);
-          const direction = midAngle(d) < Math.PI ? 1 : -1;
+          const direction = this.midAngle(d) < Math.PI ? 1 : -1;
           // determine polyline width and padd it
-          pos[0] = labelr * direction;
+          pos[0] = this.labelr * direction;
           // determine the amount of space needed for word and padd it
           if(direction <  1) {
             if(!this.wordLengthTest) {
@@ -1024,25 +1026,24 @@ const cryptoBoardView = {
           return `translate(${pos})`;
         },
         dy: '0.35em',        
-        'text-anchor': d => midAngle(d) / 2 > Math.PI ? 'end' : 'start',
-        stroke: d => color(d.data[comparisionField]),
+        'text-anchor': d => this.midAngle(d) / 2 > Math.PI ? 'end' : 'start',
+        stroke: d => this.color(d.data[comparisionField]),
       })
       .text(d => d.data.name);
-                
-    arc.append('polyline')
-      //.transition()
-      //.duration(1000)
-      .attrs({
-        points: d => {
-          const pos = this.label.centroid(d);
-          pos[0] = labelr * (midAngle(d) < Math.PI ? 1 : -1);
-          return [ this.path.centroid(d), this.label.centroid(d), pos ];
-        },
-        stroke: d => color(d.data[comparisionField]),
-        'stroke-width': 2,
-        fill: 'none'
-      });    
-  },  
+
+      selection
+        .append('polyline')      
+        .attrs({
+          points: d => {
+            const pos = this.label.centroid(d);
+            pos[0] = this.labelr * (this.midAngle(d) < Math.PI ? 1 : -1);
+            return [ this.path.centroid(d), this.label.centroid(d), pos ];
+          },
+          stroke: d => this.color(d.data[comparisionField]),
+          'stroke-width': 2,
+          fill: 'none'
+        });
+  }, 
   renderBarChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);    
