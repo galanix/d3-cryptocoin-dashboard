@@ -701,7 +701,7 @@ const currencyPairView = {
         d3.max(dataset, d => this.maxFuncForY(d))
       ])
       .range([height, 0]);
-  },  
+  },
   minFuncForY(d) {},
   createGraphInstances(dataset) {
   
@@ -888,7 +888,7 @@ const cryptoBoardView = {
   midAngle(d) {
     return d.startAngle + (d.endAngle - d.startAngle) / 2;
   },
-  updatePieChart({ hashTable, width, height, comparisionField }) {
+  /*updatePieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
     const colorValues = keys.map(key => hashTable[key].color);
@@ -906,11 +906,11 @@ const cryptoBoardView = {
       .attr('class', 'arc')
       
    
-    this.appendSlice(arcEnter, comparisionField);
+    this.appendPieSlice(arcEnter, comparisionField);
     this.applyTransition(arcEnter, comparisionField);
     
     arc.exit().remove();    
-  },
+  },*/
   renderPieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);    
@@ -951,11 +951,11 @@ const cryptoBoardView = {
       .attr('class', 'arc')
       .each(function(d) { this._current = d; }); // store the initial angles
 
-    this.appendSlice(arc, comparisionField);
+    this.appendPieSlice(arc, comparisionField);
     //this.applyTransition(arc, comparisionField);
   },
-  appendSlice(selection, comparisionField) {
-    selection      
+  appendPieSlice(selection, comparisionField) {
+    selection
       .append('path')
       .attrs({
         d: this.path,
@@ -964,7 +964,7 @@ const cryptoBoardView = {
       });
     
     const text = selection
-      .append('text')    
+      .append('text')
       .attrs({
         transform: d => {
           const pos = this.label.centroid(d);
@@ -979,7 +979,7 @@ const cryptoBoardView = {
                 .attr('id', 'word-length-tester');
               div.append('p');
               div.append('p');
-              this.wordLengthTest = d3.selectAll('#word-length-tester p').nodes();              
+              this.wordLengthTest = d3.selectAll('#word-length-tester p').nodes();
             }
             
             this.wordLengthTest[0].textContent = d.data.name;
@@ -1025,7 +1025,7 @@ const cryptoBoardView = {
         }
       });
   },
-  applyTransition(selection, comparisionField) {
+  /*applyTransition(selection, comparisionField) {
     const self = this;
     selection
       .select('path')
@@ -1076,67 +1076,76 @@ const cryptoBoardView = {
           return [self.path.centroid(d2), self.label.centroid(d2), pos];
         };
       });
-  },
+  },*/
   renderBarChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);    
-
-    const xScale = d3.scaleLinear() // scaleBand()
-      .range([0, width])
-      //.padding(0.05)
-      .domain([0, d3.max(dataset, d => +d[comparisionField])]);
+    const dataset = keys.map(key => hashTable[key]);
     
+    const margin = {top: 20, right: 20, bottom: 30, left: 40};
+    width -= (margin.left + margin.right);
+    height -= (margin.top + margin.bottom);
+
+    const xScale = d3.scaleBand()
+      .rangeRound([0, width])
+      .padding(0.1)
+      .domain(dataset.map((d, i) => i));
+        
     const yScale = d3.scaleLinear()
-      .range([height, 0])
-      .domain([ 0, d3.max(dataset, d => +d[comparisionField]) ]);
-      
+      .rangeRound([height, 0])
+      .domain([0, d3.max(dataset, d => +d[comparisionField])]);
+
     const g = this.chartSVG.append('g')
       .attrs({
-        'transform': 'translate(40, 20)',
+        'transform': `translate(${margin.left}, ${margin.top})`,
         'class': 'bar'
       });
+            
 
     g.append('g')
-      .attrs({
-        'class': 'chart-axis chart-axis--x',
-        'transform': `translate(0, ${height})`
-      })
-      .call(d3.axisBottom(xScale));
-  
+        .attr('class', 'axis axis--x')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(d3.axisBottom(xScale));
+
     g.append('g')
-        .attr('class', 'chart-axis chart-axis--y')
-        .call(d3.axisLeft(yScale).ticks(10, '%'))
+        .attr('class', 'axis axis--y')
+        .call(d3.axisLeft(yScale).ticks(10))
       .append('text')
-        .text('yoyoyo')
         .attrs({
-          transform: 'rotate(-90)',
-          y: 6,
-          dy: '0.71em',
-          'text-anchor': 'middle',
-        });
-      
-    g.selectAll('.bar__item')
+          'transform': 'rotate(-90)',
+          'y': 6,
+          'dy': '0.71em',
+          'text-anchor': 'end'
+        })
+        .text(d => comparisionField);
+
+    const bars = g.selectAll('.bar')
       .data(dataset)
-      .enter().append('rect')
-        .attrs({
-          'class': 'bar__item',
-          'x': ((d, index) => xScale(+d[comparisionField])),
+      .enter()
+      .append('g')
+      .attr('class', 'bar');
+
+    bars
+      .append('rect')
+        .attrs({          
+          'fill': '#d3d3d3',
+          'x': (d,i) => xScale(i),
           'y': d => yScale(+d[comparisionField]),
-          'width': () => {
-            let itemsWidth = 50;
-            const itemsAmount = keys.length;
-            if(width / itemsWidth < itemsAmount) {
-              return width / itemsAmount;
-            }
-        
-            return itemsWidth;
-          },
-          'height': d => height - yScale(+d[comparisionField]),
-          'fill': '#0B90AA'
+          'width': xScale.bandwidth(),
+          'height': d => height - yScale(+d[comparisionField])
         });
-  },  
-  updateBarChart({ hashTable, width, height, comparisionField }) {    
+    bars
+      .append('text')
+        .text(d => d.name)
+        .attrs({
+          'dx': (d,i) => xScale(i),
+          'dy': d => yScale(+d[comparisionField]),
+          'stroke': '#333',
+          'stroke-width': 1
+        });
+
   },
+  /*updateBarChart({ hashTable, width, height, comparisionField }) {    
+  },*/
 };
 
 const controller = {
