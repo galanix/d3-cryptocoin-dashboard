@@ -779,7 +779,7 @@ const cryptoBoardView = {
           chartData: {},
           currency: 'USD',
           type: 'bar',
-          prevType: null,
+          //prevType: null,
           comparisionField: 'price_usd',
           waitMessageObj
         }
@@ -850,16 +850,25 @@ const cryptoBoardView = {
   showModalBtn() {
     this.modalBtn.style.opacity = 1;
   },
-  renderChart({ hashTable, type, comparisionField, chartIsBeingUpdated }) {
+  renderChart({ hashTable, type, comparisionField,/* chartIsBeingUpdated */}) {
     if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');
 
     const stylesSVG = getComputedStyle(this.chartSVG.node());
     const width = parseInt(stylesSVG.width);
     const height = parseInt(stylesSVG.height);           
+    this.chartSVG.selectAll('*').remove();
 
-    if(!chartIsBeingUpdated) this.chartSVG.selectAll('*').remove();
+    switch(type) {
+      case 'pie':
+        this.renderPieChart({ hashTable, width, height, comparisionField });
+        break;
+      case 'bar':
+        this.renderBarChart({ hashTable, width, height, comparisionField });
+        break;
+    }
 
-    switch(`${type}, update: ${chartIsBeingUpdated.toString()}`) {
+    //if(!chartIsBeingUpdated) this.chartSVG.selectAll('*').remove();
+    /*switch(`${type}, update: ${chartIsBeingUpdated.toString()}`) {
       case 'pie, update: true':
         this.updatePieChart({ hashTable, width, height, comparisionField });        
         break;
@@ -874,7 +883,7 @@ const cryptoBoardView = {
         break;
       default:
         console.warn('something went wrong with chart type');
-    }
+    }*/
   },
   midAngle(d) {
     return d.startAngle + (d.endAngle - d.startAngle) / 2;
@@ -885,38 +894,27 @@ const cryptoBoardView = {
     const colorValues = keys.map(key => hashTable[key].color);
     this.color = d3.scaleOrdinal(colorValues);
 
-    const arcUpdate = this.g.selectAll('.arc')
-      .data(this.pie(dataset), d => { console.log(d); return d; });
+    this.g.selectAll('.arc').remove();
 
-    const self = this;
-    const arcExit = arcUpdate.exit()
-      .transition()
-      .duration(750)
-      .attrTween("d", function (d) {
-        const i = d3.interpolate(this._current, d);
-        this._current = i(0);
-        return function(t) { return self.path(i(t)); };
-      })
-      .remove();
+    const arc = this.g.selectAll('.arc')
+      .data(this.pie(dataset));
 
-    const arcEnter = arcUpdate
+    const arcEnter = arc
       .enter()
       .append('g')
-      .each(function(d) { this._current = d; }) // store the initial angles    
-      .attr('class', 'arc');
-
+      .each(function(d) { this._current = d; }) // store the initial angles
+      .attr('class', 'arc')
+      
+   
     this.appendSlice(arcEnter, comparisionField);
     this.applyTransition(arcEnter, comparisionField);
-
-    const arc = arcUpdate.merge(arcEnter);
-        
-    //arc = this.g.selectAll('.arc');
-    //this.applyTransition(arc, comparisionField);
+    
+    arc.exit().remove();    
   },
   renderPieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);
-    const colorValues = keys.map(key => hashTable[key].color);
+    const dataset = keys.map(key => hashTable[key]);    
+    const colorValues = keys.map(key => hashTable[key].color);    
 
     this.radius = Math.min(width, height) / 2;
     this.labelr = this.radius + 20; // label radius
@@ -930,7 +928,13 @@ const cryptoBoardView = {
 
     this.pie = d3.pie()
       .sort(null)
-      .value(d => +d[comparisionField]);
+      .value(d => {
+        let value = +d[comparisionField];
+        if(value < 0) {
+          value = 1 / Math.abs(value);
+        }
+        return value;
+      });
 
     this.path = d3.arc()
       .outerRadius(this.radius - 10)
@@ -948,16 +952,16 @@ const cryptoBoardView = {
       .each(function(d) { this._current = d; }); // store the initial angles
 
     this.appendSlice(arc, comparisionField);
-    this.applyTransition(arc, comparisionField);
+    //this.applyTransition(arc, comparisionField);
   },
-  appendSlice(selection, comparisionField) {
+  appendSlice(selection, comparisionField) {    
     selection      
       .append('path')
       .attrs({
         d: this.path,
         fill: d => this.color(d.data[comparisionField]),
         stroke: '#fff'
-      });      
+      });
     
     selection      
       .append('text')
@@ -991,11 +995,17 @@ const cryptoBoardView = {
 
     selection
       .append('polyline')       
-      .attrs({        
+      .attrs({
         stroke: d => this.color(d.data[comparisionField]),
         'stroke-width': 2,
-        fill: 'none'
-      });      
+        fill: 'none',
+        points: d => {
+          const pos = this.label.centroid(d);
+          const direction = this.midAngle(d) < Math.PI ? 1 : -1;          
+          pos[0] = this.labelr * direction;
+          return [ this.path.centroid(d), this.label.centroid(d), pos ];
+        }
+      })
   },
   applyTransition(selection, comparisionField) {
     const self = this;
@@ -1107,8 +1117,7 @@ const cryptoBoardView = {
           'fill': '#0B90AA'
         });
   },  
-  updateBarChart({ hashTable, width, height, comparisionField }) {
-    
+  updateBarChart({ hashTable, width, height, comparisionField }) {    
   },
 };
 
@@ -1427,9 +1436,23 @@ const controller = {
       const key = +d3.event.target.getAttribute('data-index');
       const checked =  d3.event.target.checked;
       if(!!checked) {
-        // add
+        // add        
+        let generatedColor;
+        let colorIsDuplicated = false;
+        const keys = Object.keys(model.cryptoBoard.chart.hashTable);
+        const hashTable = model.cryptoBoard.chart.hashTable;
+        do {
+          generatedColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+          keys.forEach(key => {
+            if(hashTable[key].color === generatedColor) {
+              console.log('damn!');
+              colorIsDuplicated = true;
+            }
+          })
+        }while(colorIsDuplicated);
+
         model.cryptoBoard.chart.hashTable[key] = model.cryptoBoard.data[key];
-        model.cryptoBoard.chart.hashTable[key].color = '#'+Math.floor(Math.random()*16777215).toString(16);
+        model.cryptoBoard.chart.hashTable[key].color = generatedColor;
       } else {
         // remove
           delete model.cryptoBoard.chart.hashTable[key];
@@ -1495,10 +1518,10 @@ const controller = {
     },
     buildChart() {
       d3.event.preventDefault();      
-      const { currency, hashTable, type, prevType, comparisionField } = model.cryptoBoard.chart;
-      const chartIsBeingUpdated = prevType === type;
+      const { currency, hashTable, type, /*prevType,*/ comparisionField } = model.cryptoBoard.chart;
+      //const chartIsBeingUpdated = prevType === type;
       
-      model.cryptoBoard.chart.prevType = type;
+      //model.cryptoBoard.chart.prevType = type;
 
       model.requestModuleData({
         url: this.createCryptoBoardURL(currency),
@@ -1508,7 +1531,7 @@ const controller = {
           cryptoBoardView.renderChart({
             hashTable: Object.assign({}, hashTable),
             type,
-            chartIsBeingUpdated,
+            //chartIsBeingUpdated,
             comparisionField,
           });
         }
