@@ -954,7 +954,7 @@ const cryptoBoardView = {
     this.appendSlice(arc, comparisionField);
     //this.applyTransition(arc, comparisionField);
   },
-  appendSlice(selection, comparisionField) {    
+  appendSlice(selection, comparisionField) {
     selection      
       .append('path')
       .attrs({
@@ -963,8 +963,8 @@ const cryptoBoardView = {
         stroke: '#fff'
       });
     
-    selection      
-      .append('text')
+    const text = selection
+      .append('text')    
       .attrs({
         transform: d => {
           const pos = this.label.centroid(d);
@@ -974,38 +974,56 @@ const cryptoBoardView = {
           // determine the amount of space needed for word and padd it
           if(direction <  1) {
             if(!this.wordLengthTest) {
-              d3.select('body')
+              const div = d3.select('body')
                 .append('div')
                 .attr('id', 'word-length-tester');
-              this.wordLengthTest = d3.select('#word-length-tester').node();
+              div.append('p');
+              div.append('p');
+              this.wordLengthTest = d3.selectAll('#word-length-tester p').nodes();              
             }
             
-            this.wordLengthTest.textContent = d.data.name;
-            const wordLength = parseInt(getComputedStyle(this.wordLengthTest).width) + 1;
-            pos[0] -= wordLength;
+            this.wordLengthTest[0].textContent = d.data.name;
+            this.wordLengthTest[1].textContent = d.data[comparisionField];
+            const wordLength0 = parseInt(getComputedStyle(this.wordLengthTest[0]).width) + 1;
+            const wordLength1 = parseInt(getComputedStyle(this.wordLengthTest[1]).width) + 1;
+            pos[0] -= wordLength0 < wordLength1 ? wordLength1 : wordLength0;
           }
           
           return `translate(${pos})`;
         },
-        dy: '0.35em',        
         'text-anchor': d => this.midAngle(d) / 2 > Math.PI ? 'end' : 'start',
         stroke: d => this.color(d.data[comparisionField]),
-      })      
-      .text(d => d.data.name); 
+      })
+
+    text
+      .append('tspan')
+        .attrs({
+          x: '0',
+          dy: '-0.35em',
+        })
+        .text(d => d.data.name)
+    text
+      .append('tspan')
+        .attrs({
+          x: '0',
+          dy: '1.1em',
+        })
+        .text(d => d.data[comparisionField]);
+        
 
     selection
-      .append('polyline')       
+      .append('polyline')
       .attrs({
         stroke: d => this.color(d.data[comparisionField]),
         'stroke-width': 2,
         fill: 'none',
         points: d => {
           const pos = this.label.centroid(d);
-          const direction = this.midAngle(d) < Math.PI ? 1 : -1;          
+          const direction = this.midAngle(d) < Math.PI ? 1 : -1;
           pos[0] = this.labelr * direction;
           return [ this.path.centroid(d), this.label.centroid(d), pos ];
         }
-      })
+      });
   },
   applyTransition(selection, comparisionField) {
     const self = this;
