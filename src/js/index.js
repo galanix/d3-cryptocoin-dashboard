@@ -881,88 +881,45 @@ const cryptoBoardView = {
   },
   updatePieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);    
-    const colorValues = keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16));
+    const dataset = keys.map(key => hashTable[key]);
+    const colorValues = keys.map(key => hashTable[key].color);
     this.color = d3.scaleOrdinal(colorValues);
-    const self = this;
-      
-    let arc = this.g.selectAll('.arc')
-      .data(this.pie(dataset));
 
-    arc.exit().remove();
-    
-    arc
+    const arcUpdate = this.g.selectAll('.arc')
+      .data(this.pie(dataset), d => { console.log(d); return d; });
+
+    const self = this;
+    const arcExit = arcUpdate.exit()
+      .transition()
+      .duration(750)
+      .attrTween("d", function (d) {
+        const i = d3.interpolate(this._current, d);
+        this._current = i(0);
+        return function(t) { return self.path(i(t)); };
+      })
+      .remove();
+
+    const arcEnter = arcUpdate
       .enter()
       .append('g')
-      .each(function(d) { this._current = d; }) // store the initial angles
-      .attr('class', 'arc')
-        .append('path')
-        .attrs({
-          d: this.path,
-          fill: d => this.color(d.data[comparisionField]),
-          stroke: '#fff'
-        });
+      .each(function(d) { this._current = d; }) // store the initial angles    
+      .attr('class', 'arc');
 
-    this.appendSlice(arc.enter(), comparisionField);    
+    this.appendSlice(arcEnter, comparisionField);
+    this.applyTransition(arcEnter, comparisionField);
 
-    // reselect to target new nodes aswell
-    arc = this.g.selectAll('.arc');    
-
-    arc.select('path')
-      .transition().duration(750)
-      .attrTween('d', function(a) {
-        const i = d3.interpolate(this.parentElement._current, a);
-        this.parentElement._current = i(0);
-        return function(t) {
-          return self.path(i(t));
-        };
-      });
-
-    arc.select('text')
-      .transition().duration(750)
-      .attrTween("transform", function(d) {
-        this.parentElement._current = this.parentElement._current || d;
-        const interpolate = d3.interpolate(this.parentElement._current, d);
-        this.parentElement._current = interpolate(0);
-        return function(t) {
-          const d2 = interpolate(t);
-          const pos = self.label.centroid(d2);
-          pos[0] = self.radius * (self.midAngle(d2) < Math.PI ? 1 : -1);
-          return "translate("+ pos +")";
-        };
-      })
-      .styleTween("text-anchor", function(d) {
-        this._current = this.parentElement._current || d;
-        const interpolate = d3.interpolate(this.parentElement._current, d);
-        this.parentElement._current = interpolate(0);
-        return function(t) {
-          const d2 = interpolate(t);
-          return self.midAngle(d2) < Math.PI ? "start":"end";
-        };
-      });
-
-    arc.select('polyline')
-      .transition().duration(750)
-      .attrTween("points", function(d){
-        this._current = this._current || d;
-        var interpolate = d3.interpolate(this._current, d);
-        this._current = interpolate(0);
-        return function(t) {
-          var d2 = interpolate(t);
-          var pos = self.label.centroid(d2);
-          pos[0] = self.radius * 0.95 * (self.midAngle(d2) < Math.PI ? 1 : -1);
-          return [self.path.centroid(d2), self.label.centroid(d2), pos];
-        };			
-      });
-		
+    const arc = arcUpdate.merge(arcEnter);
+        
+    //arc = this.g.selectAll('.arc');
+    //this.applyTransition(arc, comparisionField);
   },
   renderPieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
-    const colorValues = keys.map(_key => '#'+Math.floor(Math.random()*16777215).toString(16));
+    const colorValues = keys.map(key => hashTable[key].color);
 
     this.radius = Math.min(width, height) / 2;
-    this.labelr = this.radius + 20; // label radius    
+    this.labelr = this.radius + 20; // label radius
     this.color = d3.scaleOrdinal(colorValues);
 
     this.g = this.chartSVG.append('g')
@@ -988,20 +945,21 @@ const cryptoBoardView = {
       .enter()
       .append('g')
       .attr('class', 'arc')
-      .each(function(d) { this._current = d; }); // store the initial angles     
+      .each(function(d) { this._current = d; }); // store the initial angles
 
-    this.appendSlice(arc, comparisionField);    
+    this.appendSlice(arc, comparisionField);
+    this.applyTransition(arc, comparisionField);
   },
   appendSlice(selection, comparisionField) {
-    selection
-      .append('path')      
+    selection      
+      .append('path')
       .attrs({
         d: this.path,
         fill: d => this.color(d.data[comparisionField]),
         stroke: '#fff'
-      })     
-
-    selection
+      });      
+    
+    selection      
       .append('text')
       .attrs({
         transform: d => {
@@ -1028,22 +986,69 @@ const cryptoBoardView = {
         dy: '0.35em',        
         'text-anchor': d => this.midAngle(d) / 2 > Math.PI ? 'end' : 'start',
         stroke: d => this.color(d.data[comparisionField]),
-      })
-      .text(d => d.data.name);
+      })      
+      .text(d => d.data.name); 
 
-      selection
-        .append('polyline')      
-        .attrs({
-          points: d => {
-            const pos = this.label.centroid(d);
-            pos[0] = this.labelr * (this.midAngle(d) < Math.PI ? 1 : -1);
-            return [ this.path.centroid(d), this.label.centroid(d), pos ];
-          },
-          stroke: d => this.color(d.data[comparisionField]),
-          'stroke-width': 2,
-          fill: 'none'
-        });
-  }, 
+    selection
+      .append('polyline')       
+      .attrs({        
+        stroke: d => this.color(d.data[comparisionField]),
+        'stroke-width': 2,
+        fill: 'none'
+      });      
+  },
+  applyTransition(selection, comparisionField) {
+    const self = this;
+    selection
+      .select('path')
+      .transition().duration(750)
+      .attrTween('d', function(a) {
+        const i = d3.interpolate(this.parentElement._current, a);
+        this.parentElement._current = i(0);
+        return function(t) {
+          return self.path(i(t));
+        };
+      });
+  
+    selection
+      .select('text')
+      .transition().duration(750)
+      .attrTween("transform", function(d) {
+        this.parentElement._current = this.parentElement._current || d;
+        const interpolate = d3.interpolate(this.parentElement._current, d);
+        this.parentElement._current = interpolate(0);
+        return function(t) {
+          const d2 = interpolate(t);
+          const pos = self.label.centroid(d2);
+          pos[0] = self.radius * (self.midAngle(d2) < Math.PI ? 1 : -1);
+          return "translate("+ pos +")";
+        };
+      })
+      .styleTween("text-anchor", function(d) {
+        this._current = this.parentElement._current || d;
+        const interpolate = d3.interpolate(this.parentElement._current, d);
+        this.parentElement._current = interpolate(0);
+        return function(t) {
+          const d2 = interpolate(t);
+          return self.midAngle(d2) < Math.PI ? "start":"end";
+        };
+      });
+  
+    selection
+      .select('polyline')
+      .transition().duration(750)
+      .attrTween("points", function(d) {
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function(t) {
+          var d2 = interpolate(t);
+          var pos = self.label.centroid(d2);
+          pos[0] = self.radius * 0.95 * (self.midAngle(d2) < Math.PI ? 1 : -1);
+          return [self.path.centroid(d2), self.label.centroid(d2), pos];
+        };
+      });
+  },
   renderBarChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);    
@@ -1104,7 +1109,7 @@ const cryptoBoardView = {
   },  
   updateBarChart({ hashTable, width, height, comparisionField }) {
     
-  },  
+  },
 };
 
 const controller = {
@@ -1424,9 +1429,10 @@ const controller = {
       if(!!checked) {
         // add
         model.cryptoBoard.chart.hashTable[key] = model.cryptoBoard.data[key];
+        model.cryptoBoard.chart.hashTable[key].color = '#'+Math.floor(Math.random()*16777215).toString(16);
       } else {
         // remove
-        delete model.cryptoBoard.chart.hashTable[key];
+          delete model.cryptoBoard.chart.hashTable[key];
       }
 
       const selectionLength = Object.keys(model.cryptoBoard.chart.hashTable).length;
@@ -1434,7 +1440,7 @@ const controller = {
         // display that submenu
         cryptoBoardView.showModalBtn();
       } else {
-        // hide thatsubmenu
+        // hide that submenu
         cryptoBoardView.hideModalBtn();
       }
     },
