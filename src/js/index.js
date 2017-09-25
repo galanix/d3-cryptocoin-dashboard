@@ -897,16 +897,17 @@ const cryptoBoardView = {
     this.g.selectAll('.arc').remove();
 
     const arc = this.g.selectAll('.arc')
-      .data(this.pie(dataset));
+      .data(this.pie(dataset), d => d);
 
     const arcEnter = arc
       .enter()
       .append('g')
       .each(function(d) { this._current = d; }) // store the initial angles
       .attr('class', 'arc')
+      .merge(arc);
       
    
-    this.appendPieSlice(arcEnter, comparisionField);
+    this.appendPieSlices(arcEnter, comparisionField);
     this.applyTransition(arcEnter, comparisionField);
     
     arc.exit().remove();    
@@ -914,7 +915,7 @@ const cryptoBoardView = {
   renderPieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);    
-    const colorValues = keys.map(key => hashTable[key].color);    
+    const colorValues = keys.map(key => hashTable[key].color);
 
     this.radius = Math.min(width, height) / 2;
     this.labelr = this.radius + 20; // label radius
@@ -951,10 +952,10 @@ const cryptoBoardView = {
       .attr('class', 'arc')
       .each(function(d) { this._current = d; }); // store the initial angles
 
-    this.appendPieSlice(arc, comparisionField);
+    this.appendPieSlices(arc, comparisionField);
     //this.applyTransition(arc, comparisionField);
   },
-  appendPieSlice(selection, comparisionField) {
+  appendPieSlices(selection, comparisionField) {
     selection
       .append('path')
       .attrs({
@@ -1008,6 +1009,7 @@ const cryptoBoardView = {
           x: '0',
           dy: '1.1em',
         })
+        .style('font-size', '.75em')
         .text(d => d.data[comparisionField]);
         
 
@@ -1126,7 +1128,7 @@ const cryptoBoardView = {
 
     bars
       .append('rect')
-        .attrs({          
+        .attrs({
           'fill': '#d3d3d3',
           'x': (d,i) => xScale(i),
           'y': d => yScale(+d[comparisionField]),
@@ -1462,6 +1464,14 @@ const controller = {
     toggleItemForGraphDraw() {
       const key = +d3.event.target.getAttribute('data-index');
       const checked =  d3.event.target.checked;
+      const getRandomColor = () => {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      };
       if(!!checked) {
         // add        
         let generatedColor;
@@ -1469,15 +1479,13 @@ const controller = {
         const keys = Object.keys(model.cryptoBoard.chart.hashTable);
         const hashTable = model.cryptoBoard.chart.hashTable;
         do {
-          generatedColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+          generatedColor = getRandomColor();
           keys.forEach(key => {
             if(hashTable[key].color === generatedColor) {
-              console.log('damn!');
               colorIsDuplicated = true;
             }
           })
         }while(colorIsDuplicated);
-
         model.cryptoBoard.chart.hashTable[key] = model.cryptoBoard.data[key];
         model.cryptoBoard.chart.hashTable[key].color = generatedColor;
       } else {
