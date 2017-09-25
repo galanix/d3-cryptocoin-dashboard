@@ -4,7 +4,6 @@ import '../scss/index.scss';
 
 import * as d3 from 'd3';
 import { attrs } from 'd3-selection-multi';
-//import { interpolatePath } from 'd3-interpolate-path';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/material_green.css';
 
@@ -528,7 +527,7 @@ const historyView = {
   
     this.tooltip.transition()
       .duration(100)
-      .style('opacity', 0)         
+      .style('opacity', 0);             
   },
   formProperDateFormat(year, month, day) { // example: turns (2017, 5, 14) into 2017-05-15    
     const dateStr = `${year}-${month < 10 ? ('0' + month) : month}-${day < 10 ? ('0' + day) : day}`;        
@@ -589,7 +588,7 @@ const currencyPairView = {
       this.attachFiltersEvents();
     }
   },
-  buildLines({ dataset, width, height }) {    
+  buildLines({ dataset, width, height }) {
     this.graphSVG = d3.select('.graph--currency-pair').append('svg');
     this.makeScales({ dataset, width, height });
 
@@ -850,13 +849,15 @@ const cryptoBoardView = {
   showModalBtn() {
     this.modalBtn.style.opacity = 1;
   },
-  renderChart({ hashTable, type, comparisionField,/* chartIsBeingUpdated */}) {
-    if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');
+  renderChart({ hashTable, type, comparisionField,/* chartIsBeingUpdated */ }) {
+    if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');    
+    if(!this.legend) this.legend = d3.select('.graph--crypto-chart').append('div').attr('class', 'legend');
 
     const stylesSVG = getComputedStyle(this.chartSVG.node());
     const width = parseInt(stylesSVG.width);
     const height = parseInt(stylesSVG.height);           
     this.chartSVG.selectAll('*').remove();
+    this.legend.selectAll('*').remove();
 
     switch(type) {
       case 'pie':
@@ -888,6 +889,10 @@ const cryptoBoardView = {
   midAngle(d) {
     return d.startAngle + (d.endAngle - d.startAngle) / 2;
   },
+  togglePieLabel(container, opacityVal) {    
+    container.getElementsByTagName('text')[0].style.opacity = opacityVal;
+    container.getElementsByTagName('polyline')[0].style.opacity = opacityVal;
+  },
   /*updatePieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
@@ -917,7 +922,7 @@ const cryptoBoardView = {
     const dataset = keys.map(key => hashTable[key]);    
     const colorValues = keys.map(key => hashTable[key].color);
 
-    this.radius = Math.min(width, height) / 2;
+    this.radius = Math.min(height,width) / 2;
     this.labelr = this.radius + 20; // label radius
     this.color = d3.scaleOrdinal(colorValues);
 
@@ -953,16 +958,64 @@ const cryptoBoardView = {
       .each(function(d) { this._current = d; }); // store the initial angles
 
     this.appendPieSlices(arc, comparisionField);
-    //this.applyTransition(arc, comparisionField);
+    
+    // BUILDING THE LEGEND
+    const handleHoverEvent = (opacityVal, color) => {
+      let item = d3.event.target;
+      if(item.tagName !== 'DIV') item = item.parentElement;
+
+      item.getElementsByTagName('span')[1].style.color = color;
+
+      const labels = Array.prototype.slice.call(document.getElementsByClassName('arc'));
+      const label = labels[item.getAttribute('data-index')];
+      this.togglePieLabel(label, opacityVal);
+
+      const callback = opacityVal === 1 ?
+        item => {
+          if(item !== label) {            
+            item.style.opacity = 0.25;
+          }
+        } : 
+        item => {          
+          item.style.opacity = 1;
+        };
+
+      labels.forEach(callback);
+    };
+
+    let index = 0;
+    const items = this.legend.selectAll('.legend__item')
+      .data(dataset)
+      .enter()
+      .append('div')
+      .attrs({
+        'data-index': () => index++,
+        'class': 'legend__item',
+      })
+      .on('mouseover', d => handleHoverEvent(1, this.color(d[comparisionField])))
+      .on('mouseout', () => handleHoverEvent(0, '#333'));
+
+    items
+      .append('span')
+      .attr('class', 'square')
+      .style('background-color', d => this.color(d[comparisionField]));
+
+    items
+      .append('span')
+      .text(d => d.name);
   },
   appendPieSlices(selection, comparisionField) {
+    const containersPos = d3.select('.graph--crypto-chart').node();    
+
     selection
       .append('path')
       .attrs({
         d: this.path,
         fill: d => this.color(d.data[comparisionField]),
         stroke: '#fff'
-      });
+      })
+      .on('mouseover', () => this.togglePieLabel(d3.event.target.parentElement, 1))
+      .on('mouseout', () => this.togglePieLabel(d3.event.target.parentElement, 0));
     
     const text = selection
       .append('text')
@@ -995,6 +1048,8 @@ const cryptoBoardView = {
         'text-anchor': d => this.midAngle(d) / 2 > Math.PI ? 'end' : 'start',
         stroke: d => this.color(d.data[comparisionField]),
       })
+      .style('opacity', 0)
+      .style('transition', 'opacity .5s ease-in');
 
     text
       .append('tspan')
@@ -1025,7 +1080,10 @@ const cryptoBoardView = {
           pos[0] = this.labelr * direction;
           return [ this.path.centroid(d), this.label.centroid(d), pos ];
         }
-      });
+      })
+      .style('pointer-events', 'none')
+      .style('opacity', 0)
+      .style('transition', 'opacity .5s ease-in');
   },
   /*applyTransition(selection, comparisionField) {
     const self = this;

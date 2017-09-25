@@ -150,5 +150,32 @@ body {
     position: absolute;
     visibility: hidden;
     display: inline-block;
-    font-weight: bold; 
+    font-weight: bold;
+}
+
+.legend {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.arc {
+    transition: opacity .5s ease-in;
+}
+
+.legend__item:hover {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.square {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+}
+
+
+.legend__item span:last-child {
+    margin-left: 10px;
 }
