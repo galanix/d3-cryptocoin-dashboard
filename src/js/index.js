@@ -77,7 +77,39 @@ const model = {
     url: 'https://api.coinmarketcap.com/v1/ticker/',
     data: {},
     width: 500,
-    height: 250,    
+    height: 250,
+    additionalFilters: {
+      marketCap: {
+        '0': 'All',
+        '1': 1000000000, // +
+        '2': [100000000, 1000000000],
+        '3': [10000000, 100000000],
+        '4': [1000000, 10000000],
+        '5': [100000, 1000000],
+        '6': [0, 100000]
+      },
+      price: {
+        '0': 'All',
+        '1': 100, // +
+        '2': [1, 100],
+        '3': [0.01, 1],
+        '4': [0.0001, 0.01],
+        '5': [0, 0.0001],
+      },
+      volume_24h: {
+        '0': 'All',
+        '1': 10000000,
+        '2': 1000000,
+        '3': 100000,
+        '4': 10000,
+        '5': 1000,
+      },
+      keys: {
+        marketCap: '0',
+        price: '0',
+        volume_24h: '0'
+      }
+    }
     // chart {}
   },
   // methods
@@ -820,6 +852,12 @@ const cryptoBoardView = {
     d3.select('.filters--board .board-currencies')
       .on('change', () => controller.changeTableCurrency());
 
+    d3.selectAll('.filters--board .additional-filters select')
+      .on('change', () => controller.filterTableContent());
+
+    d3.select('.filters--board .clear-filters-btn')
+      .on('click', () => controller.clearTableFilters());
+
     this.modalBtn.addEventListener('click', (e) => {
       e.preventDefault();
       this.subMenu.style.maxHeight = 2000 + 'px';
@@ -833,11 +871,36 @@ const cryptoBoardView = {
     d3.select('#graph-currencies')
       .on('change', () => controller.changeGraphCurrency());
 
-    d3.selectAll('.filters--board .category button')
-      .on('click', () => controller.changeComparisionField());
 
-    d3.selectAll('.filters--board .type button')
-      .on('click', () => controller.changeChartType());
+    const handleClickWithBtnSelection = ({ selector, callback, classCSS }) => {
+      let prevBtn = d3.select(selector).node();
+      prevBtn.classList.add(classCSS); 
+
+      d3.selectAll(selector)
+        .on('click', () => {
+          const currBtn = d3.event.target;
+          if(currBtn !== prevBtn) {
+            currBtn.classList.add(classCSS);
+            prevBtn.classList.remove(classCSS);        
+            prevBtn = currBtn;
+          }
+  
+          if(!!callback) callback();
+        });
+    }
+
+    handleClickWithBtnSelection({
+      selector: '.filters--board .category button',
+      classCSS: 'selected',
+      callback: controller.changeComparisionField
+    });
+
+
+    handleClickWithBtnSelection({
+      selector: '.filters--board .type button',
+      classCSS: 'selected',
+      callback: controller.changeChartType
+    });    
 
     d3.selectAll('.filters--board .build-button')
       .on('click', () => controller.buildChart());
@@ -889,7 +952,7 @@ const cryptoBoardView = {
   midAngle(d) {
     return d.startAngle + (d.endAngle - d.startAngle) / 2;
   },
-  togglePieLabel(container, opacityVal) {    
+  togglePieLabel(container, opacityVal) {
     container.getElementsByTagName('text')[0].style.opacity = opacityVal;
     container.getElementsByTagName('polyline')[0].style.opacity = opacityVal;
   },
@@ -969,7 +1032,7 @@ const cryptoBoardView = {
       const labels = Array.prototype.slice.call(document.getElementsByClassName('arc'));
       const label = labels[item.getAttribute('data-index')];
       this.togglePieLabel(label, opacityVal);
-
+      
       const callback = opacityVal === 1 ?
         item => {
           if(item !== label) {            
@@ -1005,7 +1068,7 @@ const cryptoBoardView = {
       .text(d => d.name);
   },
   appendPieSlices(selection, comparisionField) {
-    const containersPos = d3.select('.graph--crypto-chart').node();    
+    const containersPos = d3.select('.graph--crypto-chart').node();
 
     selection
       .append('path')
@@ -1049,7 +1112,8 @@ const cryptoBoardView = {
         stroke: d => this.color(d.data[comparisionField]),
       })
       .style('opacity', 0)
-      .style('transition', 'opacity .5s ease-in');
+      
+    setTimeout(() => text.style('transition', 'opacity .5s ease-in'), 500); // kostyl
 
     text
       .append('tspan')
@@ -1057,7 +1121,7 @@ const cryptoBoardView = {
           x: '0',
           dy: '-0.35em',
         })
-        .text(d => d.data.name)
+        .text(d => d.data.name)      
     text
       .append('tspan')
         .attrs({
@@ -1065,7 +1129,7 @@ const cryptoBoardView = {
           dy: '1.1em',
         })
         .style('font-size', '.75em')
-        .text(d => d.data[comparisionField]);
+        .text(d => d.data[comparisionField])        
         
 
     selection
@@ -1101,7 +1165,7 @@ const cryptoBoardView = {
     selection
       .select('text')
       .transition().duration(750)
-      .attrTween("transform", function(d) {
+      .attrTween("transform', function(d) {
         this.parentElement._current = this.parentElement._current || d;
         const interpolate = d3.interpolate(this.parentElement._current, d);
         this.parentElement._current = interpolate(0);
@@ -1109,23 +1173,23 @@ const cryptoBoardView = {
           const d2 = interpolate(t);
           const pos = self.label.centroid(d2);
           pos[0] = self.radius * (self.midAngle(d2) < Math.PI ? 1 : -1);
-          return "translate("+ pos +")";
+          return 'translate('+ pos +')';
         };
       })
-      .styleTween("text-anchor", function(d) {
+      .styleTween('text-anchor', function(d) {
         this._current = this.parentElement._current || d;
         const interpolate = d3.interpolate(this.parentElement._current, d);
         this.parentElement._current = interpolate(0);
         return function(t) {
           const d2 = interpolate(t);
-          return self.midAngle(d2) < Math.PI ? "start":"end";
+          return self.midAngle(d2) < Math.PI ? 'start':'end';
         };
       });
   
     selection
       .select('polyline')
       .transition().duration(750)
-      .attrTween("points", function(d) {
+      .attrTween('points', function(d) {
         this._current = this._current || d;
         var interpolate = d3.interpolate(this._current, d);
         this._current = interpolate(0);
@@ -1323,8 +1387,8 @@ const controller = {
         isModuleBeingUpdated
       });
     },
-    renderCryptoBoardTable() {
-      const { data, currency } = model.cryptoBoard;
+    renderCryptoBoardTable(customParams) {
+      const { data, currency } = !!customParams ? customParams : model.cryptoBoard;
       cryptoBoardView.renderTable({
         dataset: data,
         currency,
@@ -1629,6 +1693,73 @@ const controller = {
           });
         }
       });
+    },
+    filterTableContent() {
+      const target = d3.event.target;
+      switch(target.getAttribute('id')) {
+        case 'market-cap':
+          model.cryptoBoard.additionalFilters.keys.marketCap = target.value;
+          break;
+        case 'price':
+          model.cryptoBoard.additionalFilters.keys.price = target.value;
+          break;
+        case 'volume-24h':
+          model.cryptoBoard.additionalFilters.keys.volume_24h = target.value;
+          break;
+      }
+      const { keys, marketCap, price, volume_24h } = model.cryptoBoard.additionalFilters;
+      const defineConstraints = (name, vals, keys) => {
+        let min;
+        let max;
+        if(!!keys[name]) {
+            if(vals[keys[name]] instanceof Array) {
+              min= vals[keys[name]][0];
+              max = vals[keys[name]][1];
+            } else min = vals[keys[name]];
+        }
+        return {
+          min,
+          max        
+        };
+      };
+      const constraintPasses = (range, item, key) => {
+        //console.log(+item[key], range.min, range.max);
+        if(typeof range.min !== 'string') {
+          if(
+            +item[key] < range.min ||
+            +item[key] > range.max
+          ) {
+            return false;
+          }
+        }
+        return true;
+      };
+      const marketCapRange = defineConstraints('marketCap', marketCap, keys);
+      const priceRange = defineConstraints('price', price, keys);
+      const volume_24hRange = defineConstraints('volume_24h', volume_24h, keys);
+      
+      const data = model.cryptoBoard.data.filter(item => {        
+        return constraintPasses(marketCapRange, item, 'market_cap_usd') &&
+               constraintPasses(priceRange, item, 'price_usd') &&
+               constraintPasses(volume_24hRange, item, '24h_volume_usd');        
+      });
+      console.log(data)
+      this.renderCryptoBoardTable({
+        data,
+        currency: 'USD'
+      });
+    },
+    clearTableFilters() {
+      d3.event.preventDefault();
+      const filters = document.querySelectorAll('.filters--board .additional-filters select');
+      const props = Object.keys(model.cryptoBoard.additionalFilters.keys);
+
+      filters.forEach((filter, index) => {
+        filter.value = '0';
+        model.cryptoBoard.additionalFilters.keys[props[index]] = "0";
+      });
+      
+      this.filterTableContent();
     }
 };
 

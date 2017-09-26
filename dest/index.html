@@ -116,8 +116,40 @@
 
     <section class="container">
         <div class="filters filters--board">
-            <section>
-                <button class="modal-button">Make Graphs</button>
+            <form class="additional-filters">
+                <label for="market-cap">Market Cap</label>
+                <select name="" id="market-cap">
+                   <option value="0">All</option>                   
+                   <option value="1">$1 Billion+</option>
+                   <option value="2">$100 Million - $1 Billion</option>
+                   <option value="3">$10 Million - $100 Million</option>
+                   <option value="4">$1 Million - $10 Million</option>
+                   <option value="5">$100k - $1 Million</option>
+                   <option value="6">$0 - $100k</option>
+                </select>
+                <label for="price">Price</label>
+                <select name="" id="price">
+                    <option value="0">All</option>
+                    <option value="1">$100+</option>
+                    <option value="2">$1 - $100</option>
+                    <option value="3">$0.01 - $1</option>
+                    <option value="4">$0.0001 - $0.01</option>
+                    <option value="5">$0 - $0.0001</option>
+                </select>
+                <label for="volume-24h">Volume(24)</label>
+                <select name="" id="volume-24h">
+                    <option value="0">All</option>
+                    <option value="1">$10 Million+</option>
+                    <option value="2">$1 Million+</option>
+                    <option value="3">$100k+</option>
+                    <option value="4">$10k+</option>
+                    <option value="5">$1k+</option>
+                </select>
+                <button class="clear-filters-btn">Reset</button>
+            </form>
+
+            <section>                
+                <button class="modal-button">Visualize</button>
                 <div class="modal-window">
                     <label for="graph-currencies">
                         Currencies
@@ -147,8 +179,8 @@
                     </div>
 
                     <div class="button-group controlls">
-                        <button class="cancel-button">Cancel</button>
-                        <button class="build-button">Build</button>
+                        <button class="cancel-button">Hide</button>
+                        <button class="build-button">Build Chart</button>
                     </div>
                     <div class="graph graph--crypto-chart">
                         <p class="wait-message">Wait, please...</p>

@@ -131,6 +131,26 @@ body {
     text-align: center;
 }
 
+.filters--board button {
+    border: none;
+    border-radius: 4px;
+    padding: .5em 1em;
+}
+
+.filters--board button:hover {
+    cursor: pointer;
+    background: #d3d3d3;
+}
+
+.filters--board .selected {
+    background: $selected;    
+    color: #fff;
+}
+
+.filters--board .selected:hover {
+    background: darken($selected, 10%);
+}
+
 .modal-button {
     transition: opacity .5s ease;
     opacity: 0;
@@ -163,6 +183,11 @@ body {
 .arc {
     transition: opacity .5s ease-in;
 }
+
+.arc:hover {
+    cursor: pointer;
+}
+
 
 .legend__item:hover {
     cursor: pointer;
