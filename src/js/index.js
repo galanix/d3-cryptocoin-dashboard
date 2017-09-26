@@ -128,7 +128,7 @@ const model = {
       })
       .catch(error => console.warn(error));
   },
-  requestModuleData({ url, isModuleBeingUpdated, callback, namespace }) {    
+  requestModuleData({ url, isModuleBeingUpdated, callback, namespace }) {
     controller.startAnimation(namespace); // shows something while data travels
     d3.json(url, (data) => {
       namespace.data = data;
@@ -732,8 +732,7 @@ const currencyPairView = {
         d3.max(dataset, d => this.maxFuncForY(d))
       ])
       .range([height, 0]);
-  },
-  minFuncForY(d) {},
+  }, 
   createGraphInstances(dataset) {
   
     const ask = new Graph({
@@ -787,7 +786,8 @@ const currencyPairView = {
       .transition()
       .duration(600)
       .style('opacity', opacityVal);
-  }
+  },
+   //minFuncForY() {}
 };
 
 const cryptoBoardView = {
@@ -821,13 +821,13 @@ const cryptoBoardView = {
   },
   renderTable({ dataset, currency }) {
     this.boardBody.innerHTML = '';
-    dataset.forEach((item, index) => {
+    dataset.forEach((item, index) => {      
       const tr = document.createElement('tr');
       tr.className = 'board-row';
       tr.innerHTML = `
         <td class="cell">
           <label>
-            <input type="checkbox" data-index=${index}>
+            <input type="checkbox" data-index="${index}" data-currency-id="${item.id}">
           </label>
         </td>
         <td class="cell">${index + 1}</td>
@@ -845,7 +845,17 @@ const cryptoBoardView = {
     d3.selectAll('.cell input')
       .on('change', () => controller.toggleItemForGraphDraw());
 
-    //this.checkPreviousItems();
+    this.checkPreviousItems();
+  },
+  checkPreviousItems() {
+    const hashTable = JSON.parse(window.localStorage.getItem('hashTable')) || {};
+    const keys = Object.keys(hashTable);
+    const checkboxes = this.boardBody.querySelectorAll('input');
+    if(!!checkboxes) {
+      keys.forEach(key => {
+        if(checkboxes[+key].getAttribute('data-currency-id') === hashTable[key].id) checkboxes[+key].checked = true;
+      });
+    }
   },
   attachFiltersEvents() {
     d3.selectAll('.filters--board .table-length button')
@@ -1674,6 +1684,7 @@ const controller = {
     toggleItemForGraphDraw() {
       const key = +d3.event.target.getAttribute('data-index');
       const checked =  d3.event.target.checked;
+      const hashTable = model.cryptoBoard.chart.hashTable;
       const getRandomColor = () => {
         const letters = '0123456789ABCDEF';
         let color = '#';
@@ -1686,8 +1697,7 @@ const controller = {
         // add        
         let generatedColor;
         let colorIsDuplicated = false;
-        const keys = Object.keys(model.cryptoBoard.chart.hashTable);
-        const hashTable = model.cryptoBoard.chart.hashTable;
+        const keys = Object.keys(hashTable);        
         do {
           generatedColor = getRandomColor();
           keys.forEach(key => {
@@ -1696,14 +1706,14 @@ const controller = {
             }
           })
         }while(colorIsDuplicated);
-        model.cryptoBoard.chart.hashTable[key] = model.cryptoBoard.data[key];
-        model.cryptoBoard.chart.hashTable[key].color = generatedColor;
+        hashTable[key] = model.cryptoBoard.data[key];
+        hashTable[key].color = generatedColor;
       } else {
         // remove
-          delete model.cryptoBoard.chart.hashTable[key];
+          delete hashTable[key];
       }
 
-      const selectionLength = Object.keys(model.cryptoBoard.chart.hashTable).length;
+      const selectionLength = Object.keys(hashTable).length;
       if(selectionLength > 1) {
         // display that submenu
         cryptoBoardView.showModalBtn();
@@ -1711,6 +1721,8 @@ const controller = {
         // hide that submenu
         cryptoBoardView.hideModalBtn();
       }
+
+      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));
     },
     changeGraphCurrency() {
       if(model.cryptoBoard.chart.currency !== d3.event.target.value) {
