@@ -806,7 +806,7 @@ const cryptoBoardView = {
         currency: 'USD',
         limit: 100,        
         chart: {
-          hashTable: {},
+          hashTable: JSON.parse(window.localStorage.getItem('hashTable')) || {},
           chartData: {},
           currency: 'USD',
           type: 'bar',
@@ -848,13 +848,14 @@ const cryptoBoardView = {
     this.checkPreviousItems();
   },
   checkPreviousItems() {
-    const hashTable = JSON.parse(window.localStorage.getItem('hashTable')) || {};
+    const hashTable = model.cryptoBoard.chart.hashTable;    
     const keys = Object.keys(hashTable);
     const checkboxes = this.boardBody.querySelectorAll('input');
-    if(!!checkboxes) {
-      keys.forEach(key => {
+    if(!!checkboxes) {      
+      keys.forEach(key => { 
         if(checkboxes[+key].getAttribute('data-currency-id') === hashTable[key].id) checkboxes[+key].checked = true;
       });
+      if(keys.length > 1) this.showModalBtn();
     }
   },
   attachFiltersEvents() {
@@ -1194,7 +1195,10 @@ const cryptoBoardView = {
           'x': (_d,i) => xScale(++i),
           'y': d => yScale(+d[comparisionField]),
           'width': xScale.bandwidth(),
-          'height': d => height - yScale(+d[comparisionField]),
+          'height': d => {
+            let result = height - yScale(+d[comparisionField]);
+            return result < 0 ? 0 : result;
+          },
           'data-index': (_d,i) => i,
         })
         .on('mouseover', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField))
@@ -1725,9 +1729,8 @@ const controller = {
       window.localStorage.setItem('hashTable', JSON.stringify(hashTable));
     },
     changeGraphCurrency() {
-      if(model.cryptoBoard.chart.currency !== d3.event.target.value) {
-        model.cryptoBoard.chart.currency = d3.event.target.value;
-      }      
+      const value = d3.event.target.value;
+      if(model.cryptoBoard.chart.currency !== value) model.cryptoBoard.chart.currency = value;
     },
     changeHashTableCurrency() {
       if(model.cryptoBoard.chart.currency === model.cryptoBoard.currency) {
@@ -1774,11 +1777,8 @@ const controller = {
       model.cryptoBoard.chart.type = d3.event.target.getAttribute('data-type');      
     },
     buildChart() {
-      d3.event.preventDefault();      
-      const { currency, hashTable, type, /*prevType,*/ comparisionField } = model.cryptoBoard.chart;
-      //const chartIsBeingUpdated = prevType === type;
-      
-      //model.cryptoBoard.chart.prevType = type;
+      d3.event.preventDefault();
+      const { currency, hashTable, type, comparisionField } = model.cryptoBoard.chart;      
 
       model.requestModuleData({
         url: this.createCryptoBoardURL(currency),
@@ -1787,8 +1787,7 @@ const controller = {
           this.changeHashTableCurrency();
           cryptoBoardView.renderChart({
             hashTable: Object.assign({}, hashTable),
-            type,
-            //chartIsBeingUpdated,
+            type,            
             comparisionField,
           });
         }
