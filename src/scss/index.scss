@@ -180,14 +180,19 @@ body {
     flex-wrap: wrap;
 }
 
-.arc {
+.arc, 
+.col {
     transition: opacity .5s ease-in;
 }
 
-.arc:hover {
+.arc:hover,
+.col:hover {
     cursor: pointer;
 }
 
+.bar .tick text {
+    //transition: all .5s ease-in;
+}
 
 .legend__item:hover {
     cursor: pointer;

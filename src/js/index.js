@@ -844,6 +844,8 @@ const cryptoBoardView = {
     });
     d3.selectAll('.cell input')
       .on('change', () => controller.toggleItemForGraphDraw());
+
+    //this.checkPreviousItems();
   },
   attachFiltersEvents() {
     d3.selectAll('.filters--board .table-length button')
@@ -912,22 +914,31 @@ const cryptoBoardView = {
   showModalBtn() {
     this.modalBtn.style.opacity = 1;
   },
+  midAngle(d) {
+    return d.startAngle + (d.endAngle - d.startAngle) / 2;
+  },
   renderChart({ hashTable, type, comparisionField,/* chartIsBeingUpdated */ }) {
     if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');    
     if(!this.legend) this.legend = d3.select('.graph--crypto-chart').append('div').attr('class', 'legend');
 
     const stylesSVG = getComputedStyle(this.chartSVG.node());
     const width = parseInt(stylesSVG.width);
-    const height = parseInt(stylesSVG.height);           
+    const height = parseInt(stylesSVG.height);
+
+    const keys = Object.keys(hashTable);
+    const dataset = keys.map(key => hashTable[key]);
+    const colorValues = keys.map(key => hashTable[key].color);
+
     this.chartSVG.selectAll('*').remove();
     this.legend.selectAll('*').remove();
+    this.color = d3.scaleOrdinal(colorValues);
 
     switch(type) {
       case 'pie':
-        this.renderPieChart({ hashTable, width, height, comparisionField });
+        this.renderPieChart({ dataset, width, height, comparisionField });
         break;
       case 'bar':
-        this.renderBarChart({ hashTable, width, height, comparisionField });
+        this.renderBarChart({ dataset, width, height, comparisionField });
         break;
     }
 
@@ -949,45 +960,32 @@ const cryptoBoardView = {
         console.warn('something went wrong with chart type');
     }*/
   },
-  midAngle(d) {
-    return d.startAngle + (d.endAngle - d.startAngle) / 2;
-  },
-  togglePieLabel(container, opacityVal) {
-    container.getElementsByTagName('text')[0].style.opacity = opacityVal;
-    container.getElementsByTagName('polyline')[0].style.opacity = opacityVal;
-  },
-  /*updatePieChart({ hashTable, width, height, comparisionField }) {
-    const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);
-    const colorValues = keys.map(key => hashTable[key].color);
-    this.color = d3.scaleOrdinal(colorValues);
-
-    this.g.selectAll('.arc').remove();
-
-    const arc = this.g.selectAll('.arc')
-      .data(this.pie(dataset), d => d);
-
-    const arcEnter = arc
+  buildLegendSection({ dataset, comparisionField, handleHoverEvent }) {
+    let index = 0;
+    const items = this.legend.selectAll('.legend__item')
+      .data(dataset)
       .enter()
-      .append('g')
-      .each(function(d) { this._current = d; }) // store the initial angles
-      .attr('class', 'arc')
-      .merge(arc);
-      
-   
-    this.appendPieSlices(arcEnter, comparisionField);
-    this.applyTransition(arcEnter, comparisionField);
-    
-    arc.exit().remove();    
-  },*/
-  renderPieChart({ hashTable, width, height, comparisionField }) {
-    const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);    
-    const colorValues = keys.map(key => hashTable[key].color);
+      .append('div')
+      .attrs({
+        'data-index': () => index++,
+        'class': 'legend__item',
+      })
+      .on('mouseover', d => handleHoverEvent(1, this.color(d[comparisionField]), d, comparisionField ))
+      .on('mouseout', d => handleHoverEvent(0, '#333', d, comparisionField));
 
+    items
+      .append('span')
+      .attr('class', 'square')
+      .style('background-color', d => this.color(d[comparisionField]));
+
+    items
+      .append('span')
+      .text(d => d.name);
+  },
+  // PIE
+  renderPieChart({ dataset, width, height, comparisionField }) {
     this.radius = Math.min(height,width) / 2;
-    this.labelr = this.radius + 20; // label radius
-    this.color = d3.scaleOrdinal(colorValues);
+    this.labelr = this.radius + 20; // label radius    
 
     this.g = this.chartSVG.append('g')
       .attrs({
@@ -1023,53 +1021,39 @@ const cryptoBoardView = {
     this.appendPieSlices(arc, comparisionField);
     
     // BUILDING THE LEGEND
-    const handleHoverEvent = (opacityVal, color) => {
-      let item = d3.event.target;
-      if(item.tagName !== 'DIV') item = item.parentElement;
+    this.buildLegendSection({
+      dataset,
+      comparisionField,
+      handleHoverEvent: this.handleHoverEventPie.bind(this)
+    });
+  },
+  togglePieLabel(parent, opacityVal) {
+    parent.getElementsByTagName('text')[0].style.opacity = opacityVal;
+    parent.getElementsByTagName('polyline')[0].style.opacity = opacityVal;
+  },
+  handleHoverEventPie(opacityVal, color) {
+    let item = d3.event.target;
+    if(item.tagName !== 'DIV') item = item.parentElement;
 
-      item.getElementsByTagName('span')[1].style.color = color;
+    item.getElementsByTagName('span')[1].style.color = color;
 
-      const labels = Array.prototype.slice.call(document.getElementsByClassName('arc'));
-      const label = labels[item.getAttribute('data-index')];
-      this.togglePieLabel(label, opacityVal);
-      
-      const callback = opacityVal === 1 ?
-        item => {
-          if(item !== label) {            
-            item.style.opacity = 0.25;
-          }
-        } : 
-        item => {          
-          item.style.opacity = 1;
-        };
+    const labels = Array.prototype.slice.call(document.getElementsByClassName('arc'));
+    const label = labels[item.getAttribute('data-index')];
+    this.togglePieLabel(label, opacityVal);
 
-      labels.forEach(callback);
-    };
+    const callback = opacityVal === 1 ?
+      labelItem => {
+        if(labelItem !== label) {
+          labelItem.style.opacity = 0.25;
+        }
+      } :
+      labelItem => {
+        labelItem.style.opacity = 1;
+      };
 
-    let index = 0;
-    const items = this.legend.selectAll('.legend__item')
-      .data(dataset)
-      .enter()
-      .append('div')
-      .attrs({
-        'data-index': () => index++,
-        'class': 'legend__item',
-      })
-      .on('mouseover', d => handleHoverEvent(1, this.color(d[comparisionField])))
-      .on('mouseout', () => handleHoverEvent(0, '#333'));
-
-    items
-      .append('span')
-      .attr('class', 'square')
-      .style('background-color', d => this.color(d[comparisionField]));
-
-    items
-      .append('span')
-      .text(d => d.name);
+    labels.forEach(callback);
   },
   appendPieSlices(selection, comparisionField) {
-    const containersPos = d3.select('.graph--crypto-chart').node();
-
     selection
       .append('path')
       .attrs({
@@ -1129,7 +1113,7 @@ const cryptoBoardView = {
           dy: '1.1em',
         })
         .style('font-size', '.75em')
-        .text(d => d.data[comparisionField])        
+        .text(d => d.data[comparisionField])
         
 
     selection
@@ -1148,6 +1132,153 @@ const cryptoBoardView = {
       .style('pointer-events', 'none')
       .style('opacity', 0)
       .style('transition', 'opacity .5s ease-in');
+  },
+  // BAR
+  renderBarChart({ dataset, width, height, comparisionField }) {
+    const margin = {top: 20, right: 20, bottom: 30, left: 40};
+    width -= (margin.left + margin.right);
+    height -= (margin.top + margin.bottom);
+
+    const xScale = d3.scaleBand()
+      .rangeRound([0, width])
+      .padding(0.1)
+      .domain(dataset.map((d, i) => ++i));
+        
+    const yScale = d3.scaleLinear()
+      .rangeRound([height, 0])
+      .domain([0, d3.max(dataset, d => +d[comparisionField])]);
+
+    const g = this.chartSVG.append('g')
+      .attrs({
+        'transform': `translate(${margin.left}, ${margin.top})`,
+        'class': 'bar'
+      });
+
+    g.append('g')
+        .attr('class', 'axis axis--x')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(d3.axisBottom(xScale));
+
+    g.append('g')
+        .attr('class', 'axis axis--y')
+        .call(d3.axisLeft(yScale).ticks(10))
+      .append('text')
+        .attrs({
+          'transform': 'rotate(-90)',
+          'y': 6,
+          'dy': '0.71em',
+          'text-anchor': 'end'
+        })
+        .text(d => comparisionField);
+
+    const bars = g.selectAll('.col')
+      .data(dataset)
+      .enter()
+      .append('g')
+      .attr('class', 'col');
+
+    bars
+      .append('rect')
+        .attrs({
+          'fill':  d => this.color(+d[comparisionField]),
+          'x': (_d,i) => xScale(++i),
+          'y': d => yScale(+d[comparisionField]),
+          'width': xScale.bandwidth(),
+          'height': d => height - yScale(+d[comparisionField]),
+          'data-index': (_d,i) => i,
+        })
+        .on('mouseover', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField))
+        .on('mouseout', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField, true));
+    
+    // const text = bars
+    //   .append('text')
+    //     .attrs({
+    //       'dx': (d,i) => xScale(++i),
+    //       'dy': d => yScale(+d[comparisionField]),
+    //       'stroke': d => this.color(+d[comparisionField]),
+    //       'stroke-width': 1
+    //     })
+    //     .style('opacity', 0)
+    //     .style('transition', 'opacity .5s ease-in')        
+
+    // text
+    //   .append('tspan')
+    //     .attrs({
+    //       //x: '0',
+    //       dy: '-1em',
+    //     })
+    //     .text(d => d.name);
+    // text
+    //   .append('tspan')
+    //     .attrs({
+    //       //x: '0',
+    //       dy: '.5em',
+    //     })
+    //     .style('font-size', '.75em')
+    //     .text(d => d[comparisionField]);    
+    
+    this.buildLegendSection({
+      dataset,
+      comparisionField,
+      handleHoverEvent: this.handleHoverEventBar.bind(this)
+    });
+  },
+  toggleBarLabel(index, d, comparisionField, mouseOut) {
+    index = +index;
+    const tickGroups = document.querySelectorAll(`.bar .axis--x .tick`);
+    const line = tickGroups[index].getElementsByTagName('line')[0];
+    const text = tickGroups[index].getElementsByTagName('text')[0];
+    const callback = !mouseOut ?
+      g => {        
+        if(g !== tickGroups[index]) g.getElementsByTagName('text')[0].style.opacity = 0;
+      } :
+      g => g.getElementsByTagName('text')[0].style.opacity = 1;
+
+    tickGroups.forEach(callback);
+    
+    if(!mouseOut) {
+      const color = this.color(+d[comparisionField]);
+      text.style.fontSize = '1.5em';
+      text.style.fill = color;
+      text.style.fontWeight = 'bold';
+      text.innerHTML = `
+        <tspan x="0">${d.name}</tspan>
+        <tspan x="0" dy="1.2em">${d[comparisionField]}</tspan>
+      `;
+      line.style.stroke = color;
+      line.style['stroke-width'] = 3;
+    } else {      
+      text.style.fontSize = '1em';
+      text.style.fill = '#000';
+      text.style.fontWeight = 'normal';
+      text.innerHTML = ++index;
+
+      line.style.stroke = '#000';
+      line.style['stroke-width'] = 1;
+    }  
+  },
+  handleHoverEventBar(opacityVal, color, d, comparisionField) {
+    let item = d3.event.target;
+    if(item.tagName !== 'DIV') item = item.parentElement;    
+
+    item.getElementsByTagName('span')[1].style.color = color;
+
+    const index = item.getAttribute('data-index');
+    const rects = document.querySelectorAll('.col rect');
+    const rect = rects[index];
+    this.toggleBarLabel(index, d, comparisionField, (opacityVal === 1 ? false : true));
+
+    const callback = opacityVal === 1 ?
+      label => {
+        if(label !== rect) {
+          label.style.opacity = 0.25;
+        }
+      } :
+      label => {
+        label.style.opacity = 1;
+      };
+    
+    rects.forEach(callback);
   },
   /*applyTransition(selection, comparisionField) {
     const self = this;
@@ -1201,74 +1332,31 @@ const cryptoBoardView = {
         };
       });
   },*/
-  renderBarChart({ hashTable, width, height, comparisionField }) {
+  /*updatePieChart({ hashTable, width, height, comparisionField }) {
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
-    
-    const margin = {top: 20, right: 20, bottom: 30, left: 40};
-    width -= (margin.left + margin.right);
-    height -= (margin.top + margin.bottom);
+    const colorValues = keys.map(key => hashTable[key].color);
+    this.color = d3.scaleOrdinal(colorValues);
 
-    const xScale = d3.scaleBand()
-      .rangeRound([0, width])
-      .padding(0.1)
-      .domain(dataset.map((d, i) => i));
-        
-    const yScale = d3.scaleLinear()
-      .rangeRound([height, 0])
-      .domain([0, d3.max(dataset, d => +d[comparisionField])]);
+    this.g.selectAll('.arc').remove();
 
-    const g = this.chartSVG.append('g')
-      .attrs({
-        'transform': `translate(${margin.left}, ${margin.top})`,
-        'class': 'bar'
-      });
-            
+    const arc = this.g.selectAll('.arc')
+      .data(this.pie(dataset), d => d);
 
-    g.append('g')
-        .attr('class', 'axis axis--x')
-        .attr('transform', 'translate(0,' + height + ')')
-        .call(d3.axisBottom(xScale));
-
-    g.append('g')
-        .attr('class', 'axis axis--y')
-        .call(d3.axisLeft(yScale).ticks(10))
-      .append('text')
-        .attrs({
-          'transform': 'rotate(-90)',
-          'y': 6,
-          'dy': '0.71em',
-          'text-anchor': 'end'
-        })
-        .text(d => comparisionField);
-
-    const bars = g.selectAll('.bar')
-      .data(dataset)
+    const arcEnter = arc
       .enter()
       .append('g')
-      .attr('class', 'bar');
-
-    bars
-      .append('rect')
-        .attrs({
-          'fill': '#d3d3d3',
-          'x': (d,i) => xScale(i),
-          'y': d => yScale(+d[comparisionField]),
-          'width': xScale.bandwidth(),
-          'height': d => height - yScale(+d[comparisionField])
-        });
-    bars
-      .append('text')
-        .text(d => d.name)
-        .attrs({
-          'dx': (d,i) => xScale(i),
-          'dy': d => yScale(+d[comparisionField]),
-          'stroke': '#333',
-          'stroke-width': 1
-        });
-
-  },
-  /*updateBarChart({ hashTable, width, height, comparisionField }) {    
+      .each(function(d) { this._current = d; }) // store the initial angles
+      .attr('class', 'arc')
+      .merge(arc);
+      
+   
+    this.appendPieSlices(arcEnter, comparisionField);
+    this.applyTransition(arcEnter, comparisionField);
+    
+    arc.exit().remove();    
+  },*/
+  /*updateBarChart({ hashTable, width, height, comparisionField }) {
   },*/
 };
 
@@ -1696,6 +1784,7 @@ const controller = {
     },
     filterTableContent() {
       const target = d3.event.target;
+      // update the model
       switch(target.getAttribute('id')) {
         case 'market-cap':
           model.cryptoBoard.additionalFilters.keys.marketCap = target.value;
@@ -1707,7 +1796,9 @@ const controller = {
           model.cryptoBoard.additionalFilters.keys.volume_24h = target.value;
           break;
       }
+
       const { keys, marketCap, price, volume_24h } = model.cryptoBoard.additionalFilters;
+      // helper functions
       const defineConstraints = (name, vals, keys) => {
         let min;
         let max;
@@ -1723,7 +1814,6 @@ const controller = {
         };
       };
       const constraintPasses = (range, item, key) => {
-        //console.log(+item[key], range.min, range.max);
         if(typeof range.min !== 'string') {
           if(
             +item[key] < range.min ||
@@ -1734,16 +1824,17 @@ const controller = {
         }
         return true;
       };
+
       const marketCapRange = defineConstraints('marketCap', marketCap, keys);
       const priceRange = defineConstraints('price', price, keys);
       const volume_24hRange = defineConstraints('volume_24h', volume_24h, keys);
-      
+
       const data = model.cryptoBoard.data.filter(item => {        
         return constraintPasses(marketCapRange, item, 'market_cap_usd') &&
                constraintPasses(priceRange, item, 'price_usd') &&
                constraintPasses(volume_24hRange, item, '24h_volume_usd');        
       });
-      console.log(data)
+      
       this.renderCryptoBoardTable({
         data,
         currency: 'USD'
