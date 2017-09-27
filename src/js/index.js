@@ -313,7 +313,7 @@ const historyView = {
     this.drawCurrencySign();
     this.createHashTable(dataset);
   },
-  makeScales({ dataset, width, height }) { 
+  makeScales({ dataset, width, height }) {
     const firstDate = dataset[0].time.getTime();
     const lastDate = dataset[dataset.length - 1].time.getTime();
 
@@ -732,7 +732,7 @@ const currencyPairView = {
         d3.max(dataset, d => this.maxFuncForY(d))
       ])
       .range([height, 0]);
-  }, 
+  },
   createGraphInstances(dataset) {
   
     const ask = new Graph({
@@ -800,22 +800,66 @@ const cryptoBoardView = {
     const waitMessageObj = new WaitMessage('crypto-chart');
     waitMessageObj.hide();
 
+    // const additionalFiltersKeys = JSON.parse(window.localStorage.getItem('additional-table-filters'));
+    // const marketCap = additionalFiltersKeys.marketCap || '0';
+    // const price = additionalFiltersKeys.price || '0';
+    // const volume_24h = additionalFiltersKeys.volume_24h || '0';
+
+    // const currencyTable = JSON.parse(window.localStorage.getItem('currency--table'));
+    // const currencyChart = JSON.parse(window.localStorage.getItem('currency--chart'));
+
     controller.setModelData({
       namespace: 'cryptoBoard',
       params: {
         currency: 'USD',
-        limit: 100,        
+        limit: 100,
         chart: {
           hashTable: JSON.parse(window.localStorage.getItem('hashTable')) || {},
           chartData: {},
           currency: 'USD',
           type: 'bar',
-          //prevType: null,
           comparisionField: 'price_usd',
           waitMessageObj
-        }
+        },
+        /*additionalFilters: {
+          marketCap: {
+            '0': 'All',
+            '1': 1000000000, // +
+            '2': [100000000, 1000000000],
+            '3': [10000000, 100000000],
+            '4': [1000000, 10000000],
+            '5': [100000, 1000000],
+            '6': [0, 100000]
+          },
+          price: {
+            '0': 'All',
+            '1': 100, // +
+            '2': [1, 100],
+            '3': [0.01, 1],
+            '4': [0.0001, 0.01],
+            '5': [0, 0.0001],
+          },
+          volume_24h: {
+            '0': 'All',
+            '1': 10000000,
+            '2': 1000000,
+            '3': 100000,
+            '4': 10000,
+            '5': 1000,
+          },
+          keys: {
+            marketCap,
+            price,
+            volume_24h
+          }
+        }*/
       }
     });
+    
+    // d3.selectAll('#market-cap option').nodes()[+marketCap].setAttribute('selected', 'selected');
+    // d3.selectAll('#price option').nodes()[+price].setAttribute('selected', 'selected');
+    // d3.selectAll('#volume-24h option').nodes()[+volume_24h].setAttribute('selected', 'selected');
+    // d3.select(`.filters--board .board-currencies option[value="${currency}"]`).setAttribute('selected', 'selected');
 
     this.attachFiltersEvents();
   },
@@ -851,17 +895,14 @@ const cryptoBoardView = {
     const hashTable = model.cryptoBoard.chart.hashTable;    
     const keys = Object.keys(hashTable);
     const checkboxes = this.boardBody.querySelectorAll('input');
-    if(!!checkboxes) {      
-      keys.forEach(key => { 
+    if(checkboxes.length >= keys.length) {
+      keys.forEach(key => {
         if(checkboxes[+key].getAttribute('data-currency-id') === hashTable[key].id) checkboxes[+key].checked = true;
       });
       if(keys.length > 1) this.showModalBtn();
     }
   },
   attachFiltersEvents() {
-    d3.selectAll('.filters--board .table-length button')
-      .on('click', () => controller.changeTableLength());
-
     d3.select('.filters--board .board-currencies')
       .on('change', () => controller.changeTableCurrency());
 
@@ -884,7 +925,6 @@ const cryptoBoardView = {
     d3.select('#graph-currencies')
       .on('change', () => controller.changeGraphCurrency());
 
-
     const handleClickWithBtnSelection = ({ selector, callback, classCSS }) => {
       let prevBtn = d3.select(selector).node();
       prevBtn.classList.add(classCSS); 
@@ -903,11 +943,16 @@ const cryptoBoardView = {
     }
 
     handleClickWithBtnSelection({
+      selector: '.filters--board .table-length button',
+      classCSS: 'selected',
+      callback: controller.changeTableLength.bind(controller),
+    });
+
+    handleClickWithBtnSelection({
       selector: '.filters--board .category button',
       classCSS: 'selected',
       callback: controller.changeComparisionField
     });
-
 
     handleClickWithBtnSelection({
       selector: '.filters--board .type button',
@@ -1156,7 +1201,7 @@ const cryptoBoardView = {
       .domain(dataset.map((d, i) => ++i));
         
     const yScale = d3.scaleLinear()
-      .rangeRound([height, 0])
+      .rangeRound([height, d3.min(dataset, d => +d[comparisionField])])
       .domain([0, d3.max(dataset, d => +d[comparisionField])]);
 
     const g = this.chartSVG.append('g')
@@ -1180,7 +1225,7 @@ const cryptoBoardView = {
           'dy': '0.71em',
           'text-anchor': 'end'
         })
-        .text(d => comparisionField);
+        .text(comparisionField);
 
     const bars = g.selectAll('.col')
       .data(dataset)
@@ -1195,10 +1240,7 @@ const cryptoBoardView = {
           'x': (_d,i) => xScale(++i),
           'y': d => yScale(+d[comparisionField]),
           'width': xScale.bandwidth(),
-          'height': d => {
-            let result = height - yScale(+d[comparisionField]);
-            return result < 0 ? 0 : result;
-          },
+          'height': d => height - yScale(+d[comparisionField]),
           'data-index': (_d,i) => i,
         })
         .on('mouseover', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField))
@@ -1726,7 +1768,7 @@ const controller = {
         cryptoBoardView.hideModalBtn();
       }
 
-      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));
+      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));      
     },
     changeGraphCurrency() {
       const value = d3.event.target.value;
@@ -1739,12 +1781,12 @@ const controller = {
           comparisionField.indexOf('volume_24h') !== -1 ||
           comparisionField.indexOf('market_cap') !== -1
         ) {
-          // we need to change the last three chars as they represent currency          
+          // we need to change the last three chars as they represent currency
           model.cryptoBoard.chart.comparisionField = comparisionField.substr(0, comparisionField.length - 3) + value.toLowerCase();          
         }
       }
     },
-    changeHashTableCurrency() {      
+    changeHashTableCurrency() {
       if(model.cryptoBoard.chart.currency === model.cryptoBoard.currency) {
         return; // no need for changing data
       }
@@ -1820,6 +1862,8 @@ const controller = {
           model.cryptoBoard.additionalFilters.keys.volume_24h = target.value;
           break;
       }
+
+      //window.localStorage.setItem('additional-table-filters', JSON.stringify(model.cryptoBoard.additionalFilters.keys));      
 
       const { keys, marketCap, price, volume_24h } = model.cryptoBoard.additionalFilters;
       // helper functions
