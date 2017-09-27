@@ -133,7 +133,7 @@ const model = {
     d3.json(url, (data) => {
       namespace.data = data;
       controller.finishAnimation(namespace);  
-      callback(isModuleBeingUpdated);    
+      callback(isModuleBeingUpdated);
     });
   },
 };
@@ -913,7 +913,7 @@ const cryptoBoardView = {
       selector: '.filters--board .type button',
       classCSS: 'selected',
       callback: controller.changeChartType
-    });    
+    });
 
     d3.selectAll('.filters--board .build-button')
       .on('click', () => controller.buildChart());
@@ -929,7 +929,7 @@ const cryptoBoardView = {
     return d.startAngle + (d.endAngle - d.startAngle) / 2;
   },
   renderChart({ hashTable, type, comparisionField,/* chartIsBeingUpdated */ }) {
-    if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');    
+    if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');
     if(!this.legend) this.legend = d3.select('.graph--crypto-chart').append('div').attr('class', 'legend');
 
     const stylesSVG = getComputedStyle(this.chartSVG.node());
@@ -943,7 +943,7 @@ const cryptoBoardView = {
     this.chartSVG.selectAll('*').remove();
     this.legend.selectAll('*').remove();
     this.color = d3.scaleOrdinal(colorValues);
-
+    
     switch(type) {
       case 'pie':
         this.renderPieChart({ dataset, width, height, comparisionField });
@@ -1730,23 +1730,37 @@ const controller = {
     },
     changeGraphCurrency() {
       const value = d3.event.target.value;
-      if(model.cryptoBoard.chart.currency !== value) model.cryptoBoard.chart.currency = value;
+      const comparisionField = model.cryptoBoard.chart.comparisionField;
+
+      if(model.cryptoBoard.chart.currency !== value) { 
+        model.cryptoBoard.chart.currency = value;
+        if(
+          comparisionField.indexOf('price') !== -1 ||
+          comparisionField.indexOf('volume_24h') !== -1 ||
+          comparisionField.indexOf('market_cap') !== -1
+        ) {
+          // we need to change the last three chars as they represent currency          
+          model.cryptoBoard.chart.comparisionField = comparisionField.substr(0, comparisionField.length - 3) + value.toLowerCase();          
+        }
+      }
     },
-    changeHashTableCurrency() {
+    changeHashTableCurrency() {      
       if(model.cryptoBoard.chart.currency === model.cryptoBoard.currency) {
         return; // no need for changing data
       }
-
+      // rewrite hashtable with the data that user has set and not the one that was in the table
       const keys = Object.keys(model.cryptoBoard.chart.hashTable);
       keys.forEach(key => {
+        const color = model.cryptoBoard.chart.hashTable[key].color; // preserve color as it is not part of the data object
         model.cryptoBoard.chart.hashTable[key] = model.cryptoBoard.chart.data[key];
+        model.cryptoBoard.chart.hashTable[key].color = color;
       });
     },
     changeComparisionField() {
       d3.event.preventDefault();
       const btnVal = d3.event.target.textContent;
       const currency = model.cryptoBoard.chart.currency;
-      let comparisionField;
+      let comparisionField;      
       
       switch(btnVal) {
         case 'Price':
@@ -1769,7 +1783,7 @@ const controller = {
           break;
       }
 
-      model.cryptoBoard.chart.comparisionField = comparisionField;
+      model.cryptoBoard.chart.comparisionField = comparisionField;      
     },
     changeChartType() {
       d3.event.preventDefault();
@@ -1778,16 +1792,15 @@ const controller = {
     },
     buildChart() {
       d3.event.preventDefault();
-      const { currency, hashTable, type, comparisionField } = model.cryptoBoard.chart;      
-
+      const { currency, type, comparisionField } = model.cryptoBoard.chart;
       model.requestModuleData({
         url: this.createCryptoBoardURL(currency),
         namespace: model.cryptoBoard.chart,
         callback: () => {
-          this.changeHashTableCurrency();
+          this.changeHashTableCurrency();          
           cryptoBoardView.renderChart({
-            hashTable: Object.assign({}, hashTable),
-            type,            
+            hashTable: Object.assign({}, model.cryptoBoard.chart.hashTable),
+            type,
             comparisionField,
           });
         }
