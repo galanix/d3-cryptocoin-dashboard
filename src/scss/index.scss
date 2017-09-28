@@ -48,6 +48,19 @@ body {
 }
 
 /*
+    PAGE CONTROLLS
+*/
+
+.page-components-state {
+    padding: 25px;
+    label {        
+        margin-top: 25px;
+        display: block;
+    }
+}
+
+
+/*
     FOR BITCOIN RATE GRAPH
 */
 
@@ -117,7 +130,7 @@ body {
 
 #crypto-chart {
     width: 500px;
-    height: 250px;
+    height: 350px;
     padding: 50px;
 }
 
@@ -181,17 +194,13 @@ body {
 }
 
 .arc, 
-.col {
+.col rect {
     transition: opacity .5s ease-in;
 }
 
 .arc:hover,
 .col:hover {
     cursor: pointer;
-}
-
-.bar .tick text {
-    //transition: all .5s ease-in;
 }
 
 .legend__item:hover {

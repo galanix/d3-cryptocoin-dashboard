@@ -7,8 +7,15 @@ import { attrs } from 'd3-selection-multi';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/material_green.css';
 
-const model = {
-  // namespaces
+const model = {  
+  // should components be rendered?
+  pageComponentState: JSON.parse(window.localStorage.getItem('componentsState')) || {
+    currentPriceView: false,
+    historyView: true,
+    currencyPairView: true,
+    cryptoBoardView: true,
+  },
+   // namespaces
   general: {
     currencySigns: {
       EUR: '&#8364;',
@@ -16,7 +23,7 @@ const model = {
       UAH: '&#8372;',
       RUB: '&#8381;'
     },
-  },
+  },  
   currentPrice: {
     url: 'https://api.coindesk.com/v1/bpi/currentprice.json',
     updateFrequency: 60000,
@@ -136,6 +143,16 @@ const model = {
       callback(isModuleBeingUpdated);
     });
   },
+};
+
+const pageComponentsView = {
+  init(componentsStates) {
+    this.inputs = document.querySelectorAll('.page-components-state input');
+    this.inputs.forEach((input, index) => {      
+      input.checked = componentsStates[index]
+      input.addEventListener('change', evt => controller.toggleComponent(evt));
+    });
+  }
 };
 
 const currentPriceView = {
@@ -1404,35 +1421,46 @@ const cryptoBoardView = {
 
 const controller = {
     init() {
+      const state = model.pageComponentState;    
+      pageComponentsView.init(Object.keys(state).map(key => state[key]));
+
       // request data for history graph
-      historyView.init(),
-      model.requestModuleData({
-        url: this.createHistoryURL(),
-        isModuleBeingUpdated: false,
-        namespace: model.history,
-        callback: this.renderHistoryGraph,
-      });
+      historyView.init();
+      if(state.historyView) {
+        model.requestModuleData({
+          url: this.createHistoryURL(),
+          isModuleBeingUpdated: false,
+          namespace: model.history,
+          callback: this.renderHistoryGraph,
+        });
+      } else console.log('historyView denied');
 
       // request data for currency pair graph
-      currencyPairView.init();   
-      model.requestModuleData({
-        url: this.createCurrencyPairURL(),
-        isModuleBeingUpdated: false,
-        namespace: model.currencyPair,
-        callback: this.renderCurrencyPairGraph,
-      });
+      currencyPairView.init();
+      if(state.currencyPairView) {
+        model.requestModuleData({
+          url: this.createCurrencyPairURL(),
+          isModuleBeingUpdated: false,
+          namespace: model.currencyPair,
+          callback: this.renderCurrencyPairGraph,
+        });
+      } else console.log('currencyPairView denied');
 
       // request data for cryptoboard graph
-      cryptoBoardView.init();      
-      model.requestModuleData({
-        url: this.createCryptoBoardURL(),
-        // isModuleBeingUpdated: false,
-        namespace: model.cryptoBoard,
-        callback: this.renderCryptoBoardTable,
-      });
+      cryptoBoardView.init();
+      if(state.cryptoBoardView) {
+        model.requestModuleData({
+          url: this.createCryptoBoardURL(),
+          // isModuleBeingUpdated: false,
+          namespace: model.cryptoBoard,
+          callback: this.renderCryptoBoardTable,
+        });
+      } else console.log('cryptoBoardView denied');
+      
 
-      model.startFetchingData();
       currentPriceView.init();
+      if(state.currentPriceView) model.startFetchingData();
+      else console.log('currentPriceView denied');
     },
     // general methods
     updateGraphData({ namespace, callback }) {
@@ -1523,6 +1551,12 @@ const controller = {
         dataset: data,
         currency,
       });
+    },
+    // event handlers : pageComponentsView
+    toggleComponent(evt) {
+      const target = evt.target;
+      model.pageComponentState[target.getAttribute('id')] = target.checked;
+      window.localStorage.setItem('componentsState', JSON.stringify(model.pageComponentState));
     },
     // event handlers : currencyPairGraphView
     changePairName() {
