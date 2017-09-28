@@ -1190,88 +1190,74 @@ const cryptoBoardView = {
       .style('transition', 'opacity .5s ease-in');
   },
   // BAR
-  renderBarChart({ dataset, width, height, comparisionField }) {
-    const margin = {top: 20, right: 20, bottom: 30, left: 40};
+  renderBarChart({ dataset, width, height, comparisionField }) {    
+    const margin = {top: 30, right: 10, bottom: 50, left: 50};    
     width -= (margin.left + margin.right);
     height -= (margin.top + margin.bottom);
 
-    const xScale = d3.scaleBand()
-      .rangeRound([0, width])
-      .padding(0.1)
-      .domain(dataset.map((d, i) => ++i));
-        
+    let max = d3.max(dataset, d => +d[comparisionField]);
+    max = max < 0 ? 0 : max;
+    let min = d3.min(dataset, d => +d[comparisionField]);
+    min = min > 0 ? 0 : min;
+    
     const yScale = d3.scaleLinear()
-      .rangeRound([height, d3.min(dataset, d => +d[comparisionField])])
-      .domain([0, d3.max(dataset, d => +d[comparisionField])]);
+      .domain([min, max])     
+      .range([height, 0])
+      .nice();    
+    
+    const xScale = d3.scaleBand()
+      .domain(dataset.map((_d, i) => ++i))
+      .padding(0.2)
+      .rangeRound([0, width], 0.2);
 
     const g = this.chartSVG.append('g')
       .attrs({
         'transform': `translate(${margin.left}, ${margin.top})`,
         'class': 'bar'
       });
+      
+    g.append('g')
+      .attr('class', 'axis axis--x')
+      .attr('transform', 'translate(0,' + height + ')')
+      .call(d3.axisBottom(xScale))
+      .style('shape-rendering', 'crispEdges');
+      
+    g.append('g')
+      .attr('class', 'axis axis--x axis--zero')
+      .attr('transform', `translate(0, ${yScale(0)})`)
+      .style('opacity', 0.4)
+      .call(d3.axisBottom(xScale).tickFormat('').tickSize(0));
 
     g.append('g')
-        .attr('class', 'axis axis--x')
-        .attr('transform', 'translate(0,' + height + ')')
-        .call(d3.axisBottom(xScale));
-
-    g.append('g')
-        .attr('class', 'axis axis--y')
-        .call(d3.axisLeft(yScale).ticks(10))
-      .append('text')
-        .attrs({
-          'transform': 'rotate(-90)',
-          'y': 6,
-          'dy': '0.71em',
-          'text-anchor': 'end'
-        })
-        .text(comparisionField);
+      .attr('class', 'axis axis--y')
+      .call(d3.axisLeft(yScale).ticks(10))
+      // .append('text')
+      // .attrs({
+      //   'transform': 'rotate(-90)',
+      //   'y': 6,
+      //   'dy': '0.71em',
+      //   'text-anchor': 'end'
+      // })
+      // .text(comparisionField);
 
     const bars = g.selectAll('.col')
       .data(dataset)
       .enter()
       .append('g')
       .attr('class', 'col');
-
+     
     bars
       .append('rect')
-        .attrs({
-          'fill':  d => this.color(+d[comparisionField]),
-          'x': (_d,i) => xScale(++i),
-          'y': d => yScale(+d[comparisionField]),
-          'width': xScale.bandwidth(),
-          'height': d => height - yScale(+d[comparisionField]),
-          'data-index': (_d,i) => i,
-        })
-        .on('mouseover', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField))
-        .on('mouseout', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField, true));
-    
-    // const text = bars
-    //   .append('text')
-    //     .attrs({
-    //       'dx': (d,i) => xScale(++i),
-    //       'dy': d => yScale(+d[comparisionField]),
-    //       'stroke': d => this.color(+d[comparisionField]),
-    //       'stroke-width': 1
-    //     })
-    //     .style('opacity', 0)
-    //     .style('transition', 'opacity .5s ease-in')        
-
-    // text
-    //   .append('tspan')
-    //     .attrs({
-    //       //x: '0',
-    //       dy: '-1em',
-    //     })
-    //     .text(d => d.name);
-    // text
-    //   .append('tspan')
-    //     .attrs({
-    //       //x: '0',
-    //       dy: '.5em',
-    //     })
-    //     .style('font-size', '.75em')
-    //     .text(d => d[comparisionField]);    
+      .attrs({
+        'fill':  d => this.color(+d[comparisionField]),
+        'width': xScale.bandwidth(),
+        'data-index': (_d,i) => i,
+        'x': (_d,i) => xScale(++i),
+        'y': d => +d[comparisionField] < 0 ? (yScale(0)) :  yScale(+d[comparisionField]),
+        'height': d => Math.abs(yScale(+d[comparisionField]) - (yScale(0))),
+      })
+      .on('mouseover', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField))
+      .on('mouseout', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField, true));
     
     this.buildLegendSection({
       dataset,
