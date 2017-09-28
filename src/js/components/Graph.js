@@ -3,7 +3,7 @@ import { attrs } from 'd3-selection-multi';
 import { interpolatePath } from 'd3-interpolate-path';
 
 // GRAPH CLASS
-class Graph {
+export default class Graph {
   constructor(params) {
     const keys = Object.keys(params);
     keys.forEach(key => {
@@ -40,5 +40,3 @@ class Graph {
       .style('opacity', opacityVal);
   }
 };
-
-export default Graph;

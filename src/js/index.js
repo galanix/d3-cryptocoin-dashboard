@@ -185,7 +185,7 @@ const historyView = {
         end: this.formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
         start: this.formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()),
         currency: 'USD',
-        waitMessageObj: new WaitMessage('history'),
+        waitMessageObj: new WaitMessage('.graph--history'),
       }
     });    
   },
@@ -596,7 +596,7 @@ const currencyPairView = {
         pairName: 'BTCLTC',
         hours: 2,
         dataPoints: 120, // === 1 min
-        waitMessageObj: new WaitMessage('currency-pair'),
+        waitMessageObj: new WaitMessage('.graph--currency-pair'),
         currentDivisor: 0.0167,
       }
     });
@@ -797,7 +797,7 @@ const cryptoBoardView = {
     this.cancelBtn = document.getElementsByClassName('cancel-button')[0];
     this.boardBody = document.getElementsByClassName('board-body')[0];
 
-    const waitMessageObj = new WaitMessage('crypto-chart');
+    const waitMessageObj = new WaitMessage('.graph--crypto-chart');
     waitMessageObj.hide();
 
     // const additionalFiltersKeys = JSON.parse(window.localStorage.getItem('additional-table-filters'));
@@ -1040,7 +1040,7 @@ const cryptoBoardView = {
   },
   // PIE
   renderPieChart({ dataset, width, height, comparisionField }) {
-    this.radius = Math.min(height,width) / 2;
+    this.radius = width / 4;//Math.min(height,width) / 2;
     this.labelr = this.radius + 20; // label radius    
 
     this.g = this.chartSVG.append('g')
@@ -1072,7 +1072,7 @@ const cryptoBoardView = {
       .enter()
       .append('g')
       .attr('class', 'arc')
-      .each(function(d) { this._current = d; }); // store the initial angles
+      //.each(function(d) { this._current = d; }); // store the initial angles
 
     this.appendPieSlices(arc, comparisionField);
     
@@ -1190,7 +1190,7 @@ const cryptoBoardView = {
       .style('transition', 'opacity .5s ease-in');
   },
   // BAR
-  renderBarChart({ dataset, width, height, comparisionField }) {    
+  renderBarChart({ dataset, width, height, comparisionField }) {
     const margin = {top: 30, right: 10, bottom: 50, left: 50};    
     width -= (margin.left + margin.right);
     height -= (margin.top + margin.bottom);

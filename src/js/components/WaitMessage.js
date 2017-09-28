@@ -1,7 +1,14 @@
 // WAIT MESSAGE CLASS
-class WaitMessage {
-  constructor(classModifier) {
-    this.messageRef = document.querySelector(`.graph--${classModifier} .wait-message`);
+export default class WaitMessage {
+  constructor(parentSelector) {
+    this.messageRef = document.createElement('p');
+    this.messageRef.textContent = 'Wait, please...';
+    this.messageRef.classList.add('wait-message');
+    
+    this.parent = document.querySelector(parentSelector);
+    this.parent.appendChild(this.messageRef);
+    
+    //this.messageRef = document.querySelector(`.graph--${classModifier} .wait-message`);
   }
   show() {
     this.messageRef.style.opacity = 0.75;
@@ -10,5 +17,3 @@ class WaitMessage {
     this.messageRef.style.opacity = 0;
   }
 };
-
-export default WaitMessage;
