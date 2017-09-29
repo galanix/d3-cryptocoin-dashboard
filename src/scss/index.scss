@@ -77,6 +77,44 @@
     border-color: #2A3F54 !important;
 }
 
+
+/* < CURRENCY PAIR > */
+
+.form-control-feedback.fa-clock-o {
+    margin-top: 6px;
+}
+
+.toggle-graphs { 
+    margin-top: 16px;
+
+    .btn span.glyphicon {
+        color: white;
+    }
+    .btn span.glyphicon {    			
+        opacity: 0;				
+    }
+    .btn.active span.glyphicon {				
+        opacity: 1;				
+    }
+}
+
+#currency-pair {
+    .dropdown {
+        display: inline-block;
+    }
+}
+
+
+/* </ CURRENCY PAIR > */
+
+
+
+
+/*
+    OLD STYLES
+*/
+
+
 // #historical-data {
 //     padding: 60px; IN JS
 // }
