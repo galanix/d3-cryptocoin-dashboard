@@ -19,14 +19,14 @@ export default class Graph {
           'stroke': this.color,
           'stroke-width': 2,
           'fill': 'none',
-          'id': 'graph-line--' + this.type,
+          'id': 'graph-type--' + this.type,
       })
       .style('opacity', opacityVal);
   }
   update(dataset) {
-    const opacityVal = !!this.hidden ? 0 : 1;
+    const opacityVal = !!this.hidden ? 0 : 1;    
     this.container
-      .select('path#graph-line--' + this.type)
+      .select('#graph-type--' + this.type)
       .transition()
       .duration(1200)
       .attrTween('d',  (() => {
