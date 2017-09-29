@@ -57,9 +57,9 @@
             <div class="top_nav">
                 <div class="nav_menu">
                     <nav>
-                    <div class="nav toggle">
-                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-                    </div>                                
+                        <div class="nav toggle">
+                            <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                        </div>                                
                     </nav>
                 </div>
             </div>
@@ -94,13 +94,17 @@
                                 <h2>Bitcoin History</h2>
                             </header>
                             <div class="filters col-md-12 col-sm-12 col-xs-12">
-                                <div class="well btn-group full_width">
-                                    <button data-timeline="all-time" class="btn btn-success">All time</button>
-                                    <button data-timeline="1-year" class="btn btn-success">Year</button>
-                                    <button data-timeline="6-month" class="btn btn-success">6 months</button>
-                                    <button data-timeline="3-month" class="btn btn-success">3 months</button>
-                                    <button data-timeline="1-month" class="btn btn-success selected">1 month</button>
-                                    <button data-timeline="1-week" class="btn btn-success">week</button>
+                                <div class="well dropdown">
+                                    <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+                                        Currencies
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a data-value="USD">USD</a></li>
+                                        <li><a data-value="EUR">EUR</a></li>
+                                        <li><a data-value="RUB">RUB</a></li>
+                                        <li><a data-value="UAH">UAH</a></li>
+                                    </ul>
                                 </div>
                                 <div class="well" style="overflow: auto">
                                     <div class="col-md-6 col-sm-12 col-xs-12">
@@ -128,20 +132,86 @@
                                                         </div>                                                
                                                     </div>                                            
                                                 </div>
-                                            </fieldset>                                   
+                                            </fieldset>
                                         </form>
                                     </div>
-                                </div>                                                
-                                <div class="dropdown">
-                                    <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">Currencies
-                                    <span class="caret"></span></button>
-                                    <ul class="dropdown-menu">
-                                        <li><a data-value="USD">USD</a></li>
-                                        <li><a data-value="EUR">EUR</a></li>
-                                        <li><a data-value="RUB">RUB</a></li>
-                                        <li><a data-value="UAH">UAH</a></li>
-                                    </ul>
                                 </div>
+                                <div class="well btn-group full_width">
+                                        <button data-timeline="all-time" class="btn btn-success">All time</button>
+                                        <button data-timeline="1-year" class="btn btn-success">Year</button>
+                                        <button data-timeline="6-month" class="btn btn-success">6 months</button>
+                                        <button data-timeline="3-month" class="btn btn-success">3 months</button>
+                                        <button data-timeline="1-month" class="btn btn-success selected">1 month</button>
+                                        <button data-timeline="1-week" class="btn btn-success">week</button>
+                                </div>                                                                            
+                            </div>
+                            <div class="graph col-md-12 col-sm-12 col-xs-12"></div>
+                        </section>
+                    </div>
+
+                    <div class="col-md-6 col-sm-12 col-xs-12">
+                        <section id="currency-pair" class="row">
+                            <header class="col-md-12 col-sm-12 col-xs-12">
+                                    <h2>Currency Pair</h2>
+                            </header>
+                            <div class="filters col-md-12 col-sm-12 col-xs-12">
+                                <div class="well dropdowns">
+                                    <div class="dropdown dropdown_currency">
+                                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+                                            Currencies
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a data-value="BTCLTC">BTC - LTC</a></li>
+                                            <li><a data-value="LTCBTC">LTC - BTC</a></li>
+                                            <li><a data-value="ETHBTC">ETH - BTC</a></li>
+                                            <li><a data-value="BTCETH">BTC - ETH</a></li>
+                                            <li><a data-value="LTCETH">LTC - ETC</a></li>
+                                            <li><a data-value="ETHLTC">ETH - LTC</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="dropdown dropdown_frequency">
+                                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+                                            Frequencies
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a data-value="1 min">1 min</a></li>
+                                            <li><a data-value="5 mins">5 min</a></li>
+                                            <li><a data-value="10 mins">10 mins</a></li>
+                                            <li><a data-value="30 mins">30 mins</a></li>
+                                            <li><a data-value="1 hour">1 hour</a></li>
+                                            <li><a data-value="3 hours">3 hours</a></li>
+                                            <li><a data-value="6 hours">6 hours</a></li>
+                                            <li><a data-value="12 hours">12 hours</a></li>
+                                            <li><a data-value="24 hours">24 hours</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <form class="well form-horizontal form-label-left input_mask" id="hours-input">
+                                    <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
+                                        <input type="text" class="form-control has-feedback-left" placeholder="Hours">
+                                        <span class="fa fa-clock-o form-control-feedback left" aria-hidden="true"></span>
+                                    </div>
+                                </form>
+                                
+                                <div class="well toggle-graphs">                                    
+                                    <div class="btn-group" data-toggle="buttons">
+                                      <label class="btn btn-info active" id="ask">
+                                        <input type="checkbox" autocomplete="off">
+                                        <span class="glyphicon glyphicon-ok"></span>
+                                      </label>
+                                      <label class="btn btn-danger active" id="bid">
+                                        <input type="checkbox" autocomplete="off">
+                                        <span class="glyphicon glyphicon-ok"></span>
+                                      </label>
+                                      <label class="btn btn-success" id="spread" >
+                                        <input type="checkbox" autocomplete="off">
+                                        <span class="glyphicon glyphicon-ok"></span>
+                                      </label>
+                                    </div>
+                                </div>
+                    
                             </div>
                             <div class="graph col-md-12 col-sm-12 col-xs-12"></div>
                         </section>
@@ -401,9 +471,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
     <!-- Malihu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.js"></script>
+    <!-- iCheck -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
     <!-- Custom -->
     <script src="bundle.js"></script>
-    <!-- Custom Theme Scripts -->
+    <!-- Template -->
     <script src="template.js"></script>
 </body>
 </html>
