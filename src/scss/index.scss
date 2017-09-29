@@ -1,29 +1,24 @@
-@import './utilities/variables';
 @import url('https://unpkg.com/flatpickr/dist/flatpickr.min.css');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
-
-html,
-body {    
-  width: 100%;
-  height: 100%;
-}
-
-body {
-    margin: 0;
-    font: 16px/1.5 'Open Sans', sans-serif;
-}
+@import url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
+@import './utilities/variables';
+@import './template.css';
 
 /*
-   TEMPORARY STYLES
+    < GENERAL RULES >
 */
 
-.container {
-    margin: 25px 0 0 25px;
+.toggle {
+    padding-bottom: 16px;
+}
+
+.full_width {
+    width: 100%;
 }
 
 .graph {
-    box-sizing: border-box;
-    width: 620px; // 500 + 60 + 60
+    box-sizing: border-box;    
     position: relative;
 }
 
@@ -42,28 +37,6 @@ body {
     transition: opacity .5s ease-in;
 }
 
-#historical-data,
-#currency-pair {
-    padding: 60px;
-}
-
-/*
-    PAGE CONTROLLS
-*/
-
-.page-components-state {
-    padding: 25px;
-    label {        
-        margin-top: 25px;
-        display: block;
-    }
-}
-
-
-/*
-    FOR BITCOIN RATE GRAPH
-*/
-
 .tooltip {
     position: absolute;
     max-width: 200px;
@@ -81,140 +54,220 @@ body {
     }
 }
 
-.button-group {
-    padding: 25px;
-}
-
-.button {
-  padding: 7px 14px;  
-  background-color: $material-green;  
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  transition: background-color .3s linear;  
-
-  &:hover {
-      background-color: darken($material-green, 5%);
-      cursor: pointer;
-  }
-  &.selected,
-  &.selected:hover {
-    cursor: auto;    
-    background-color: $selected;
-  }
-}
-
 /*
-    FOR PAIR GRAPHS
+    </ GENERAL RULES >
 */
 
-.displayed-graphs {
-    label {       
-        margin: 15px;
-    }
-    label[for="ask"] {
-         border-bottom: 4px solid #3498DB;
-    }
-    label[for="bid"] {
-        border-bottom: 4px solid #E74C3C;  
-    }
-    label[for="spread"] {
-        border-bottom: 4px solid #2ECC71;
-    }
-}
 
 /*
-    CRYPTO BOARD
+    < BITCOIN CURRENT PRICE >
 */
 
-#crypto-chart {
-    width: 500px;
-    height: 350px;
-    padding: 50px;
+
+/*
+    </ BITCOIN CURRENT PRICE >
+*/
+
+/*
+    < HISTORY GRAPH >
+*/
+
+.selected {
+    background-color: #2A3F54 !important;
+    border-color: #2A3F54 !important;
 }
 
-.crypto-currency-board {
-    table-layout: fixed;
-}
+// #historical-data {
+//     padding: 60px; IN JS
+// }
 
-.cell {
-    background-color: #eee;
-    padding: 5px 10px;
-    text-align: center;
-}
-
-.filters--board button {
-    border: none;
-    border-radius: 4px;
-    padding: .5em 1em;
-}
-
-.filters--board button:hover {
-    cursor: pointer;
-    background: #d3d3d3;
-}
-
-.filters--board .selected {
-    background: $selected;    
-    color: #fff;
-}
-
-.filters--board .selected:hover {
-    background: darken($selected, 10%);
-}
-
-.modal-button {
-    transition: opacity .5s ease;
-    opacity: 0;
-}
-
-.modal-window {
-    padding: 0;
-    border: none;
-    overflow-y: hidden;
-    transition: max-height .5s ease;
-    max-height: 0;
-}
-
-#word-length-tester {
-    padding: 0;
-    margin: 0;
-    position: absolute;
-    visibility: hidden;
-    display: inline-block;
-    font-weight: bold;
-}
-
-.legend {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.arc, 
-.col rect {
-    transition: opacity .5s ease-in;
-}
-
-.arc:hover,
-.col:hover {
-    cursor: pointer;
-}
-
-.legend__item:hover {
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.square {
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-}
+/*
+    </ HISTORY GRAPH >
+*/
 
 
-.legend__item span:last-child {
-    margin-left: 10px;
-}
+// html,
+// body {
+//   width: 100%;
+//   height: 100%;
+// }
+
+// body {
+//     margin: 0;
+//     font: 16px/1.5 'Open Sans', sans-serif;
+// }
+
+// /*
+//    TEMPORARY STYLES
+// */
+
+// // .container {
+// //     margin: 25px 0 0 25px;
+// // }
+
+// .graph {
+//     box-sizing: border-box;
+//     width: 620px; // 500 + 60 + 60
+//     position: relative;
+// }
+
+// #historical-data,
+// #currency-pair {
+//     padding: 60px;
+// }
+
+// /*
+//     PAGE CONTROLLS
+// */
+
+// .page-components-state {
+//     padding: 25px;
+//     label {        
+//         margin-top: 25px;
+//         display: block;
+//     }
+// }
+
+
+// /*
+//     FOR BITCOIN RATE GRAPH
+// */
+
+
+// .button-group {
+//     padding: 25px;
+// }
+
+// .button {
+//   padding: 7px 14px;  
+//   background-color: $material-green;  
+//   color: #fff;
+//   border: none;
+//   border-radius: 5px;
+//   font-weight: bold;
+//   transition: background-color .3s linear;  
+
+//   &:hover {
+//       background-color: darken($material-green, 5%);
+//       cursor: pointer;
+//   }
+//   &.selected,
+//   &.selected:hover {
+//     cursor: auto;    
+//     background-color: $selected;
+//   }
+// }
+
+// /*
+//     FOR PAIR GRAPHS
+// */
+
+// .displayed-graphs {
+//     label {       
+//         margin: 15px;
+//     }
+//     label[for="ask"] {
+//          border-bottom: 4px solid #3498DB;
+//     }
+//     label[for="bid"] {
+//         border-bottom: 4px solid #E74C3C;  
+//     }
+//     label[for="spread"] {
+//         border-bottom: 4px solid #2ECC71;
+//     }
+// }
+
+// /*
+//     CRYPTO BOARD
+// */
+
+// #crypto-chart {
+//     width: 500px;
+//     height: 350px;
+//     padding: 50px;
+// }
+
+// .crypto-currency-board {
+//     table-layout: fixed;
+// }
+
+// .cell {
+//     background-color: #eee;
+//     padding: 5px 10px;
+//     text-align: center;
+// }
+
+// .filters--board button {
+//     border: none;
+//     border-radius: 4px;
+//     padding: .5em 1em;
+// }
+
+// .filters--board button:hover {
+//     cursor: pointer;
+//     background: #d3d3d3;
+// }
+
+// .filters--board .selected {
+//     background: $selected;    
+//     color: #fff;
+// }
+
+// .filters--board .selected:hover {
+//     background: darken($selected, 10%);
+// }
+
+// .modal-button {
+//     transition: opacity .5s ease;
+//     opacity: 0;
+// }
+
+// .modal-window {
+//     padding: 0;
+//     border: none;
+//     overflow-y: hidden;
+//     transition: max-height .5s ease;
+//     max-height: 0;
+// }
+
+// #word-length-tester {
+//     padding: 0;
+//     margin: 0;
+//     position: absolute;
+//     visibility: hidden;
+//     display: inline-block;
+//     font-weight: bold;
+// }
+
+// .legend {
+//     display: flex;
+//     justify-content: space-around;
+//     align-items: center;
+//     flex-wrap: wrap;
+// }
+
+// .arc, 
+// .col rect {
+//     transition: opacity .5s ease-in;
+// }
+
+// .arc:hover,
+// .col:hover {
+//     cursor: pointer;
+// }
+
+// .legend__item:hover {
+//     cursor: pointer;
+//     font-weight: bold;
+// }
+
+// .square {
+//     display: inline-block;
+//     width: 15px;
+//     height: 15px;
+// }
+
+
+// .legend__item span:last-child {
+//     margin-left: 10px;
+// }

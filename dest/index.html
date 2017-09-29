@@ -1,12 +1,162 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>D3 Bitcoin Charts</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>D3 Bitcoin Charts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 </head>
-<body>
-    <section class="page-components-state">
+<body class="nav-md">    
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col menu_fixed">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        <a href="index.html" class="site_title"><i class="fa fa-line-chart"></i> <span>D3 Dashboard</span></a>
+                    </div>            
+                    <div class="clearfix"></div>                                                    
+                    <br />
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        <div class="menu_section">
+                            <ul class="nav side-menu">
+                                <li>
+                                    <a>
+                                        <i class="fa fa-bar-chart-o"></i> 
+                                        Dashboards 
+                                        <span class="fa fa-chevron-down"></span>
+                                    </a>
+                                    <ul class="nav child_menu">
+                                        <li>
+                                            <a href="index.html">Current Bitcoin Price</a>
+                                        </li>
+                                        <li>
+                                            <a href="index.html">Bitcoin Price History</a>
+                                        </li>
+                                        <li>
+                                            <a href="index.html">Currency Comparison</a>
+                                        </li>
+                                        <li>
+                                            <a href="index.html">Table of Currencies</a>
+                                        </li>                                    
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="index.html">
+                                        <i class="fa fa-cogs"></i>
+                                        Settings
+                                    </a>                                    
+                                </li>
+                            </ul>
+                        </div>        
+                    </div>
+                    <!-- /sidebar menu -->                                                      
+                </div>
+            </div>
+        
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <nav>
+                    <div class="nav toggle">
+                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                    </div>                                
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+    
+            <!-- page content -->
+            <div class="right_col" role="main">
+
+                <div class="row">
+
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <setion id="bitcoin-current-price" class="row tile_count">
+                            <header class="col-md-6 col-sm-12 col-xs-12">
+                                <h2>Current Price For Bitcoin</h2>
+                            </header>
+                    
+                            <div class="current-price-in-USD col-md-3 col-sm-6 col-xs-6 tile_stats_count">
+                                <span class="count_top">United States Dollars:</span>
+                                <div class="count value"></div>
+                            </div>
+                    
+                            <div class="current-price-in-EUR col-md-3 col-sm-6 col-xs-6 tile_stats_count">
+                                <span class="count_top">European Union Euro:</span>
+                                <div class="count value"></div>                            
+                            </div>
+                        </setion>
+                    </div>
+                    
+                    <div class="col-md-6 col-sm-12 col-xs-12">
+                        <section id="history" class="row">
+                            <header class="col-md-12 col-sm-12 col-xs-12">
+                                <h2>Bitcoin History</h2>
+                            </header>
+                            <div class="filters col-md-12 col-sm-12 col-xs-12">
+                                <div class="well btn-group full_width">
+                                    <button data-timeline="all-time" class="btn btn-success">All time</button>
+                                    <button data-timeline="1-year" class="btn btn-success">Year</button>
+                                    <button data-timeline="6-month" class="btn btn-success">6 months</button>
+                                    <button data-timeline="3-month" class="btn btn-success">3 months</button>
+                                    <button data-timeline="1-month" class="btn btn-success selected">1 month</button>
+                                    <button data-timeline="1-week" class="btn btn-success">week</button>
+                                </div>
+                                <div class="well" style="overflow: auto">
+                                    <div class="col-md-6 col-sm-12 col-xs-12">
+                                        <form class="calendar-date form-horizontal">
+                                            <fieldset>
+                                                <div class="control-group">
+                                                    <div class="controls">
+                                                        <div class="input-prepend input-group">                                                    
+                                                            <span class="add-on input-group-addon"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></span>
+                                                            <input type="text" style="width: 150px" name="start-date" id="start-date" class="form-control flatpickr-target" value="" />                                                                                                        
+                                                        </div>                                                                                           
+                                                    </div>                                            
+                                                </div>
+                                            </fieldset>                                   
+                                        </form>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12 col-xs-12">
+                                        <form class="calendar-date form-horizontal">
+                                            <fieldset>
+                                                <div class="control-group">
+                                                    <div class="controls">                                                    
+                                                        <div class="input-prepend input-group">                                                    
+                                                            <span class="add-on input-group-addon"><i class="glyphicon glyphicon-calendar fa fa-calendar"></i></span>
+                                                            <input type="text" style="width: 150px" name="end-date" id="end-date" class="form-control flatpickr-target" value="" />                                                    
+                                                        </div>                                                
+                                                    </div>                                            
+                                                </div>
+                                            </fieldset>                                   
+                                        </form>
+                                    </div>
+                                </div>                                                
+                                <div class="dropdown">
+                                    <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">Currencies
+                                    <span class="caret"></span></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a data-value="USD">USD</a></li>
+                                        <li><a data-value="EUR">EUR</a></li>
+                                        <li><a data-value="RUB">RUB</a></li>
+                                        <li><a data-value="UAH">UAH</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="graph col-md-12 col-sm-12 col-xs-12"></div>
+                        </section>
+                    </div>
+
+                </div>
+                                
+            </div>
+            <!-- /page content -->
+        </div>
+    </div>                       
+    
+
+
+    <!-- <section class="page-components-state">
         <h1>Page Content</h1>
         <form action="" class="">            
             <label for="currentPriceView">                
@@ -50,8 +200,7 @@
             </p>  
         </div>
     </setion>
-
-     <!-- HISTORY GRAPH -->
+     
     <section class="container">
         <div class="filters filters--history">
             <form class="button-group">
@@ -239,7 +388,22 @@
             </thead>
             <tbody class="board-body"></tbody>
         </table>        
-    </section>
+    </section> -->
+
+    <!-- REDO -->
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- NProgress -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ngprogress/1.1.3/ngprogress.min.js"></script>
+    <!-- FastClick -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+    <!-- Malihu -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.js"></script>
+    <!-- Custom -->
     <script src="bundle.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="template.js"></script>
 </body>
 </html>
