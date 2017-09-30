@@ -7,6 +7,10 @@ import { attrs } from 'd3-selection-multi';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/material_green.css';
 
+import runTemplateScript from './template';
+
+//runTemplateScript();
+
 const model = {
   // should components be rendered?
   pageComponentState: JSON.parse(window.localStorage.getItem('componentsState')) || {
@@ -157,21 +161,33 @@ const pageComponentsView = {
 
 const currentPriceView = {
   init() {
-      this.valueHolderUSD = document.querySelector('.current-price-in-USD .value');
-      this.valueHolderEUR = document.querySelector('.current-price-in-EUR .value');      
+      this.currencyValueUSD = document.querySelector('.current-price-in-USD .count');
+      this.diffNodeUSD = document.querySelector('.current-price-in-USD .count_bottom');
+      
+      this.currencyValueEUR = document.querySelector('.current-price-in-EUR .count');
+      this.diffNodeEUR = document.querySelector('.current-price-in-EUR .count_bottom');        
   },
   renderData({ rateUSD, rateEUR, signsObj }) {
     const transition = 'all .5s ease-in';    
-    const highlightColor = '#26B99A';
+    let highlightColor = '#26B99A';
     const blackColor = '#73879C';
 
     const setStyle = (styles) => {
       const props = Object.keys(styles);
       props.forEach(prop => {
-        this.valueHolderUSD.style[prop] = styles[prop];
-        this.valueHolderEUR.style[prop] = styles[prop];
+        this.currencyValueUSD.style[prop] = styles[prop];
+        this.currencyValueEUR.style[prop] = styles[prop];
       })
     };
+    const insertDiffValue = (node, diff, sign) => {
+      node.innerHTML = `
+      <i class="${diff > 0 ? 'green' : 'red'}">
+        <i class="fa fa-sort-${diff > 0 ? 'asc' : 'desc'}"></i>
+        ${sign + Math.abs(diff).toFixed(2)}
+      </i>
+      From last minute
+    `;
+    }
 
     setStyle({
       transition,
@@ -179,16 +195,27 @@ const currentPriceView = {
     });
     
     setTimeout(() => {
-      setStyle({      
+      setStyle({
         color: blackColor
       })
     }, 2500);
-        
-    this.valueHolderUSD.innerHTML = signsObj['USD'] + this.formatNumber(rateUSD);
-    this.valueHolderEUR.innerHTML = signsObj['EUR'] + this.formatNumber(rateEUR);
+    
+            
+    const prevValUSD = +(this.currencyValueUSD.innerHTML.substr(1));
+    const prevValEUR = +(this.currencyValueEUR.innerHTML.substr(1));
+    const currValUSD = +this.formatNumber(rateUSD);
+    const currValEUR = +this.formatNumber(rateEUR);
+    
+    if(prevValEUR !== 0 || prevValUSD !== 0) {
+      insertDiffValue(this.diffNodeUSD, prevValUSD - currValUSD, signsObj['USD']);
+      insertDiffValue(this.diffNodeEUR, prevValEUR - currValEUR, signsObj['EUR']);
+    }
+
+    this.currencyValueUSD.innerHTML = signsObj['USD'] + currValUSD;
+    this.currencyValueEUR.innerHTML = signsObj['EUR'] + currValEUR;
   },
-  formatNumber(number) {
-    return (+number.replace(',', '')).toFixed(2);
+  formatNumber(numberStr) {
+    return (+numberStr.replace(',', '')).toFixed(2);
   }
 };
 
