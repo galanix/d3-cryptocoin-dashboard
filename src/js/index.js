@@ -505,7 +505,7 @@ const historyView = {
     const graphSVGStyles = getComputedStyle(this.graphSVG.node());
     const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
     const offsetLeft = d3.select('#history .graph').node().getBoundingClientRect().left;
-    // COMEBACK    
+    // REDO    
     this.graphSVG
       .on('mousemove', () => {
         const navBarLeft =  d3.select('.left_col').node().getBoundingClientRect().width;        
@@ -577,7 +577,7 @@ const historyView = {
     return dateStr;
   },
   attachFiltersEvents() {
-    this.prevBtn = d3.select('#history .btn.selected').node();
+    this.prevBtn = d3.select('#history .btn.active').node();
 
     d3.selectAll('#history .btn-group .btn')
       .on('click', () => { 
@@ -589,12 +589,12 @@ const historyView = {
       .on('click', () => controller.currencyDropdownChange());
   },
   changeSelectedButton() {
-    d3.event.preventDefault();      
+    // d3.event.preventDefault();      
     const btn = d3.event.target;
     if(btn !== this.prevBtn) {
-      this.prevBtn.classList.remove('selected');
-      btn.classList.add('selected');
-      this.prevBtn = btn;   
+      this.prevBtn.classList.remove('active');
+      btn.classList.add('active');
+      this.prevBtn = btn;
     }
   }
 };
@@ -811,20 +811,14 @@ const currencyPairView = {
 const cryptoBoardView = {
   init() {
     this.subMenu = document.getElementsByClassName('modal-window')[0];
-    this.modalBtn = document.getElementsByClassName('modal-button')[0];
-    this.cancelBtn = document.getElementsByClassName('cancel-button')[0];
-    this.boardBody = document.getElementsByClassName('board-body')[0];
+    this.modalBtn = document.getElementById('modal-button');
+    this.cancelBtn = document.getElementById('cancel-button');
+    this.buildBtn = document.getElementById('build-button');
+    
+    this.boardBody = document.querySelector('#board-of-crypto-currencies tbody');
 
-    const waitMessageObj = new WaitMessage('.graph--crypto-chart');
-    waitMessageObj.hide();
-
-    // const additionalFiltersKeys = JSON.parse(window.localStorage.getItem('additional-table-filters'));
-    // const marketCap = additionalFiltersKeys.marketCap || '0';
-    // const price = additionalFiltersKeys.price || '0';
-    // const volume_24h = additionalFiltersKeys.volume_24h || '0';
-
-    // const currencyTable = JSON.parse(window.localStorage.getItem('currency--table'));
-    // const currencyChart = JSON.parse(window.localStorage.getItem('currency--chart'));
+    const waitMessageObj = new WaitMessage('#board-of-crypto-currencies .graph');
+    waitMessageObj.hide();    
 
     controller.setModelData({
       namespace: 'cryptoBoard',
@@ -838,110 +832,72 @@ const cryptoBoardView = {
           type: 'bar',
           comparisionField: 'price_usd',
           waitMessageObj
-        },
-        /*additionalFilters: {
-          marketCap: {
-            '0': 'All',
-            '1': 1000000000, // +
-            '2': [100000000, 1000000000],
-            '3': [10000000, 100000000],
-            '4': [1000000, 10000000],
-            '5': [100000, 1000000],
-            '6': [0, 100000]
-          },
-          price: {
-            '0': 'All',
-            '1': 100, // +
-            '2': [1, 100],
-            '3': [0.01, 1],
-            '4': [0.0001, 0.01],
-            '5': [0, 0.0001],
-          },
-          volume_24h: {
-            '0': 'All',
-            '1': 10000000,
-            '2': 1000000,
-            '3': 100000,
-            '4': 10000,
-            '5': 1000,
-          },
-          keys: {
-            marketCap,
-            price,
-            volume_24h
-          }
-        }*/
+        }        
       }
-    });
+    });        
     
-    // d3.selectAll('#market-cap option').nodes()[+marketCap].setAttribute('selected', 'selected');
-    // d3.selectAll('#price option').nodes()[+price].setAttribute('selected', 'selected');
-    // d3.selectAll('#volume-24h option').nodes()[+volume_24h].setAttribute('selected', 'selected');
-    // d3.select(`.filters--board .board-currencies option[value="${currency}"]`).setAttribute('selected', 'selected');
-
     this.attachFiltersEvents();
   },
   renderTable({ dataset, currency }) {
     this.boardBody.innerHTML = '';
     dataset.forEach((item, index) => {      
-      const tr = document.createElement('tr');
+      if(!item.index) item.index = index;      
+      const tr = document.createElement('tr');      
       tr.className = 'board-row';
       tr.innerHTML = `
-        <td class="cell">
-          <label>
-            <input type="checkbox" data-index="${index}" data-currency-id="${item.id}">
-          </label>
+        <td data-toggle="button">
+            <button class="btn btn-xs btn-dark" data-index="${item.index}" data-currency-id="${item.id}"></button>
         </td>
-        <td class="cell">${index + 1}</td>
-        <td class="cell">${item.name}</td>
-        <td class="cell">${item['market_cap_' + currency.toLowerCase()]}</td>
-        <td class="cell">${(+item['price_' + currency.toLowerCase()]).toFixed(5)}</td>
-        <td class="cell">${item.available_supply}</td>
-        <td class="cell">${item['24h_volume_' + currency.toLowerCase()]}</td>
-        <td class="cell">${item.percent_change_1h}</td>
-        <td class="cell">${item.percent_change_24h}</td>
-        <td class="cell">${item.percent_change_7d}</td>
+        <td>${index + 1}</td>
+        <td>${item.name}</td>
+        <td>${item['market_cap_' + currency.toLowerCase()]}</td>
+        <td>${(+item['price_' + currency.toLowerCase()]).toFixed(5)}</td>
+        <td>${item.available_supply}</td>
+        <td>${item['24h_volume_' + currency.toLowerCase()]}</td>
+        <td>${item.percent_change_1h}</td>
+        <td>${item.percent_change_24h}</td>
+        <td>${item.percent_change_7d}</td>
       `;
       this.boardBody.appendChild(tr);
     });
-    d3.selectAll('.cell input')
-      .on('change', () => controller.toggleItemForGraphDraw());
+    d3.selectAll('td .btn')
+      .on('click', () => controller.toggleItemForGraphDraw());
 
     this.checkPreviousItems();
   },
   checkPreviousItems() {
     const hashTable = model.cryptoBoard.chart.hashTable;    
     const keys = Object.keys(hashTable);
-    const checkboxes = this.boardBody.querySelectorAll('input');
+    const checkboxes = [].slice.call(this.boardBody.getElementsByClassName('btn'));
     if(checkboxes.length >= keys.length) {
       keys.forEach(key => {
-        if(checkboxes[+key].getAttribute('data-currency-id') === hashTable[key].id) checkboxes[+key].checked = true;
+        if(checkboxes[+key].getAttribute('data-currency-id') === hashTable[key].id) checkboxes[+key].classList.add('active');
       });
-      if(keys.length > 1) this.showModalBtn();
+      if(keys.length > 1) this.enableBtn(this.modalBtn);        
+      else {
+        this.disableBtn(this.buildBtn);
+        this.disableBtn(this.modalBtn);
+      }
     }
   },
   attachFiltersEvents() {
-    d3.select('.filters--board .board-currencies')
-      .on('change', () => controller.changeTableCurrency());
+    d3.selectAll('#board-of-crypto-currencies .filters .dropdown_currency a')
+      .on('click', () => controller.changeTableCurrency());
 
-    d3.selectAll('.filters--board .additional-filters select')
-      .on('change', () => controller.filterTableContent());
+    d3.selectAll('#board-of-crypto-currencies .filters .dropdown-group a')
+      .on('click', () => controller.filterTableContent());
 
-    d3.select('.filters--board .clear-filters-btn')
+    d3.select('#reset_dropdown-group')
       .on('click', () => controller.clearTableFilters());
 
-    this.modalBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.subMenu.style.maxHeight = 2000 + 'px';
-    });
+    this.modalBtn.addEventListener('click', evt => this.showModalWindow(evt));
 
-    this.cancelBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.subMenu.style.maxHeight = 0 + 'px';
-    });
+    this.cancelBtn.addEventListener('click', () => this.hideModalWindow());
+    
+    this.buildBtn.addEventListener('click', evt => controller.buildChart(evt));
 
-    d3.select('#graph-currencies')
-      .on('change', () => controller.changeGraphCurrency());
+    d3.select('#board-of-crypto-currencies .modal-window .dropdown_currency a')
+      .on('click', () => controller.changeGraphCurrency());
 
     const handleClickWithBtnSelection = ({ selector, callback, classCSS }) => {
       let prevBtn = d3.select(selector).node();
@@ -961,43 +917,63 @@ const cryptoBoardView = {
     }
 
     handleClickWithBtnSelection({
-      selector: '.filters--board .table-length button',
-      classCSS: 'selected',
+      selector: '#board-of-crypto-currencies .table-length .btn',
+      classCSS: 'active',
       callback: controller.changeTableLength.bind(controller),
     });
 
     handleClickWithBtnSelection({
-      selector: '.filters--board .category button',
-      classCSS: 'selected',
+      selector: '#board-of-crypto-currencies .category .btn',
+      classCSS: 'active',
       callback: controller.changeComparisionField
     });
 
     handleClickWithBtnSelection({
-      selector: '.filters--board .type button',
-      classCSS: 'selected',
+      selector: '#board-of-crypto-currencies .type .btn',
+      classCSS: 'active',
       callback: controller.changeChartType
-    });
-
-    d3.selectAll('.filters--board .build-button')
-      .on('click', () => controller.buildChart());
+    });  
   },
-  hideModalBtn() {
-    this.modalBtn.style.opacity = 0;
-    this.subMenu.style.maxHeight = 0 + 'px';
+  showModalWindow(evt) {
+    if(evt.target.classList.contains('disabled')) {
+      return;
+    }    
+    this.subMenu.style.paddingTop = '19px';    
+    this.subMenu.style.paddingBottom = '19px';
+    this.subMenu.style.maxHeight = '2000px';    
+    this.subMenu.style.minHeight = '20px';
   },
-  showModalBtn() {
-    this.modalBtn.style.opacity = 1;
+  hideModalWindow() {
+    this.subMenu.style.paddingTop = '0';
+    this.subMenu.style.paddingBottom = '0';
+    this.subMenu.style.maxHeight = '0';
+    this.subMenu.style.minHeight = '0';
+  },
+  enableBtn(btn) {
+    btn.classList.remove('disabled');
+  },
+  disableBtn(btn) {
+    btn.classList.add('disabled');
   },
   midAngle(d) {
     return d.startAngle + (d.endAngle - d.startAngle) / 2;
   },
-  renderChart({ hashTable, type, comparisionField,/* chartIsBeingUpdated */ }) {
-    if(!this.chartSVG) this.chartSVG = d3.select('.graph--crypto-chart').append('svg').attr('id', 'crypto-chart');
-    if(!this.legend) this.legend = d3.select('.graph--crypto-chart').append('div').attr('class', 'legend');
+  renderChart({ hashTable, type, comparisionField }) {
+    if(!this.chartSVG) this.chartSVG = d3.select('#board-of-crypto-currencies .graph').append('svg').attr('id', 'crypto-chart');
+    if(!this.legend) this.legend = d3.select('#board-of-crypto-currencies .graph').append('div').attr('class', 'legend');
 
-    const stylesSVG = getComputedStyle(this.chartSVG.node());
-    const width = parseInt(stylesSVG.width);
-    const height = parseInt(stylesSVG.height);
+    const width = Math.round(document.querySelector('#board-of-crypto-currencies .graph').getBoundingClientRect().width);
+    //if(width > 380) width = 380;
+    const height = Math.round(width / 2);
+
+    //const paddingValue = 60;
+    this.chartSVG .attrs({
+      width: width,
+      height: height
+    })
+    //.style('padding', paddingValue);
+    
+    //this.legend.style('width', width + 'px')// + paddingValue * 2 + 'px');
 
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
@@ -1006,15 +982,24 @@ const cryptoBoardView = {
     this.chartSVG.selectAll('*').remove();
     this.legend.selectAll('*').remove();
     this.color = d3.scaleOrdinal(colorValues);
-    
+    let hoverCallback;
     switch(type) {
       case 'pie':
         this.renderPieChart({ dataset, width, height, comparisionField });
+        hoverCallback = this.handleHoverEventPie.bind(this)
         break;
       case 'bar':
         this.renderBarChart({ dataset, width, height, comparisionField });
+        hoverCallback = this.handleHoverEventBar.bind(this);
         break;
     }
+    
+    // BUILDING THE LEGEND
+    this.buildLegendSection({
+      dataset,
+      comparisionField,
+      handleHoverEvent: hoverCallback
+    });
 
     //if(!chartIsBeingUpdated) this.chartSVG.selectAll('*').remove();
     /*switch(`${type}, update: ${chartIsBeingUpdated.toString()}`) {
@@ -1035,14 +1020,14 @@ const cryptoBoardView = {
     }*/
   },
   buildLegendSection({ dataset, comparisionField, handleHoverEvent }) {
-    let index = 0;
-    const items = this.legend.selectAll('.legend__item')
+    let index = 0;    
+    const items = this.legend.selectAll('.legend_item')
       .data(dataset)
       .enter()
       .append('div')
       .attrs({
         'data-index': () => index++,
-        'class': 'legend__item',
+        'class': 'legend_item',
       })
       .on('mouseover', d => handleHoverEvent(1, this.color(d[comparisionField]), d, comparisionField ))
       .on('mouseout', d => handleHoverEvent(0, '#333', d, comparisionField));
@@ -1058,8 +1043,13 @@ const cryptoBoardView = {
   },
   // PIE
   renderPieChart({ dataset, width, height, comparisionField }) {
-    this.radius = width / 4;//Math.min(height,width) / 2;
-    this.labelr = this.radius + 20; // label radius    
+    this.radius = Math.round(width / 4);
+    if(this.radius > 150) {
+      //width = 600;
+      //height = width / 2;
+      this.radius = 150; // Math.round(width / 4);
+    }
+    this.labelr = this.radius + 20; // label radius  
 
     this.g = this.chartSVG.append('g')
       .attrs({
@@ -1092,14 +1082,7 @@ const cryptoBoardView = {
       .attr('class', 'arc')
       //.each(function(d) { this._current = d; }); // store the initial angles
 
-    this.appendPieSlices(arc, comparisionField);
-    
-    // BUILDING THE LEGEND
-    this.buildLegendSection({
-      dataset,
-      comparisionField,
-      handleHoverEvent: this.handleHoverEventPie.bind(this)
-    });
+    this.appendPieSlices(arc, comparisionField);        
   },
   togglePieLabel(parent, opacityVal) {
     parent.getElementsByTagName('text')[0].style.opacity = opacityVal;
@@ -1248,15 +1231,7 @@ const cryptoBoardView = {
 
     g.append('g')
       .attr('class', 'axis axis--y')
-      .call(d3.axisLeft(yScale).ticks(10))
-      // .append('text')
-      // .attrs({
-      //   'transform': 'rotate(-90)',
-      //   'y': 6,
-      //   'dy': '0.71em',
-      //   'text-anchor': 'end'
-      // })
-      // .text(comparisionField);
+      .call(d3.axisLeft(yScale).ticks(10))      
 
     const bars = g.selectAll('.col')
       .data(dataset)
@@ -1275,13 +1250,7 @@ const cryptoBoardView = {
         'height': d => Math.abs(yScale(+d[comparisionField]) - (yScale(0))),
       })
       .on('mouseover', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField))
-      .on('mouseout', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField, true));
-    
-    this.buildLegendSection({
-      dataset,
-      comparisionField,
-      handleHoverEvent: this.handleHoverEventBar.bind(this)
-    });
+      .on('mouseout', d => this.toggleBarLabel(d3.event.target.getAttribute('data-index'), d, comparisionField, true));     
   },
   toggleBarLabel(index, d, comparisionField, mouseOut) {
     index = +index;
@@ -1447,16 +1416,16 @@ const controller = {
         });
       } else console.warn('currencyPairView denied');
 
-      // request data for cryptoboard graph
-      // cryptoBoardView.init();
-      // if(state.cryptoBoardView) {
-      //   model.requestModuleData({
-      //     url: this.createCryptoBoardURL(),
-      //     // isModuleBeingUpdated: false,
-      //     namespace: model.cryptoBoard,
-      //     callback: this.renderCryptoBoardTable,
-      //   });
-      // } else console.warn('cryptoBoardView denied');
+      //request data for cryptoboard graph
+      cryptoBoardView.init();
+      if(state.cryptoBoardView) {
+        model.requestModuleData({
+          url: this.createCryptoBoardURL(),
+          // isModuleBeingUpdated: false,
+          namespace: model.cryptoBoard,
+          callback: this.renderCryptoBoardTable,
+        });
+      } else console.warn('cryptoBoardView denied');
       
 
       currentPriceView.init();
@@ -1580,7 +1549,7 @@ const controller = {
       const hours = +input.value;
       const divisor = model.currencyPair.currentDivisor;
       
-      input.placeholder = hours;
+      input.placeholder = hours + ' Hours'
       input.value = '';
       input.blur();      
       
@@ -1746,16 +1715,19 @@ const controller = {
     },
     // event handlers : cryptoBoardView
     changeTableLength() {
-      d3.event.preventDefault();
+      // d3.event.preventDefault();
       model.cryptoBoard.limit = +(d3.event.target.getAttribute('data-value'));
       model.requestModuleData({
         url: this.createCryptoBoardURL(),
         namespace: model.cryptoBoard,
-        callback: this.renderCryptoBoardTable,
+        callback: () => {
+          this.renderCryptoBoardTable();
+          this.filterTableContent();
+        },
       });
     },
     changeTableCurrency() {
-      model.cryptoBoard.currency = d3.event.target.value;
+      model.cryptoBoard.currency = d3.event.target.getAttribute('data-value');
 
       model.requestModuleData({
         url: this.createCryptoBoardURL(),        
@@ -1764,8 +1736,9 @@ const controller = {
       });
     },
     toggleItemForGraphDraw() {
-      const key = +d3.event.target.getAttribute('data-index');
-      const checked =  d3.event.target.checked;
+      const target = d3.event.target;
+      const key = +target.getAttribute('data-index');      
+      const checked =  !target.classList.contains('active');      
       const hashTable = model.cryptoBoard.chart.hashTable;
       const getRandomColor = () => {
         const letters = '0123456789ABCDEF';
@@ -1796,21 +1769,24 @@ const controller = {
       }
 
       const selectionLength = Object.keys(hashTable).length;
+      const viewObj = cryptoBoardView;
       if(selectionLength > 1) {
         // display that submenu
-        cryptoBoardView.showModalBtn();
+        viewObj.enableBtn(viewObj.modalBtn);
+        viewObj.enableBtn(viewObj.buildBtn);
       } else {
         // hide that submenu
-        cryptoBoardView.hideModalBtn();
+        viewObj.disableBtn(viewObj.modalBtn);
+        viewObj.disableBtn(viewObj.buildBtn);
       }
 
       window.localStorage.setItem('hashTable', JSON.stringify(hashTable));      
     },
     changeGraphCurrency() {
-      const value = d3.event.target.value;
+      const value = d3.event.target.getAttribute('data-value');
       const comparisionField = model.cryptoBoard.chart.comparisionField;
 
-      if(model.cryptoBoard.chart.currency !== value) { 
+      if(model.cryptoBoard.chart.currency !== value) {
         model.cryptoBoard.chart.currency = value;
         if(
           comparisionField.indexOf('price') !== -1 ||
@@ -1818,7 +1794,7 @@ const controller = {
           comparisionField.indexOf('market_cap') !== -1
         ) {
           // we need to change the last three chars as they represent currency
-          model.cryptoBoard.chart.comparisionField = comparisionField.substr(0, comparisionField.length - 3) + value.toLowerCase();          
+          model.cryptoBoard.chart.comparisionField = comparisionField.substr(0, comparisionField.length - 3) + value.toLowerCase();
         }
       }
     },
@@ -1835,7 +1811,7 @@ const controller = {
       });
     },
     changeComparisionField() {
-      d3.event.preventDefault();
+      // d3.event.preventDefault();
       const btnVal = d3.event.target.textContent;
       const currency = model.cryptoBoard.chart.currency;
       let comparisionField;      
@@ -1864,12 +1840,14 @@ const controller = {
       model.cryptoBoard.chart.comparisionField = comparisionField;      
     },
     changeChartType() {
-      d3.event.preventDefault();
-      const prevValue = model.cryptoBoard.chart.type;      
+      // d3.event.preventDefault();            
       model.cryptoBoard.chart.type = d3.event.target.getAttribute('data-type');      
     },
-    buildChart() {
-      d3.event.preventDefault();
+    buildChart(evt) {
+      if(evt.target.classList.contains('disabled')) {
+        return;
+      }
+
       const { currency, type, comparisionField } = model.cryptoBoard.chart;
       model.requestModuleData({
         url: this.createCryptoBoardURL(currency),
@@ -1885,22 +1863,18 @@ const controller = {
       });
     },
     filterTableContent() {
-      const target = d3.event.target;
-      // update the model
-      switch(target.getAttribute('id')) {
-        case 'market-cap':
-          model.cryptoBoard.additionalFilters.keys.marketCap = target.value;
-          break;
-        case 'price':
-          model.cryptoBoard.additionalFilters.keys.price = target.value;
-          break;
-        case 'volume-24h':
-          model.cryptoBoard.additionalFilters.keys.volume_24h = target.value;
-          break;
+      if(!!d3.event) {
+        const target = d3.event.target;
+        const greatGreatParent = target.parentElement.parentElement.parentElement;      
+        // update the model
+        if(greatGreatParent.classList.contains('dropdown_market-cap')) {
+          model.cryptoBoard.additionalFilters.keys.marketCap = target.getAttribute('data-value');
+        } else if(greatGreatParent.classList.contains('dropdown_price')) {
+          model.cryptoBoard.additionalFilters.keys.price = target.getAttribute('data-value');
+        } else if(greatGreatParent.classList.contains('dropdown_volume-24h')) {
+          model.cryptoBoard.additionalFilters.keys.volume_24h = target.getAttribute('data-value');
+        }
       }
-
-      //window.localStorage.setItem('additional-table-filters', JSON.stringify(model.cryptoBoard.additionalFilters.keys));      
-
       const { keys, marketCap, price, volume_24h } = model.cryptoBoard.additionalFilters;
       // helper functions
       const defineConstraints = (name, vals, keys) => {
@@ -1933,7 +1907,7 @@ const controller = {
       const priceRange = defineConstraints('price', price, keys);
       const volume_24hRange = defineConstraints('volume_24h', volume_24h, keys);
 
-      const data = model.cryptoBoard.data.filter(item => {        
+      const data = model.cryptoBoard.data.filter(item => {
         return constraintPasses(marketCapRange, item, 'market_cap_usd') &&
                constraintPasses(priceRange, item, 'price_usd') &&
                constraintPasses(volume_24hRange, item, '24h_volume_usd');        
@@ -1945,15 +1919,8 @@ const controller = {
       });
     },
     clearTableFilters() {
-      d3.event.preventDefault();
-      const filters = document.querySelectorAll('.filters--board .additional-filters select');
       const props = Object.keys(model.cryptoBoard.additionalFilters.keys);
-
-      filters.forEach((filter, index) => {
-        filter.value = '0';
-        model.cryptoBoard.additionalFilters.keys[props[index]] = "0";
-      });
-      
+      props.forEach(prop =>  model.cryptoBoard.additionalFilters.keys[prop] = "0");     
       this.filterTableContent();
     }
 };
