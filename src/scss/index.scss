@@ -28,7 +28,7 @@
     top: 0; right: 0; bottom: 0; left: 0;
 
     pointer-events: none;
-    color: #445252;
+    color: $dark;
     letter-spacing: 1px;
     text-align: center;
     height: 25px;
@@ -75,8 +75,8 @@
 #history {   
     .active {
         color: #E9EDEF;
-        background-color: #4B5F71;
-        border-color: #364B5F;
+        background-color: $dark;
+        border-color: $dark_darker;
     }
     .btn-group {
         .btn {
@@ -140,9 +140,9 @@
         // color: #E9EDEF;
         // background-color: #4B5F71;
         // border-color: #364B5F;
-        color: #E9EDEF;
-        background: #26B99A;
-        border: 1px solid #169F85;    
+        color: white;
+        background: $success;
+        border: 1px solid $success_darker;    
     }    
     td {
         position: relative;        
