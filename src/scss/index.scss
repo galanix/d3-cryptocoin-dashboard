@@ -13,7 +13,7 @@
     padding-bottom: 16px;
 }
 
-.full_width {
+.full-width {
     width: 100%;
 }
 
@@ -72,33 +72,41 @@
     < HISTORY GRAPH >
 */
 
-.selected {
-    background-color: #2A3F54 !important;
-    border-color: #2A3F54 !important;
+#history {   
+    .active {
+        color: #E9EDEF;
+        background-color: #4B5F71;
+        border-color: #364B5F;
+    }
+    .btn-group {
+        .btn {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+    }
 }
 
 
 /* < CURRENCY PAIR > */
 
-.form-control-feedback.fa-clock-o {
-    margin-top: 6px;
-}
-
-.toggle-graphs { 
-    margin-top: 16px;
-
-    .btn span.glyphicon {
-        color: white;
-    }
-    .btn span.glyphicon {    			
-        opacity: 0;				
-    }
-    .btn.active span.glyphicon {				
-        opacity: 1;				
-    }
-}
-
 #currency-pair {
+    .form-control-feedback.fa-clock-o {
+        margin-top: 6px;
+    }
+    
+    .toggle-graphs {
+        margin-top: 16px;
+    
+        .btn span.glyphicon {
+            color: white;
+        }
+        .btn span.glyphicon {    			
+            opacity: 0;				
+        }
+        .btn.active span.glyphicon {				
+            opacity: 1;				
+        }
+    }
     .dropdown {
         display: inline-block;
     }
@@ -107,205 +115,103 @@
 
 /* </ CURRENCY PAIR > */
 
+/* < CRYPTOBOARD > */
+
+#board-of-crypto-currencies {
+    .dropdown-group {
+        .dropdown {
+            display: inline-block;
+        }
+    }
+    .modal-window {
+        .category {
+            margin-top: 5px; 
+        }
+        .type {
+           margin-top: 10px;
+        }    
+        .controll-group {         
+            position: relative;
+            right: 10px;
+            margin-bottom: 10px;
+        }
+    }
+    .active {
+        // color: #E9EDEF;
+        // background-color: #4B5F71;
+        // border-color: #364B5F;
+        color: #E9EDEF;
+        background: #26B99A;
+        border: 1px solid #169F85;    
+    }    
+    td {
+        position: relative;        
+        .btn {
+            position: absolute;
+            margin: auto;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            text-align: center;
+        }
+    }    
+}
+
+.modal-window {    
+    overflow-y: hidden;
+    transition: all .5s ease;
+    max-height: 0;
+    min-height: 0;
+}
+
+#word-length-tester {
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    visibility: hidden;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.legend {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;    
+}
+
+.arc, 
+.col rect {
+    transition: opacity .5s ease-in;
+}
+
+.arc:hover,
+.col:hover {
+    cursor: pointer;
+}
+
+.legend_item {
+    min-width: 10%;
+}
+
+.legend_item:hover {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.square {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+}
 
 
+.legend_item span:last-child {
+    margin-left: 10px;
+    margin-right: 5px;
+}
 
-/*
-    OLD STYLES
-*/
-
-
-// #historical-data {
-//     padding: 60px; IN JS
-// }
-
-/*
-    </ HISTORY GRAPH >
-*/
-
-
-// html,
-// body {
-//   width: 100%;
-//   height: 100%;
-// }
-
-// body {
-//     margin: 0;
-//     font: 16px/1.5 'Open Sans', sans-serif;
-// }
-
-// /*
-//    TEMPORARY STYLES
-// */
-
-// // .container {
-// //     margin: 25px 0 0 25px;
-// // }
-
-// .graph {
-//     box-sizing: border-box;
-//     width: 620px; // 500 + 60 + 60
-//     position: relative;
-// }
-
-// #historical-data,
-// #currency-pair {
-//     padding: 60px;
-// }
-
-// /*
-//     PAGE CONTROLLS
-// */
-
-// .page-components-state {
-//     padding: 25px;
-//     label {        
-//         margin-top: 25px;
-//         display: block;
-//     }
-// }
-
-
-// /*
-//     FOR BITCOIN RATE GRAPH
-// */
-
-
-// .button-group {
-//     padding: 25px;
-// }
-
-// .button {
-//   padding: 7px 14px;  
-//   background-color: $material-green;  
-//   color: #fff;
-//   border: none;
-//   border-radius: 5px;
-//   font-weight: bold;
-//   transition: background-color .3s linear;  
-
-//   &:hover {
-//       background-color: darken($material-green, 5%);
-//       cursor: pointer;
-//   }
-//   &.selected,
-//   &.selected:hover {
-//     cursor: auto;    
-//     background-color: $selected;
-//   }
-// }
-
-// /*
-//     FOR PAIR GRAPHS
-// */
-
-// .displayed-graphs {
-//     label {       
-//         margin: 15px;
-//     }
-//     label[for="ask"] {
-//          border-bottom: 4px solid #3498DB;
-//     }
-//     label[for="bid"] {
-//         border-bottom: 4px solid #E74C3C;  
-//     }
-//     label[for="spread"] {
-//         border-bottom: 4px solid #2ECC71;
-//     }
-// }
-
-// /*
-//     CRYPTO BOARD
-// */
-
-// #crypto-chart {
-//     width: 500px;
-//     height: 350px;
-//     padding: 50px;
-// }
-
-// .crypto-currency-board {
-//     table-layout: fixed;
-// }
-
-// .cell {
-//     background-color: #eee;
-//     padding: 5px 10px;
-//     text-align: center;
-// }
-
-// .filters--board button {
-//     border: none;
-//     border-radius: 4px;
-//     padding: .5em 1em;
-// }
-
-// .filters--board button:hover {
-//     cursor: pointer;
-//     background: #d3d3d3;
-// }
-
-// .filters--board .selected {
-//     background: $selected;    
-//     color: #fff;
-// }
-
-// .filters--board .selected:hover {
-//     background: darken($selected, 10%);
-// }
-
-// .modal-button {
-//     transition: opacity .5s ease;
-//     opacity: 0;
-// }
-
-// .modal-window {
-//     padding: 0;
-//     border: none;
-//     overflow-y: hidden;
-//     transition: max-height .5s ease;
-//     max-height: 0;
-// }
-
-// #word-length-tester {
-//     padding: 0;
-//     margin: 0;
-//     position: absolute;
-//     visibility: hidden;
-//     display: inline-block;
-//     font-weight: bold;
-// }
-
-// .legend {
-//     display: flex;
-//     justify-content: space-around;
-//     align-items: center;
-//     flex-wrap: wrap;
-// }
-
-// .arc, 
-// .col rect {
-//     transition: opacity .5s ease-in;
-// }
-
-// .arc:hover,
-// .col:hover {
-//     cursor: pointer;
-// }
-
-// .legend__item:hover {
-//     cursor: pointer;
-//     font-weight: bold;
-// }
-
-// .square {
-//     display: inline-block;
-//     width: 15px;
-//     height: 15px;
-// }
-
-
-// .legend__item span:last-child {
-//     margin-left: 10px;
-// }
+/* </ CRYPTOBOARD > */
