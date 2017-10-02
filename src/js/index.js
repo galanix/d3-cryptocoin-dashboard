@@ -591,13 +591,15 @@ const historyView = {
     this.prevBtn = d3.select('#history .btn.active').node();
 
     d3.selectAll('#history .btn-group .btn')
-      .on('click', () => { 
-        this.changeSelectedButton();
-        controller.timelineBtnClick();
-      });
-
+      .on('click', controller.btnGroupClick({
+        selector: '#history .btn-group .btn',
+        callback: controller.timelineBtnClick.bind(controller)
+      }));          
     d3.selectAll('#history .dropdown a')
-      .on('click', () => controller.currencyDropdownChange());
+      .on('click', controller.dropdownChange({
+        selector: '#history .dropdown a', 
+        callback: controller.currencyDropdownChange
+      }));
   },
   changeSelectedButton() {
     // d3.event.preventDefault();      
@@ -715,10 +717,18 @@ const currencyPairView = {
       .on('click', () => controller.adjustForSpreadGraph());
 
     d3.selectAll('#currency-pair .dropdown_currency a')
-      .on('click', () => controller.changePairName());    
+      .on('click', controller.dropdownChange({
+        selector: '#currency-pair .dropdown_currency a',
+        callback: controller.changePairName.bind(controller)
+      }));
+      //.on('click', () => controller.changePairName()); 
 
     d3.selectAll('#currency-pair .dropdown_frequency a')
-      .on('click', () => controller.changeDataPointsFreq());    
+      .on('click', controller.dropdownChange({
+        selector: '#currency-pair .dropdown_frequency a',
+        callback: controller.changeDataPointsFreq.bind(controller)
+      }));
+      //.on('click', () => controller.changeDataPointsFreq());    
     
     d3.selectAll('#currency-pair #hours-input')
       .on('submit', () => controller.changeHours());
@@ -892,14 +902,33 @@ const cryptoBoardView = {
     }
   },
   attachFiltersEvents() {
-    d3.selectAll('#board-of-crypto-currencies .filters .dropdown_currency a')
-      .on('click', () => controller.changeTableCurrency());
+    d3.selectAll('#board-of-crypto-currencies .dropdown_table-currency a')
+    .on('click', controller.dropdownChange({
+      selector: '#board-of-crypto-currencies .dropdown_table-currency a',
+      callback: controller.changeTableCurrency.bind(controller)
+    }));     
+    
+    const selectors = [
+      '#board-of-crypto-currencies .dropdown_market-cap a',
+      '#board-of-crypto-currencies .dropdown_price a',
+      '#board-of-crypto-currencies .dropdown_volume-24h a'
+    ];
+    selectors.forEach(selector => {
+      d3.selectAll(selector)
+      .on('click', controller.dropdownChange({
+        selector,
+        callback: controller.filterTableContent.bind(controller)
+      }));    
+    });
 
-    d3.selectAll('#board-of-crypto-currencies .filters .dropdown-group a')
-      .on('click', () => controller.filterTableContent());
+    d3.selectAll('#board-of-crypto-currencies .modal-window .dropdown_chart-currency a')
+      .on('click', controller.dropdownChange({
+        selector: '#board-of-crypto-currencies .modal-window .dropdown_chart-currency a',
+        callback: controller.changeGraphCurrency.bind(controller)
+       }));      
 
     d3.select('#reset_dropdown-group')
-      .on('click', () => controller.clearTableFilters());
+    .on('click', () => controller.clearTableFilters());
 
     this.modalBtn.addEventListener('click', evt => this.showModalWindow(evt));
 
@@ -907,43 +936,21 @@ const cryptoBoardView = {
     
     this.buildBtn.addEventListener('click', evt => controller.buildChart(evt));
 
-    d3.select('#board-of-crypto-currencies .modal-window .dropdown_currency a')
-      .on('click', () => controller.changeGraphCurrency());
-
-    const handleClickWithBtnSelection = ({ selector, callback, classCSS }) => {
-      let prevBtn = d3.select(selector).node();
-      prevBtn.classList.add(classCSS); 
-
-      d3.selectAll(selector)
-        .on('click', () => {
-          const currBtn = d3.event.target;
-          if(currBtn !== prevBtn) {
-            currBtn.classList.add(classCSS);
-            prevBtn.classList.remove(classCSS);        
-            prevBtn = currBtn;
-          }
-  
-          if(!!callback) callback();
-        });
-    }
-
-    handleClickWithBtnSelection({
-      selector: '#board-of-crypto-currencies .table-length .btn',
-      classCSS: 'active',
-      callback: controller.changeTableLength.bind(controller),
-    });
-
-    handleClickWithBtnSelection({
-      selector: '#board-of-crypto-currencies .category .btn',
-      classCSS: 'active',
-      callback: controller.changeComparisionField
-    });
-
-    handleClickWithBtnSelection({
-      selector: '#board-of-crypto-currencies .type .btn',
-      classCSS: 'active',
-      callback: controller.changeChartType
-    });  
+    d3.selectAll('#board-of-crypto-currencies .table-length .btn')
+      .on('click', controller.btnGroupClick({
+        selector: '#board-of-crypto-currencies .table-length .btn',
+        callback: controller.changeTableLength.bind(controller)
+      }));
+    d3.selectAll('#board-of-crypto-currencies .category .btn')
+      .on('click', controller.btnGroupClick({
+        selector: '#board-of-crypto-currencies .category .btn',
+        callback: controller.changeComparisionField.bind(controller)
+      }));
+    d3.selectAll('#board-of-crypto-currencies .type .btn')
+      .on('click', controller.btnGroupClick({
+        selector: '#board-of-crypto-currencies .type .btn',
+        callback: controller.changeChartType.bind(controller)
+      }));
   },
   showModalWindow(evt) {
     if(evt.target.classList.contains('disabled')) {
@@ -1463,13 +1470,13 @@ const controller = {
         this.hideComponent(document.getElementById('board-of-crypto-currencies').parentElement);
         console.warn('cryptoBoardView not displayed, go to settings to change that');
       }            
-    },    
-    // general methods
-    hideComponent(element) {      
-      element.style.maxHeight = 0;
     },
-    showComponent(element) {      
-      element.style.maxHeight = 'auto';
+    // general methods
+    hideComponent(element) {
+      element.style.display = 'none'
+    },
+    showComponent(element) {
+      element.style.display = 'block';
     },
     updateGraphData({ namespace, callback }) {
       let url;
@@ -1511,6 +1518,37 @@ const controller = {
         return output;
       }
       return model[namespace][prop];
+    },
+    dropdownChange({ selector, callback }) {
+      let prevAnchorTag = d3.select(selector).node();
+      const btn = prevAnchorTag.parentElement.parentElement.parentElement.querySelector('button');
+      const currDropdownVal = document.createElement('span');
+      
+      prevAnchorTag.classList.add('active');    
+      currDropdownVal.textContent = prevAnchorTag.textContent;      
+      btn.insertBefore(currDropdownVal, btn.querySelector('span'));
+      
+      return () => {
+        prevAnchorTag.classList.remove('active');
+        d3.event.target.classList.add('active');
+        prevAnchorTag = d3.event.target;
+        currDropdownVal.textContent = d3.event.target.textContent;
+        if(!!callback) callback(); // actual event handling
+      }
+    },
+    btnGroupClick({ selector, callback }) {
+      let prevBtn = d3.select(selector + '.active').node();      
+      if(!prevBtn) prevBtn = d3.select(selector).node();
+
+      prevBtn.classList.add('active');
+      return () => {
+        const currBtn = d3.event.target
+        currBtn.classList.add('active');
+        prevBtn.classList.remove('active');
+        prevBtn = currBtn;
+  
+        if(!!callback) callback();
+      };
     },
     // class specific methods
     createCurrencyPairURL() {

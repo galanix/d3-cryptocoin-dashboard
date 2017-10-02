@@ -9,6 +9,10 @@
     < GENERAL RULES >
 */
 
+// a.active {
+//     background: #d3d3d3;
+// }
+
 .toggle {
     padding-bottom: 16px;
 }
@@ -50,7 +54,7 @@
     font-size: 12px;
     h4, strong {
       margin-top: 2px;
-      margin-bottom: 2px;      
+      margin-bottom: 2px;
     }
 }
 
@@ -93,12 +97,15 @@
             padding-right: 8px;
         }
     }
+    input:focus {
+        background: inherit;
+    }
 }
 
 
 /* < CURRENCY PAIR > */
 
-#currency-pair {
+#currency-pair {   
     .form-control-feedback.fa-clock-o {
         margin-top: 6px;
     }
@@ -116,7 +123,7 @@
             opacity: 1;				
         }
     }
-    .dropdown {
+    .dropdown_container {
         display: inline-block;
     }
 }
@@ -128,10 +135,27 @@
 
 #board-of-crypto-currencies {
     .dropdown-group {
-        .dropdown {
+        .dropdown_container {
             display: inline-block;
+            min-width: 100px;
+            text-align: center;            
         }
     }
+    #reset_dropdown-group {
+        margin-left: 25px;
+    }
+    // @media screen and (max-width: 525px) {
+    //     .dropdown-group {
+    //         text-align: center;
+    //         .dropdown_container {                
+    //             width: 100%;                               
+    //         }
+    //     }
+    //     #reset_dropdown-group {            
+    //         margin-left: 0;
+    //         margin-top: 20px;
+    //     }
+    // }
     .modal-window {
         .category {
             margin-top: 5px; 
@@ -224,10 +248,6 @@
 
 
 /* < SETTINGS PAGE >  */
-
-.right_col > .row > div {
-    overflow-y: hidden;
-}
 
 #component-display {
     span.title {
