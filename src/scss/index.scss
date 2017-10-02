@@ -145,13 +145,10 @@
             margin-bottom: 10px;
         }
     }
-    .active {
-        // color: #E9EDEF;
-        // background-color: #4B5F71;
-        // border-color: #364B5F;
+    .active {     
         color: white;
         background: $success;
-        border: 1px solid $success_darker;    
+        border: 1px solid $success_darker;
     }    
     td {
         position: relative;        
@@ -224,3 +221,22 @@
 }
 
 /* </ CRYPTOBOARD > */
+
+
+/* < SETTINGS PAGE >  */
+
+.right_col > .row > div {
+    overflow-y: hidden;
+}
+
+#component-display {
+    span.title {
+        font-size: 24px;
+    }
+    .btn {
+      min-width: 52px;
+    }
+}
+
+
+/* </ SETTINGS PAGE >  */

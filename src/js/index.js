@@ -1,5 +1,6 @@
 import WaitMessage from './components/WaitMessage';
 import Graph from './components/Graph';
+
 import '../scss/index.scss';
 
 import * as d3 from 'd3';
@@ -11,14 +12,7 @@ import runTemplateScript from './template';
 
 //runTemplateScript();
 
-const model = {
-  // should components be rendered?
-  pageComponentState: JSON.parse(window.localStorage.getItem('componentsState')) || {
-    currentPriceView: false,
-    historyView: true,
-    currencyPairView: true,
-    cryptoBoardView: true,
-  },
+const model = {    
   // namespaces
   general: {
     currencySigns: {
@@ -147,16 +141,6 @@ const model = {
       callback(isModuleBeingUpdated);
     });
   },
-};
-
-const pageComponentsView = {
-  init(componentsStates) {
-    this.inputs = document.querySelectorAll('.page-components-state input');
-    this.inputs.forEach((input, index) => {      
-      input.checked = componentsStates[index]
-      input.addEventListener('change', evt => controller.toggleComponent(evt));
-    });
-  }
 };
 
 const currentPriceView = {
@@ -1418,8 +1402,22 @@ const cryptoBoardView = {
 
 const controller = {
     init() {
-      const state = model.pageComponentState;    
-      pageComponentsView.init(Object.keys(state).map(key => state[key]));
+      const state = JSON.parse(window.localStorage.getItem('componentState')) || {
+        currentPriceView: false,
+        historyView: true,
+        currencyPairView: true,
+        cryptoBoardView: true,
+      };      
+
+      currentPriceView.init();
+      if(state.currentPriceView) {
+        model.startFetchingData();
+        this.showComponent(document.getElementById('bitcoin-current-price').parentElement);
+      }
+      else {
+        this.hideComponent(document.getElementById('bitcoin-current-price').parentElement);
+        console.warn('currentPriceView not displayed, go to settings to change that');
+      }
 
       //request data for history graph
       historyView.init();
@@ -1430,7 +1428,11 @@ const controller = {
           namespace: model.history,
           callback: this.renderHistoryGraph,
         });
-      } else console.warn('historyView denied');
+        this.showComponent(document.getElementById('history').parentElement);
+      } else {        
+        this.hideComponent(document.getElementById('history').parentElement);
+        console.warn('historyView not displayed, go to settings to change that');
+      }
 
       //request data for currency pair graph
       currencyPairView.init();
@@ -1441,7 +1443,11 @@ const controller = {
           namespace: model.currencyPair,
           callback: this.renderCurrencyPairGraph,
         });
-      } else console.warn('currencyPairView denied');
+        this.showComponent(document.getElementById('currency-pair').parentElement);
+      } else {        
+        this.hideComponent(document.getElementById('currency-pair').parentElement);
+        console.warn('currencyPairView not displayed, go to settings to change that');
+      }
 
       //request data for cryptoboard graph
       cryptoBoardView.init();
@@ -1452,14 +1458,19 @@ const controller = {
           namespace: model.cryptoBoard,
           callback: this.renderCryptoBoardTable,
         });
-      } else console.warn('cryptoBoardView denied');
-      
-
-      currentPriceView.init();
-      if(state.currentPriceView) model.startFetchingData();
-      else console.warn('currentPriceView denied');
-    },
+        this.showComponent(document.getElementById('board-of-crypto-currencies').parentElement);
+      } else {        
+        this.hideComponent(document.getElementById('board-of-crypto-currencies').parentElement);
+        console.warn('cryptoBoardView not displayed, go to settings to change that');
+      }            
+    },    
     // general methods
+    hideComponent(element) {      
+      element.style.maxHeight = 0;
+    },
+    showComponent(element) {      
+      element.style.maxHeight = 'auto';
+    },
     updateGraphData({ namespace, callback }) {
       let url;
       if(namespace === model.currencyPair) {
@@ -1554,12 +1565,6 @@ const controller = {
         dataset: data,
         currency,
       });
-    },
-    // event handlers : pageComponentsView
-    toggleComponent(evt) {
-      const target = evt.target;
-      model.pageComponentState[target.getAttribute('id')] = target.checked;
-      window.localStorage.setItem('componentsState', JSON.stringify(model.pageComponentState));
     },
     // event handlers : currencyPairGraphView
     changePairName() {

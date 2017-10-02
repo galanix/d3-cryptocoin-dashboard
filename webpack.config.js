@@ -1,45 +1,44 @@
 const path = require('path');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
-    entry: './src/js/index.js',
+    entry: {
+      'bundle': './src/js/index.js',
+      'settings/bundle': './src/js/settings.js',
+    },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dest')
     },
-    module: {        
+    module: {
         rules: [
         {
             test: /\.js$/,
             exclude: /(node_modules|bower_components)/,
             use: {
-            loader: 'babel-loader',
-            options: {
-                presets: ['env']
-            }
+              loader: 'babel-loader',
+              options: {
+                  presets: ['env']
+              }
             }
         },
-        {
+        {            
             test: /\.scss$/,
-            use: [{
-                loader: "style-loader" // creates style nodes from JS strings
-            }, {
-                loader: "css-loader" // translates CSS into CommonJS
-            }, {
-                loader: 'postcss-loader' // autoprefixes css
-            }, {
-                loader: "sass-loader" // compiles Sass to CSS
-            }]
+            use: ExtractTextPlugin.extract({
+              fallback: "style-loader",
+              use: ['css-loader','postcss-loader','sass-loader']
+            }),
         },
-        {
+        {       
             test: /\.css$/,
-            use: [{
-                loader: "style-loader" // creates style nodes from JS strings
-            }, {
-                loader: "css-loader" // translates CSS into CommonJS
-            }, {
-                loader: 'postcss-loader' // autoprefixes css
-            }]
+            use: ExtractTextPlugin.extract({
+              fallback: "style-loader",
+              use: ['css-loader','postcss-loader']
+            })
         }
         ]
-    }
+    },
+    plugins: [
+        new ExtractTextPlugin("bundle.css"),
+    ]
 }
