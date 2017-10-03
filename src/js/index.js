@@ -1065,7 +1065,7 @@ const cryptoBoardView = {
       .append('span')
       .text(d => d.name);
   },
-  // PIE
+  // PIE/DONUT
   renderPieChart({ dataset, width, height, comparisionField }) {
     this.radius = Math.round(width / 4);
     if(this.radius > 150) {
@@ -1825,8 +1825,11 @@ const controller = {
       });
     },
     toggleItemForGraphDraw() {
-      const target = d3.event.target;
-      const key = +target.getAttribute('data-index');      
+      //debugger;
+      let target = d3.event.target;
+      if(target.tagName !== 'BUTTON') target = target.parentElement;
+
+      const newKey = +target.getAttribute('data-index');            
       const checked =  !target.classList.contains('active');      
       const hashTable = model.cryptoBoard.chart.hashTable;
       const getRandomColor = () => {
@@ -1837,11 +1840,11 @@ const controller = {
         }
         return color;
       };
-      if(!!checked) {
-        // add        
+      if(checked) {
+        // add
         let generatedColor;
         let colorIsDuplicated = false;
-        const keys = Object.keys(hashTable);        
+        const keys = Object.keys(hashTable);
         do {
           generatedColor = getRandomColor();
           keys.forEach(key => {
@@ -1849,17 +1852,17 @@ const controller = {
               colorIsDuplicated = true;
             }
           })
-        }while(colorIsDuplicated);
-        hashTable[key] = model.cryptoBoard.data[key];
-        hashTable[key].color = generatedColor;
+        } while(colorIsDuplicated);        
+        hashTable[newKey] = model.cryptoBoard.data[newKey];
+        hashTable[newKey].color = generatedColor;
+
       } else {
         // remove
-          delete hashTable[key];
+          delete hashTable[newKey];
       }
-
-      const selectionLength = Object.keys(hashTable).length;
+      
       const viewObj = cryptoBoardView;
-      if(selectionLength > 1) {
+      if(Object.keys(hashTable).length > 1) {
         // display that submenu
         viewObj.enableBtn(viewObj.modalBtn);
         viewObj.enableBtn(viewObj.buildBtn);
@@ -1869,7 +1872,8 @@ const controller = {
         viewObj.disableBtn(viewObj.buildBtn);
       }
 
-      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));      
+      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));
+      console.log(JSON.parse(window.localStorage.getItem('hashTable')));
     },
     changeGraphCurrency() {
       const value = d3.event.target.getAttribute('data-value');
