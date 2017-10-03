@@ -1009,7 +1009,8 @@ const cryptoBoardView = {
     let hoverCallback;
     switch(type) {
       case 'pie':
-        this.renderPieChart({ dataset, width, height, comparisionField });
+      case 'pie-donut':
+        this.renderPieChart({ dataset, width, height, comparisionField, chartIsDonut: type === 'pie-donut' });
         hoverCallback = this.handleHoverEventPie.bind(this)
         break;
       case 'bar':
@@ -1065,23 +1066,24 @@ const cryptoBoardView = {
       .append('span')
       .text(d => d.name);
   },
-  // PIE/DONUT
-  renderPieChart({ dataset, width, height, comparisionField }) {
-    this.radius = Math.round(width / 4);
-    if(this.radius > 150) {
-      //width = 600;
-      //height = width / 2;
-      this.radius = 150; // Math.round(width / 4);
-    }
-    this.labelr = this.radius + 20; // label radius  
+  // PIE / PIE-DONUT
+  renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {
+    let radius = Math.round(width / 4);
+    let holeRadius = Math.round(radius * 0.6); // for donut chart
 
-    this.g = this.chartSVG.append('g')
+    if(radius > 150) {
+      radius = 150;
+      holeRadius = radius * 0.6;
+    }
+    this.labelr = radius + 20; // label radius  
+
+    const g = this.chartSVG.append('g')
       .attrs({
         'transform': `translate(${width / 2}, ${height / 2})`,
         'class': 'pie'
       });
-
-    this.pie = d3.pie()
+    
+    const pie = d3.pie()
       .sort(null)
       .value(d => {
         let value = +d[comparisionField];
@@ -1090,21 +1092,20 @@ const cryptoBoardView = {
         }
         return value;
       });
-
+    
     this.path = d3.arc()
-      .outerRadius(this.radius - 10)
-      .innerRadius(0);
+      .outerRadius(radius - 10)
+      .innerRadius(chartIsDonut ? holeRadius : 0);
 
     this.label = d3.arc()
       .outerRadius(this.labelr)
       .innerRadius(this.labelr);
 
-    const arc = this.g.selectAll('.arc')
-      .data(this.pie(dataset))
+    const arc = g.selectAll('.arc')
+      .data(pie(dataset))
       .enter()
       .append('g')
-      .attr('class', 'arc')
-      //.each(function(d) { this._current = d; }); // store the initial angles
+      .attr('class', 'arc')      
 
     this.appendPieSlices(arc, comparisionField);        
   },
@@ -1176,6 +1177,7 @@ const cryptoBoardView = {
         'text-anchor': d => this.midAngle(d) / 2 > Math.PI ? 'end' : 'start',
         stroke: d => this.color(d.data[comparisionField]),
       })
+      .style('font-size', '16px')
       .style('opacity', 0)
       
     setTimeout(() => text.style('transition', 'opacity .5s ease-in'), 500); // kostyl
@@ -1333,84 +1335,6 @@ const cryptoBoardView = {
     
     rects.forEach(callback);
   },
-  /*applyTransition(selection, comparisionField) {
-    const self = this;
-    selection
-      .select('path')
-      .transition().duration(750)
-      .attrTween('d', function(a) {
-        const i = d3.interpolate(this.parentElement._current, a);
-        this.parentElement._current = i(0);
-        return function(t) {
-          return self.path(i(t));
-        };
-      });
-  
-    selection
-      .select('text')
-      .transition().duration(750)
-      .attrTween("transform', function(d) {
-        this.parentElement._current = this.parentElement._current || d;
-        const interpolate = d3.interpolate(this.parentElement._current, d);
-        this.parentElement._current = interpolate(0);
-        return function(t) {
-          const d2 = interpolate(t);
-          const pos = self.label.centroid(d2);
-          pos[0] = self.radius * (self.midAngle(d2) < Math.PI ? 1 : -1);
-          return 'translate('+ pos +')';
-        };
-      })
-      .styleTween('text-anchor', function(d) {
-        this._current = this.parentElement._current || d;
-        const interpolate = d3.interpolate(this.parentElement._current, d);
-        this.parentElement._current = interpolate(0);
-        return function(t) {
-          const d2 = interpolate(t);
-          return self.midAngle(d2) < Math.PI ? 'start':'end';
-        };
-      });
-  
-    selection
-      .select('polyline')
-      .transition().duration(750)
-      .attrTween('points', function(d) {
-        this._current = this._current || d;
-        var interpolate = d3.interpolate(this._current, d);
-        this._current = interpolate(0);
-        return function(t) {
-          var d2 = interpolate(t);
-          var pos = self.label.centroid(d2);
-          pos[0] = self.radius * 0.95 * (self.midAngle(d2) < Math.PI ? 1 : -1);
-          return [self.path.centroid(d2), self.label.centroid(d2), pos];
-        };
-      });
-  },*/
-  /*updatePieChart({ hashTable, width, height, comparisionField }) {
-    const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);
-    const colorValues = keys.map(key => hashTable[key].color);
-    this.color = d3.scaleOrdinal(colorValues);
-
-    this.g.selectAll('.arc').remove();
-
-    const arc = this.g.selectAll('.arc')
-      .data(this.pie(dataset), d => d);
-
-    const arcEnter = arc
-      .enter()
-      .append('g')
-      .each(function(d) { this._current = d; }) // store the initial angles
-      .attr('class', 'arc')
-      .merge(arc);
-      
-   
-    this.appendPieSlices(arcEnter, comparisionField);
-    this.applyTransition(arcEnter, comparisionField);
-    
-    arc.exit().remove();    
-  },*/
-  /*updateBarChart({ hashTable, width, height, comparisionField }) {
-  },*/
 };
 
 const controller = {
@@ -1872,8 +1796,7 @@ const controller = {
         viewObj.disableBtn(viewObj.buildBtn);
       }
 
-      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));
-      console.log(JSON.parse(window.localStorage.getItem('hashTable')));
+      window.localStorage.setItem('hashTable', JSON.stringify(hashTable));      
     },
     changeGraphCurrency() {
       const value = d3.event.target.getAttribute('data-value');
@@ -2064,7 +1987,7 @@ const controller = {
       
         scroll();
       };     
-    },  
+    },
 };
 
 controller.init();
