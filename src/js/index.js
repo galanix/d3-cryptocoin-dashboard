@@ -867,7 +867,9 @@ const cryptoBoardView = {
       tr.className = 'board-row';
       tr.innerHTML = `
         <td data-toggle="button">
-            <button class="btn btn-xs btn-dark" data-index="${item.index}" data-currency-id="${item.id}"></button>
+            <button class="btn btn-xs btn-dark" data-index="${item.index}" data-currency-id="${item.id}">
+              <span class="fa fa-check"></span>
+            </button>
         </td>
         <td>${index + 1}</td>
         <td>${item.name}</td>
@@ -1414,7 +1416,9 @@ const controller = {
         historyView: true,
         currencyPairView: true,
         cryptoBoardView: true,
-      };      
+      };    
+      
+      this.animatedScrollToTarget();
 
       currentPriceView.init();
       if(state.currentPriceView) {
@@ -1525,7 +1529,7 @@ const controller = {
       const currDropdownVal = document.createElement('span');
       
       prevAnchorTag.classList.add('active');    
-      currDropdownVal.textContent = prevAnchorTag.textContent;      
+      currDropdownVal.textContent = prevAnchorTag.textContent;     
       btn.insertBefore(currDropdownVal, btn.querySelector('span'));
       
       return () => {
@@ -1992,7 +1996,57 @@ const controller = {
       const props = Object.keys(model.cryptoBoard.additionalFilters.keys);
       props.forEach(prop =>  model.cryptoBoard.additionalFilters.keys[prop] = "0");     
       this.filterTableContent();
-    }
+    },
+    animatedScrollToTarget() {
+      const componentLinks = document.querySelectorAll("a[data-linksTo]");
+      componentLinks.forEach(link => link.addEventListener("click", evt => {
+        scrollIt(
+          document.getElementById(evt.target.getAttribute('data-linksTo')),
+          300,          
+          () => console.log(`Just finished scrolling to ${window.pageYOffset}px`) 
+        );
+      }));
+
+      const scrollIt = (destination, duration = 200, callback) => {
+        const easingFunc = t =>  t * (2 - t);
+      
+        const start = window.pageYOffset;
+        const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
+      
+        const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+
+        let destinationOffset = destination.getBoundingClientRect().top;
+        if(destinationOffset < 0) destinationOffset = destination.offsetTop;
+
+        const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);        
+        if ('requestAnimationFrame' in window === false) {
+          window.scroll(0, destinationOffsetToScroll);
+          if (callback) {
+            callback();
+          }
+          return;
+        }
+      
+        function scroll() {
+          const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+          const time = Math.min(1, ((now - startTime) / duration));
+          const timeFunction = easingFunc(time);
+          window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
+      
+          if (window.pageYOffset === destinationOffsetToScroll) {
+            if (callback) {
+              callback();
+            }
+            return;
+          }
+      
+          requestAnimationFrame(scroll);
+        }
+      
+        scroll();
+      };     
+    },  
 };
 
 controller.init();
