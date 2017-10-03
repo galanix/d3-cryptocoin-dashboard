@@ -246,7 +246,7 @@ const historyView = {
         this.buildLine({ // build new graph from scratch and add event listeners for filters
           dataset,
           width,
-          height
+          height          
         });
         this.attachFiltersEvents();
         controller.initCalendar();
@@ -308,8 +308,8 @@ const historyView = {
                         'class': 'x-axis'
                     });
     this.drawCurrencySign();
-    this.createHashTable(dataset);
-    this.addMovableParts(dataset, height);
+    controller.createHashTable(dataset);
+    this.addMovableParts({ dataset, height });
   },
   updateLine({ dataset, width, height }) {
     // dataset has changed, need to update #historical-data graph
@@ -341,7 +341,7 @@ const historyView = {
                     .call(xAxisGen);
 
     this.drawCurrencySign();
-    this.createHashTable(dataset);
+    controller.createHashTable(dataset);
   },
   makeScales({ dataset, width, height }) {
     const firstDate = dataset[0].time.getTime();
@@ -463,20 +463,7 @@ const historyView = {
       xTickFormat
     };
   },
-  createHashTable(dataset) {
-    const hashTable = {};
-    dataset.forEach(item => {
-      hashTable[Math.round(this.xScale(item.time.getTime()))] = {
-        currencyValue: item.currencyValue,
-        time: item.time,
-      }
-    });
-    controller.setModelData({
-      namespace: 'history',
-      params: { hashTable }
-    });    
-  },
-  addMovableParts(dataset, height) {
+  addMovableParts({ dataset, height }) {
     const lineFunction =
       d3.line()
         .x(d => 0)
@@ -491,15 +478,7 @@ const historyView = {
         'fill': 'none',
         'id': 'movable',
         'transform': `translate(0, 0)`,
-      });
-   
-    const hideMovablePart = () => {
-      d3.select('#movable')
-      .attrs({
-        'transform': `translate(-999, 0)`,          
-      })       
-      this.hideDotsAndTooltip();
-    }
+      });       
 
     this.tooltip = d3.select('#history .graph').append('div')
     .attr('class', 'tooltip')
@@ -512,37 +491,57 @@ const historyView = {
         'fill': '#26B99A'
       })
       .style('opacity', 0);
+        
 
-    const graphSVGStyles = getComputedStyle(this.graphSVG.node());
-    const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
-    const offsetLeft = d3.select('#history .graph').node().getBoundingClientRect().left;
-    // REDO    
+    const svgEl = d3.select('#historical-data').node();
+    const graphSVGStyles = getComputedStyle(this.graphSVG.node());    
     this.graphSVG
       .on('mousemove', () => {
-        const navBarLeft =  d3.select('.left_col').node().getBoundingClientRect().width;        
+        const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
+        const offsetLeft = svgEl.getBoundingClientRect().left;
+        let xPos = Math.round(d3.event.clientX - offsetLeft - paddingLeft);                
+        const hashTable = controller.getModelData({ namespace: 'history', prop: 'hashTable' });
+
+        const graphWidth = parseInt(graphSVGStyles.width);
+        const padRight = parseInt(graphSVGStyles.paddingRight);
+        const padLeft = parseInt(graphSVGStyles.paddingLeft);
         
-        const xPos = Math.round(d3.event.clientX - offsetLeft - navBarLeft);      
-        const value = controller.getModelData({ namespace: 'history', prop: 'hashTable' })[xPos];        
+        if(
+          xPos > (graphWidth - padRight - padLeft + 10) ||
+          xPos < -10
+        ) {          
+          this.hideDotsAndTooltip();
+          return;
+        }
+
+        let rightDist = xPos;
+        let leftDist = xPos;
+        let valueKey;
+
+        // looks for closest point relative to the mouse
+        while( !hashTable['' + leftDist] && leftDist < (graphWidth - padRight - padLeft + 10) ) {
+          leftDist++;
+        }
+        while( !hashTable['' + rightDist] && rightDist > -10 ) {
+          rightDist--;
+        }                
+        if(rightDist < leftDist) valueKey = rightDist; 
+        else valueKey = leftDist;
+        
+        const value = hashTable['' + valueKey];
         if(!!value) {
-          this.showDotsAndTooltip(Object.assign(value));
+          this.showDotsAndTooltip(Object.assign({}, value));
         } else {
           this.hideDotsAndTooltip();
         }
-        d3.select('#movable')
-          .attrs({              
-            'transform': `translate(${xPos}, 0)`,
-          });     
 
-        const graphWidth = parseInt(graphSVGStyles.width);        
-        // if movable reaches the end of a graph-line
-        if(xPos > graphWidth + 5 || // 5s are added for padding
-            xPos < -5
-        ) {
-          hideMovablePart();
-        }
+        d3.select('#movable')
+          .attrs({
+            'transform': `translate(${xPos}, 0)`,
+        });                
       })
       .on('mouseout', () => {
-        hideMovablePart();
+        this.hideDotsAndTooltip();
       });    
   },
   showDotsAndTooltip({ time, currencyValue }) {
@@ -574,6 +573,11 @@ const historyView = {
       .style('top', this.yScale(currencyValue) + 'px')
   },
   hideDotsAndTooltip() {
+    d3.select('#movable')
+    .attrs({
+      'transform': `translate(-999, 0)`,
+    })
+
     d3.selectAll('.dot')         
     .transition()
     .duration(100)
@@ -1553,23 +1557,8 @@ const controller = {
   
         if(!!callback) callback();
       };
-    },
-    // class specific methods
-    createCurrencyPairURL() {
-      const { pairName, dataPoints, hours } = model.currencyPair;
-      return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
-    },
-    createHistoryURL() {
-      const { url, start, end, currency } = model.history;
-      return url + `?start=${start}&end=${end}&currency=${currency}`;
-    },
-    createCryptoBoardURL(customCurrency) {
-      let { url, currency, limit } = model.cryptoBoard;
-      if(!!customCurrency) {
-        currency = customCurrency;
-      }
-      return url + `?convert=${currency}&limit=${limit}`;
-    },
+    },        
+    // currentPriceView
     renderCurrentPrice() {
       currentPriceView.renderData({
           rateEUR: model.currentPrice.data.bpi.EUR.rate,
@@ -1577,103 +1566,7 @@ const controller = {
           signsObj: model.general.currencySigns      
       });
     },
-    renderHistoryGraph(isModuleBeingUpdated) {
-       const data = model.history.data;
-       let width = Math.round(document.querySelector('#history .graph').getBoundingClientRect().width);       
-       if(width > 380) width = 380;
-       const height = Math.round(width / 2);
-       historyView.renderGraph({
-           width,
-           height,
-           data: data.bpi,
-           isModuleBeingUpdated
-       });
-    },
-    renderCurrencyPairGraph(isModuleBeingUpdated) {
-      const data = model.currencyPair.data;
-      let width = Math.round(document.querySelector('#currency-pair .graph').getBoundingClientRect().width);
-      if(width > 380) width = 380;
-      const height = Math.round(width / 2);
-      currencyPairView.renderGraph({
-        width,
-        height,
-        dataset: data,
-        isModuleBeingUpdated
-      });
-    },
-    renderCryptoBoardTable(customParams) {
-      const { data, currency } = !!customParams ? customParams : model.cryptoBoard;
-      cryptoBoardView.renderTable({
-        dataset: data,
-        currency,
-      });
-    },
-    // event handlers : currencyPairGraphView
-    changePairName() {
-      model.currencyPair.pairName = d3.event.target.getAttribute('data-value');      
-      this.updateGraphData({
-        namespace: model.currencyPair,
-        callback: this.renderCurrencyPairGraph
-      });
-    },
-    changeHours() {
-      d3.event.preventDefault();
-
-      const input = d3.event.target.getElementsByTagName('input')[0];
-      const hours = +input.value;
-      const divisor = model.currencyPair.currentDivisor;
-      
-      input.placeholder = hours + ' Hours'
-      input.value = '';
-      input.blur();      
-      
-      model.currencyPair.hours = hours;
-      model.currencyPair.dataPoints = Math.floor(hours / divisor);
-
-      controller.updateGraphData({
-        namespace: model.currencyPair,
-        callback: controller.renderCurrencyPairGraph
-      });
-    },
-    changeDataPointsFreq() {
-      const frequency = d3.event.target.getAttribute('data-value') || '';      
-      // getting data from model
-      const hours = model.currencyPair.hours;
-      const divisor = model.currencyPair.dataPointDivisors[frequency];
-      // changing model data
-      model.currencyPair.currentDivisor = divisor;
-
-      let dataPoints = Math.floor(hours / divisor);
-      if(dataPoints !== 0) {
-        if(dataPoints === 1) {
-          dataPoints++;
-        }
-        
-        model.currencyPair.dataPoints = dataPoints;
-        controller.updateGraphData({
-          namespace: model.currencyPair,
-          callback: controller.renderCurrencyPairGraph
-        });
-      }
-    },
-    adjustForSpreadGraph() {
-      const self = currencyPairView;
-      let active = false;
-      if(!!d3.event) {
-        let target = d3.event.target;
-        if(target.tagName !== 'LABEL') target = target.parentElement; 
-        active = !(target.classList.contains('active'));
-      }
-      model.currencyPair.graphs['spread'].hidden = !active;      
-      
-      const data = model.currencyPair.data;
-      let width = Math.round(document.querySelector('#currency-pair .graph').getBoundingClientRect().width);
-      if(width > 380) width = 380;      
-      const height = Math.round(width / 2);
-      
-      self.updateLines({ dataset: data, width, height });
-    },
-    // event handlers : historyView
+    // historyView
     timelineBtnClick() {
       const btnValue = d3.event.target.getAttribute('data-timeline'); // button value         
       const today = new Date(); // endDate
@@ -1787,7 +1680,129 @@ const controller = {
       const startInput = inputs[0]._flatpickr;
       const endInput = inputs[1]._flatpickr;
     },
-    // event handlers : cryptoBoardView
+    createHashTable(dataset) {
+      const hashTable = {};
+      dataset.forEach(item => {
+        hashTable[Math.round(historyView.xScale(item.time.getTime()))] = {
+          currencyValue: item.currencyValue,
+          time: item.time,
+        }
+      });   
+      model.history.hashTable = hashTable;
+    },
+    createHistoryURL() {
+      const { url, start, end, currency } = model.history;
+      return url + `?start=${start}&end=${end}&currency=${currency}`;
+    },
+    renderHistoryGraph(isModuleBeingUpdated) {
+      const data = model.history.data;
+      
+      let width = Math.round(document.querySelector('#history .graph').getBoundingClientRect().width);       
+      if(width > 380) width = 380;
+      const height = Math.round(width / 2);
+      historyView.renderGraph({
+          width,
+          height,
+          data: data.bpi,
+          isModuleBeingUpdated           
+      });
+    },
+    // currencyPairGraphView
+    createCurrencyPairURL() {
+      const { pairName, dataPoints, hours } = model.currencyPair;
+      return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
+    },        
+    renderCurrencyPairGraph(isModuleBeingUpdated) {
+      const data = model.currencyPair.data;
+      let width = Math.round(document.querySelector('#currency-pair .graph').getBoundingClientRect().width);
+      if(width > 380) width = 380;
+      const height = Math.round(width / 2);
+      currencyPairView.renderGraph({
+        width,
+        height,
+        dataset: data,
+        isModuleBeingUpdated
+      });
+    },       
+    changePairName() {
+      model.currencyPair.pairName = d3.event.target.getAttribute('data-value');      
+      this.updateGraphData({
+        namespace: model.currencyPair,
+        callback: this.renderCurrencyPairGraph
+      });
+    },
+    changeHours() {
+      d3.event.preventDefault();
+
+      const input = d3.event.target.getElementsByTagName('input')[0];
+      const hours = +input.value;
+      const divisor = model.currencyPair.currentDivisor;
+      
+      input.placeholder = hours + ' Hours'
+      input.value = '';
+      input.blur();      
+      
+      model.currencyPair.hours = hours;
+      model.currencyPair.dataPoints = Math.floor(hours / divisor);
+
+      controller.updateGraphData({
+        namespace: model.currencyPair,
+        callback: controller.renderCurrencyPairGraph
+      });
+    },
+    changeDataPointsFreq() {
+      const frequency = d3.event.target.getAttribute('data-value') || '';      
+      // getting data from model
+      const hours = model.currencyPair.hours;
+      const divisor = model.currencyPair.dataPointDivisors[frequency];
+      // changing model data
+      model.currencyPair.currentDivisor = divisor;
+
+      let dataPoints = Math.floor(hours / divisor);
+      if(dataPoints !== 0) {
+        if(dataPoints === 1) {
+          dataPoints++;
+        }
+        
+        model.currencyPair.dataPoints = dataPoints;
+        controller.updateGraphData({
+          namespace: model.currencyPair,
+          callback: controller.renderCurrencyPairGraph
+        });
+      }
+    },
+    adjustForSpreadGraph() {
+      const self = currencyPairView;
+      let active = false;
+      if(!!d3.event) {
+        let target = d3.event.target;
+        if(target.tagName !== 'LABEL') target = target.parentElement; 
+        active = !(target.classList.contains('active'));
+      }
+      model.currencyPair.graphs['spread'].hidden = !active;      
+      
+      const data = model.currencyPair.data;
+      let width = Math.round(document.querySelector('#currency-pair .graph').getBoundingClientRect().width);
+      if(width > 380) width = 380;      
+      const height = Math.round(width / 2);
+      
+      self.updateLines({ dataset: data, width, height });
+    },    
+    // cryptoBoardView
+    renderCryptoBoardTable(customParams) {
+      const { data, currency } = !!customParams ? customParams : model.cryptoBoard;
+      cryptoBoardView.renderTable({
+        dataset: data,
+        currency,
+      });
+    }, 
+    createCryptoBoardURL(customCurrency) {
+      let { url, currency, limit } = model.cryptoBoard;
+      if(!!customCurrency) {
+        currency = customCurrency;
+      }
+      return url + `?convert=${currency}&limit=${limit}`;
+    }, 
     changeTableLength() {
       // d3.event.preventDefault();
       model.cryptoBoard.limit = +(d3.event.target.getAttribute('data-value'));
@@ -2002,8 +2017,7 @@ const controller = {
       componentLinks.forEach(link => link.addEventListener("click", evt => {
         scrollIt(
           document.getElementById(evt.target.getAttribute('data-linksTo')),
-          300,          
-          () => console.log(`Just finished scrolling to ${window.pageYOffset}px`) 
+          300         
         );
       }));
 
