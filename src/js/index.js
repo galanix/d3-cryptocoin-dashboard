@@ -10,9 +10,7 @@ import 'flatpickr/dist/themes/material_green.css';
 
 import runTemplateScript from './template';
 
-//runTemplateScript();
-
-const model = {    
+const model = {
   // namespaces
   general: {
     currencySigns: {
@@ -245,7 +243,7 @@ const historyView = {
         controller.initCalendar();
       }
   },
-  buildLine({ dataset, width, height, paddingVal }) {
+  buildLine({ dataset, width, height, paddingVal }) {  
     this.makeScales({ dataset, width, height });
     
     this.graphSVG = d3.select('#history .graph').append('svg');
@@ -304,15 +302,16 @@ const historyView = {
     this.addMovableParts({ dataset });
   },
   updateLine(dataset) {
+    //debugger;
     // dataset has changed, need to update #historical-data graph
-    const width = Math.round(document.querySelector('#historical-data').getBoundingClientRect().width);  
-    const height = Math.round(width / 2);
-
     const paddingVal = parseInt(this.graphSVG.style('padding-left'));
+    const width = Math.round(document.querySelector('#historical-data').getBoundingClientRect().width) - paddingVal * 2;  
+    const height = Math.round(width * 0.6);
+
     this.graphSVG.attrs({
       width: width + paddingVal * 2,
       height: height + paddingVal * 2,
-    })    
+    })
     // data is in chronological order
     this.makeScales({ dataset, width, height });
       // update basic graph
@@ -629,9 +628,9 @@ const currencyPairView = {
       }
     });
   },
-  renderGraph({ dataset, isModuleBeingUpdated, width, height, paddingVal }) {
+  renderGraph({ dataset, isModuleBeingUpdated, width, height, paddingVal, graphInstances }) {
     if(isModuleBeingUpdated) { // substitute dataset and update current graphs(max3)
-      this.updateLines(dataset);
+      this.updateLines({ dataset, graphInstances });
     } else {
       // build new graphs from scratch and add event listeners for filters
       this.buildLines({ dataset, width, height, paddingVal });
@@ -645,8 +644,8 @@ const currencyPairView = {
     
     this.graphSVG
       .attrs({
-        width: width + 120,
-        height: height + 120,
+        width: width + paddingVal * 2,
+        height: height + paddingVal * 2,
         id: 'ask-bid-spread',
       })
       .style('padding', paddingVal);
@@ -655,7 +654,7 @@ const currencyPairView = {
     this.createGraphInstances(dataset);
     // add axises
     // ONLY ONE PAIR OF AXISES
-    const yAxisGen = d3.axisLeft(this.yScale); // bid or ask?
+    const yAxisGen = d3.axisLeft(this.yScale).ticks(5);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat('%H:%M'));
 
     const yAxis = this.graphSVG
@@ -672,24 +671,23 @@ const currencyPairView = {
                         'class': 'x-axis'
                     });
   },
-  updateLines(dataset) {
+  updateLines({ dataset, graphInstances }) {
     if(!dataset) {
       return;
-    }
-
-    const width = Math.round(document.querySelector('#ask-bid-spread').getBoundingClientRect().width);    
-    const height = Math.round(width / 2);    
-
+    }    
     const paddingVal = parseInt(this.graphSVG.style('padding-left'));
+    const width = Math.round(document.querySelector('#ask-bid-spread').getBoundingClientRect().width) - paddingVal * 2;    
+    const height = Math.round(width * 0.6);
+
     this.graphSVG.attrs({
       width: width + paddingVal * 2,
       height: height + paddingVal * 2,
-    });    
+    });
     // dataset has changed, need to update #historical-data graph
     // data is in chronological order
-    this.makeScales({ dataset, width, height });
-        // update basic graph
-    const graphInstances = controller.getModelData({ namespace: 'currencyPair', prop: 'graphs' });
+    this.makeScales({ dataset, width, height, graphInstances });
+    // update basic graph
+    
     const keys = Object.keys(graphInstances);
     keys.forEach(key => {
       graphInstances[key].update(dataset);
@@ -735,7 +733,7 @@ const currencyPairView = {
     d3.selectAll('#currency-pair #hours-input')
       .on('submit', () => controller.changeHours());
   },
-  makeScales({ dataset, width, height }) {
+  makeScales({ dataset, width, height, graphInstances }) {    
     const firstDate = new Date(dataset[0].created_on).getTime();
     const lastDate = new Date(dataset[dataset.length - 1].created_on).getTime();
 
@@ -745,8 +743,7 @@ const currencyPairView = {
         lastDate
       ])
       .range([0, width]);
-      
-    const graphInstances = controller.getModelData({ namespace: 'currencyPair', prop: 'graphs' });
+          
     const spread = !!graphInstances ? graphInstances['spread'] : null;
         
     if(!spread || !!spread.hidden) {
@@ -1363,9 +1360,9 @@ const controller = {
           url: this.createCurrencyPairURL(),
           isModuleBeingUpdated: false,
           namespace: model.currencyPair,
-          callback: () => {
-            this.scaleGraphs();
+          callback: () => {            
             this.renderCurrencyPairGraph();
+            this.scaleGraphs();
           }
         });
         this.showComponent(document.getElementById('currency-pair').parentElement);
@@ -1396,22 +1393,22 @@ const controller = {
       // FOR historyView and currentPairView
       const scale = (selector, callback, width, dir) => {
         const svg = d3.select(selector);
-        if(!svg.node()) return;        
+        if(!svg.node()) return;
         const paddingVal = parseInt(svg.style('padding-left'));                
         if(
           (dir === 'down' && svg.node().getBoundingClientRect().width > (width + paddingVal * 2)) ||
           (dir === 'up' && Math.ceil(svg.node().getBoundingClientRect().width) < (width + paddingVal * 2))
-        ) {                    
+        ) {          
           svg.attrs({
             'width': width,
-            'height': width / 2
+            'height': width * 0.6
           });
           callback();
         }
-      };            
+      };
       if(document.body.clientWidth < 500) {
-        scale('#historical-data', this.renderHistoryGraph.bind(this, true), 200, 'down');
-        scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), 200, 'down');
+        scale('#historical-data', this.renderHistoryGraph.bind(this, true), 300, 'down');
+        scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), 300, 'down');
       }  else {
         scale('#historical-data', this.renderHistoryGraph.bind(this, true), model.history.width, 'up');
         scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), model.currencyPair.width, 'up');
@@ -1640,8 +1637,8 @@ const controller = {
           data: data.bpi,
           isModuleBeingUpdated,
           width, 
-          height: width / 2,
-          paddingVal    
+          height: width * 0.6,
+          paddingVal
       });
     },
     // currencyPairGraphView
@@ -1650,13 +1647,14 @@ const controller = {
       return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
     },
     renderCurrencyPairGraph(isModuleBeingUpdated) {
-      const { data, width, paddingVal } = model.currencyPair;
+      const { data, width, paddingVal, graphs } = model.currencyPair;
       currencyPairView.renderGraph({
         dataset: data,
         isModuleBeingUpdated,
         width, 
-        height: width / 2,
-        paddingVal
+        height: width * 0.6,
+        paddingVal,
+        graphInstances: graphs,
       });
     },
     changePairName() {
@@ -1714,9 +1712,12 @@ const controller = {
         if(target.tagName !== 'LABEL') target = target.parentElement; 
         active = !(target.classList.contains('active'));
       }
-      model.currencyPair.graphs['spread'].hidden = !active;          
+      model.currencyPair.graphs['spread'].hidden = !active;
       
-      self.updateLines(model.currencyPair.data);
+      self.updateLines({ 
+        dataset: model.currencyPair.data, 
+        graphInstances: model.currencyPair.graphs 
+      });
     },    
     // cryptoBoardView
     renderCryptoBoardTable(customParams) {
