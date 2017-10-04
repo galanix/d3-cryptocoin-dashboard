@@ -1249,9 +1249,9 @@ const cryptoBoardView = {
       .append('rect')
       .attrs({
         'fill':  d => this.color(+d[comparisionField]),
-        'width': xScale.bandwidth(),
+        'width': () => xScale.bandwidth() > 200 ? 200 : xScale.bandwidth(),
         'data-index': (_d,i) => i,
-        'x': (_d,i) => xScale(++i),
+        'x': (_d,i) => xScale(++i) + (xScale.bandwidth() > 200 ? (xScale.bandwidth() - 200)/2 : 0),
         'y': d => +d[comparisionField] < 0 ? (yScale(0)) :  yScale(+d[comparisionField]),
         'height': d => Math.abs(yScale(+d[comparisionField]) - (yScale(0))),
       })
