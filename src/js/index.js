@@ -305,8 +305,7 @@ const historyView = {
   },
   updateLine(dataset) {
     // dataset has changed, need to update #historical-data graph
-    let width = Math.round(document.querySelector('#historical-data').getBoundingClientRect().width);
-    if(width > 380) width = 380;
+    const width = Math.round(document.querySelector('#historical-data').getBoundingClientRect().width);  
     const height = Math.round(width / 2);
 
     const paddingVal = parseInt(this.graphSVG.style('padding-left'));
@@ -478,7 +477,7 @@ const historyView = {
         'stroke-width': 2,
         'fill': 'none',
         'id': 'movable',
-        'transform': `translate(0, 0)`,
+        'transform': `translate(-100, 0)`,
       });
 
     this.tooltip = d3.select('#history .graph').append('div')
@@ -678,8 +677,7 @@ const currencyPairView = {
       return;
     }
 
-    let width = Math.round(document.querySelector('#ask-bid-spread').getBoundingClientRect().width);
-    if(width > 500) width = 500;
+    const width = Math.round(document.querySelector('#ask-bid-spread').getBoundingClientRect().width);    
     const height = Math.round(width / 2);    
 
     const paddingVal = parseInt(this.graphSVG.style('padding-left'));
@@ -1348,7 +1346,10 @@ const controller = {
           url: this.createHistoryURL(),
           isModuleBeingUpdated: false,
           namespace: model.history,
-          callback: this.renderHistoryGraph,
+          callback: () => {
+            this.renderHistoryGraph();
+            this.scaleGraphs();
+          },
         });
         this.showComponent(document.getElementById('history').parentElement);
       } else {
@@ -1363,7 +1364,10 @@ const controller = {
           url: this.createCurrencyPairURL(),
           isModuleBeingUpdated: false,
           namespace: model.currencyPair,
-          callback: this.renderCurrencyPairGraph,
+          callback: () => {
+            this.scaleGraphs();
+            this.renderCurrencyPairGraph();
+          }
         });
         this.showComponent(document.getElementById('currency-pair').parentElement);
       } else {
@@ -1389,10 +1393,10 @@ const controller = {
       }
     },
     // general methods
-    scaleGraphs() {    
+    scaleGraphs() {
       const scale = (selector, callback, width, dir) => {
         const svg = d3.select(selector);
-        if(!svg) return;              
+        if(!svg.node()) return;        
         const paddingVal = parseInt(svg.style('padding-left'));                
         if(
           (dir === 'down' && svg.node().getBoundingClientRect().width > (width + paddingVal * 2)) ||
@@ -1405,14 +1409,16 @@ const controller = {
           callback();
         }
       };
-      
+            
       if(document.body.clientWidth < 500) {
-        scale('#historical-data', this.renderHistoryGraph.bind(this, true), 200, 'down');      
-        scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), 200, 'down');        
+        scale('#historical-data', this.renderHistoryGraph.bind(this, true), 200, 'down');
+        scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), 200, 'down');
       }  else {
         scale('#historical-data', this.renderHistoryGraph.bind(this, true), model.history.width, 'up');
         scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), model.currencyPair.width, 'up');
       }
+
+
     },
     hideComponent(element) {
       element.style.display = 'none'
