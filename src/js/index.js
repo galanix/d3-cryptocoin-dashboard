@@ -984,14 +984,13 @@ const cryptoBoardView = {
     if(!this.chartSVG) this.chartSVG = d3.select('#board-of-crypto-currencies .graph').append('svg').attr('id', 'crypto-chart');
     if(!this.legend) this.legend = d3.select('#board-of-crypto-currencies .graph').append('div').attr('class', 'legend');
 
-    const width = Math.round(document.querySelector('#board-of-crypto-currencies .graph').getBoundingClientRect().width);
-    //if(width > 380) width = 380;
+    const width = Math.round(document.querySelector('#board-of-crypto-currencies .graph').getBoundingClientRect().width);  
     const height = Math.round(width / 2);
     
-    this.chartSVG .attrs({
+    this.chartSVG.attrs({
       width: width,
       height: height
-    })
+    });
 
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
@@ -1043,14 +1042,14 @@ const cryptoBoardView = {
       .text(d => d.name);
   },
   // PIE / PIE-DONUT
-  renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {
-    let radius = Math.round(width / 4);
-    let holeRadius = Math.round(radius * 0.6); // for donut chart
+  renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {  
+    let radius;
+    
+    if(width > 800) radius = 150;
+    else if(width > 500) radius = 100;
+    else radius = Math.round(height / 2); // ? 50
 
-    if(radius > 150) {
-      radius = 150;
-      holeRadius = radius * 0.6;
-    }
+    const holeRadius = Math.round(radius * 0.6); // for donut chart
     this.labelr = radius + 20; // label radius
 
     const g = this.chartSVG.append('g')
@@ -1394,6 +1393,7 @@ const controller = {
     },
     // general methods
     scaleGraphs() {
+      // FOR historyView and currentPairView
       const scale = (selector, callback, width, dir) => {
         const svg = d3.select(selector);
         if(!svg.node()) return;        
@@ -1408,8 +1408,7 @@ const controller = {
           });
           callback();
         }
-      };
-            
+      };            
       if(document.body.clientWidth < 500) {
         scale('#historical-data', this.renderHistoryGraph.bind(this, true), 200, 'down');
         scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), 200, 'down');
@@ -1418,7 +1417,8 @@ const controller = {
         scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), model.currencyPair.width, 'up');
       }
 
-
+      // FOR cryptoBoardView
+      if(!!cryptoBoardView.chartSVG) this.buildChart();      
     },
     hideComponent(element) {
       element.style.display = 'none'
@@ -1861,7 +1861,7 @@ const controller = {
       model.cryptoBoard.chart.type = d3.event.target.getAttribute('data-type');      
     },
     buildChart(evt) {
-      if(evt.target.classList.contains('disabled')) {
+      if(!!evt && evt.target.classList.contains('disabled')) {
         return;
       }
 
