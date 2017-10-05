@@ -8,7 +8,8 @@ module.exports = {
     },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, 'dest')
+        path: path.resolve(__dirname, 'dest'),
+        publicPath: 'dest/'
     },
     module: {
         rules: [

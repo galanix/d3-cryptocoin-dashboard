@@ -32,8 +32,11 @@ a.active:hover {
 }
 
 .graph {
-    box-sizing: border-box;    
     position: relative;
+}
+
+svg {
+    box-sizing: content-box;
 }
 
 .wait-message {
@@ -161,6 +164,9 @@ a.active:hover {
         h4, .dropdown {
             display: inline-block;
         }
+        h4 {
+            margin-bottom:  3px;
+        }
         .dropdown-group {
             .dropdown_container {
                 h4 {
@@ -179,14 +185,12 @@ a.active:hover {
             @media screen and (max-width: 720px) {                
                 text-align: center;
                 .dropdown_container {
-                    width: 100%;
                     margin-left: 0;
                 }
-                #reset_dropdown-group {
-                    margin-top: 15px;                
-                    margin-left: 0;                
+                #reset_dropdown-group {                    
+                    margin-left: 0;
                 }
-            }            
+            }
         }
         .dropdown_container {
             display: inline-block;            
@@ -204,7 +208,10 @@ a.active:hover {
             .table-length, .dropdown_container {
                 text-align: center;
                 display: block;
-                margin-left: 0;                
+                margin-left: 0;                        
+            }
+            #reset_dropdown-group {                    
+                margin-top: 15px;
             }
         }
     }       

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --content-base dest/"
+    "start": "webpack-dev-server"
   },
   "author": "Vlad Tarasenko",
   "license": "ISC",
@@ -12,6 +12,7 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
+    "bootstrap": "^3.3.7",
     "css-loader": "^0.28.7",
     "d3": "^4.10.2",
     "d3-interpolate-path": "^2.0.0",

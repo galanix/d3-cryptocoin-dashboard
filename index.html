@@ -5,7 +5,7 @@
     <title>D3 Graphs Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="stylesheet" href="bundle.css">
+    <link rel="stylesheet" href="dest/bundle.css">
 </head>
 <body class="nav-md">
     <div class="container body">
@@ -15,8 +15,8 @@
                 <div class="left_col scroll-view">
                     <div class="navbar nav_title" style="border: 0;">
                         <a href="index.html" class="site_title"><i class="fa fa-line-chart"></i> <span>D3 Dashboard</span></a>
-                    </div>            
-                    <div class="clearfix"></div>                                                    
+                    </div>
+                    <div class="clearfix"></div>
                     <br />
                     <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                         <div class="menu_section">
@@ -50,7 +50,7 @@
                                     </a>                                    
                                     <ul class="nav child_menu">
                                         <li>
-                                            <a href="../../settings/settings.html">Components</a>
+                                            <a href="dest/settings/settings.html">Components</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -85,7 +85,7 @@
                                 <h2>Current Price For Bitcoin</h2>
                             </header>
                     
-                            <div class="current-price-in-USD col-md-3 col-sm-6 col-xs-12 tile_stats_count">
+                            <div class="current-price-in-USD col-md-3 col-sm-6 col-xs-6 tile_stats_count">
                                 <span class="count_top">United States Dollars:</span>
                                 <div class="count"></div>
                                 <span class="count_bottom">
@@ -93,7 +93,7 @@
                                 </span>
                             </div>
                     
-                            <div class="current-price-in-EUR col-md-3 col-sm-6 col-xs-12 tile_stats_count">
+                            <div class="current-price-in-EUR col-md-3 col-sm-6 col-xs-6 tile_stats_count">
                                 <span class="count_top">European Union Euro:</span>
                                 <div class="count"></div>   
                                 <span class="count_bottom">
@@ -102,7 +102,7 @@
                             </div>
                         </setion>
                         <!-- /bitcoin-current-price-->
-                    </div>   
+                    </div>
 
                     <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
                         <!-- history -->
@@ -217,7 +217,7 @@
                                 </div>
                                 <form class="well form-horizontal form-label-left input_mask" id="hours-input">
                                     <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
-                                        <input type="text" class="form-control has-feedback-left" placeholder="Hours">
+                                        <input name="hours" type="text" class="form-control has-feedback-left" placeholder="Hours">
                                         <span class="fa fa-clock-o form-control-feedback left" aria-hidden="true"></span>
                                     </div>
                                 </form>
@@ -290,6 +290,7 @@
                                         <div class="btn-group type">                                        
                                             <button class="btn" data-type="bar">Bar Chart</button>
                                             <button class="btn" data-type="pie">Pie Chart</button>
+                                            <button class="btn" data-type="pie-donut">Donut Chart</button>
                                         </div>                           
                                     </div>         
                                 </div>
@@ -302,10 +303,10 @@
                                 <div class="graph"></div>
                             </div>
 
-                            <div class="well col-md-12 col-sm-12 col-xs-12">
-                                <div class="dropdown-group row">
+                            <div class="table-filters col-md-12 col-sm-12 col-xs-12">
+                                <div class="well dropdown-group">
                                     <div class="dropdown_container">
-                                        <h4>Market Cap</h4>                                   
+                                        <h4>Market Cap</h4>                          
                                         <div class="dropdown dropdown_market-cap">
                                             <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown">                                                                                                
                                                 <span class="caret"></span>
@@ -320,6 +321,7 @@
                                                 <li><a data-value="6">$0 - $100k</a></li>
                                             </ul>
                                         </div>
+                                        
                                     </div>
                                     <div class="dropdown_container">
                                         <h4>Price</h4>
@@ -335,7 +337,7 @@
                                                 <li><a data-value="4">$0.0001 - $0.01</a></li>
                                                 <li><a data-value="5">$0 - $0.0001</a></li>
                                             </ul>
-                                        </div>
+                                        </div>                                        
                                     </div>
                                     <div class="dropdown_container">
                                         <h4>Volume(24 hours)</h4>
@@ -351,30 +353,35 @@
                                                 <li><a data-value="4">$10k+</a></li>
                                                 <li><a data-value="5">$1k+</a></li>
                                             </ul>
-                                        </div>
+                                        </div>                                        
                                     </div>
                                     <button id="reset_dropdown-group" class="btn btn-danger">Reset</button>                                    
                                 </div>
-                                <div class="dropdown_container">
-                                    <h4>Currency</h4>
-                                    <div class="dropdown dropdown_table-currency">
-                                        <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown">                                            
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a data-value="USD">USD</a></li>
-                                            <li><a data-value="EUR">EUR</a></li>
-                                            <li><a data-value="UAH">UAH</a></li>
-                                            <li><a data-value="RUB">RUB</a></li>
-                                            <li><a data-value="BTC">BTC</a></li>
-                                            <li><a data-value="LTC">LTC</a></li>
-                                            <li><a data-value="ETH">ETH</a></li>
-                                        </ul>
+                                <div class="well full_width">
+                                    <div class="dropdown_container">
+                                        <h4>Currency</h4>
+                                        <div class="dropdown dropdown_table-currency">
+                                            <button class="btn btn-success dropdown-toggle" type="button" data-toggle="dropdown">                                            
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a data-value="USD">USD</a></li>
+                                                <li><a data-value="EUR">EUR</a></li>
+                                                <li><a data-value="UAH">UAH</a></li>
+                                                <li><a data-value="RUB">RUB</a></li>
+                                                <li><a data-value="BTC">BTC</a></li>
+                                                <li><a data-value="LTC">LTC</a></li>
+                                                <li><a data-value="ETH">ETH</a></li>
+                                            </ul>
+                                        </div>                                        
                                     </div>
-                                </div>
-                                 <div class="btn-group table-length">
-                                    <button class="btn" data-value="100">Top 100</button>
-                                    <button class="btn" data-value="">All</button>
+                                    <div class="table-length">
+                                        <h4>Table Length</h4>
+                                        <div class="btn-group">
+                                            <button class="btn" data-value="100">Top 100</button>
+                                            <button class="btn" data-value="">All</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -412,9 +419,9 @@
         </div>
     </div>
 
-    <!-- REDO -->
+    <!-- REDO -->    
     <!-- jQuery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- NProgress -->
@@ -424,8 +431,8 @@
     <!-- Malihu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.js"></script>
     <!-- iCheck -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>     
     <!-- Custom -->
-    <script src="bundle.js"></script>   
+    <script src="dest/bundle.js"></script>
 </body>
 </html>

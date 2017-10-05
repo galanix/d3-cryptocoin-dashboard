@@ -1,6 +1,9 @@
 import WaitMessage from './components/WaitMessage';
 import Graph from './components/Graph';
 
+// import $ from 'jquery';
+// import bootstrap from 'bootstrap';
+
 import '../scss/index.scss';
 
 import * as d3 from 'd3';
@@ -29,6 +32,7 @@ const model = {
     url: 'https://api.coindesk.com/v1/bpi/historical/close.json',
     data: {},
     hashTable: {},
+    minWidth: 180,
     width: 380,    
     paddingVal: 60,
     ticksInfo: {
@@ -47,16 +51,12 @@ const model = {
         xTickFormat: '%e\'%b',
         yTicks: 3
       }
-    },
-    //graphs,
-    // end,
-    // start,
-    // currency,
-    // waitMessageObj,
+    }
   },
   currencyPair: {
     data: {},
-    width: 380,   
+    minWidth: 180,
+    width: 380,
     paddingVal: 60,
     dataPointDivisors: { // to get data_point we need to divide hours by these values
       '1 min': 0.0167, // (1 / 60)      
@@ -68,13 +68,7 @@ const model = {
       '6 hours': 6,
       '12 hours': 12,
       '24 hours': 24
-    },
-    // graphs
-    // pairName,
-    // hours,
-    // dataPoints,
-    // waitMessageObj,
-    // currentDivisor,
+    }
   },
   cryptoBoard: {
     url: 'https://api.coinmarketcap.com/v1/ticker/',
@@ -232,8 +226,7 @@ const historyView = {
               time: createDateObj(key),
               currencyValue: data[key]
           });
-      });
-
+      });      
       if(isModuleBeingUpdated) { // substitute dataset and update current graph
         this.updateLine(dataset);
       } else {
@@ -243,7 +236,7 @@ const historyView = {
         controller.initCalendar();
       }
   },
-  buildLine({ dataset, width, height, paddingVal }) {  
+  buildLine({ dataset, width, height, paddingVal }) {
     this.makeScales({ dataset, width, height });
     
     this.graphSVG = d3.select('#history .graph').append('svg');
@@ -269,8 +262,8 @@ const historyView = {
             
     this.graphSVG
       .attrs({
-        width: width + paddingVal * 2, // padding.left + padding.right
-        height: height + paddingVal * 2, // padding.top + padding.bottom
+        width,
+        height,
         id: 'historical-data',
       })
       .style('padding', paddingVal);
@@ -305,12 +298,12 @@ const historyView = {
     //debugger;
     // dataset has changed, need to update #historical-data graph
     const paddingVal = parseInt(this.graphSVG.style('padding-left'));
-    const width = Math.round(document.querySelector('#historical-data').getBoundingClientRect().width) - paddingVal * 2;  
+    const width = Math.round(document.querySelector('#historical-data').getBoundingClientRect().width) - paddingVal * 2;
     const height = Math.round(width * 0.6);
 
     this.graphSVG.attrs({
-      width: width + paddingVal * 2,
-      height: height + paddingVal * 2,
+      width,
+      height,
     })
     // data is in chronological order
     this.makeScales({ dataset, width, height });
@@ -499,16 +492,15 @@ const historyView = {
         const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
         const offsetLeft = svgEl.getBoundingClientRect().left;
         let xPos = Math.round(d3.event.clientX - offsetLeft - paddingLeft);                
-        const hashTable = controller.getModelData({ namespace: 'history', prop: 'hashTable' });
-
+        const hashTable = controller.getModelData({ namespace: 'history', prop: 'hashTable' });      
         const graphWidth = parseInt(graphSVGStyles.width);
         const padRight = parseInt(graphSVGStyles.paddingRight);
         const padLeft = parseInt(graphSVGStyles.paddingLeft);
         
         if(
-          xPos > (graphWidth - padRight - padLeft + 10) ||
+          xPos > (graphWidth + 10) ||
           xPos < -10
-        ) {          
+        ) {
           this.hideDotsAndTooltip();
           return;
         }
@@ -644,17 +636,17 @@ const currencyPairView = {
     
     this.graphSVG
       .attrs({
-        width: width + paddingVal * 2,
-        height: height + paddingVal * 2,
+        width,
+        height,
         id: 'ask-bid-spread',
       })
-      .style('padding', paddingVal);
+      .style('padding', paddingVal);      
 
     //INSTANTIATE GRAPH OBJECTS
     this.createGraphInstances(dataset);
     // add axises
     // ONLY ONE PAIR OF AXISES
-    const yAxisGen = d3.axisLeft(this.yScale).ticks(5);
+    const yAxisGen = d3.axisLeft(this.yScale);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat('%H:%M'));
 
     const yAxis = this.graphSVG
@@ -674,14 +666,14 @@ const currencyPairView = {
   updateLines({ dataset, graphInstances }) {
     if(!dataset) {
       return;
-    }    
+    }
     const paddingVal = parseInt(this.graphSVG.style('padding-left'));
     const width = Math.round(document.querySelector('#ask-bid-spread').getBoundingClientRect().width) - paddingVal * 2;    
     const height = Math.round(width * 0.6);
 
     this.graphSVG.attrs({
-      width: width + paddingVal * 2,
-      height: height + paddingVal * 2,
+      width: width,
+      height: height
     });
     // dataset has changed, need to update #historical-data graph
     // data is in chronological order
@@ -733,7 +725,7 @@ const currencyPairView = {
     d3.selectAll('#currency-pair #hours-input')
       .on('submit', () => controller.changeHours());
   },
-  makeScales({ dataset, width, height, graphInstances }) {    
+  makeScales({ dataset, width, height, graphInstances }) {
     const firstDate = new Date(dataset[0].created_on).getTime();
     const lastDate = new Date(dataset[dataset.length - 1].created_on).getTime();
 
@@ -1394,11 +1386,11 @@ const controller = {
       const scale = (selector, callback, width, dir) => {
         const svg = d3.select(selector);
         if(!svg.node()) return;
-        const paddingVal = parseInt(svg.style('padding-left'));                
+        const paddingVal = parseInt(svg.style('padding-left'));
         if(
           (dir === 'down' && svg.node().getBoundingClientRect().width > (width + paddingVal * 2)) ||
           (dir === 'up' && Math.ceil(svg.node().getBoundingClientRect().width) < (width + paddingVal * 2))
-        ) {          
+        ) {
           svg.attrs({
             'width': width,
             'height': width * 0.6
@@ -1407,15 +1399,61 @@ const controller = {
         }
       };
       if(document.body.clientWidth < 500) {
-        scale('#historical-data', this.renderHistoryGraph.bind(this, true), 300, 'down');
-        scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), 300, 'down');
+        scale('#historical-data', this.renderHistoryGraph.bind(this, true), model.history.minWidth, 'down');
+        scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), model.currencyPair.minWidth, 'down');
       }  else {
         scale('#historical-data', this.renderHistoryGraph.bind(this, true), model.history.width, 'up');
         scale('#ask-bid-spread', this.renderCurrencyPairGraph.bind(this, true), model.currencyPair.width, 'up');
       }
 
       // FOR cryptoBoardView
-      if(!!cryptoBoardView.chartSVG) this.buildChart();      
+      if(!!cryptoBoardView.chartSVG) this.buildChart();
+    },
+    animatedScrollToTarget() {
+      const componentLinks = document.querySelectorAll("a[data-linksTo]");
+      componentLinks.forEach(link => link.addEventListener("click", evt => {
+        scrollIt(
+          document.getElementById(evt.target.getAttribute('data-linksTo')),
+          300         
+        );
+      }));     
+
+      const scrollIt = (destination, duration = 200, callback) => {
+        const easingFunc = t =>  t * (2 - t);
+        const scroll = () => {
+          const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+          const time = Math.min(1, ((now - startTime) / duration));
+          const timeFunction = easingFunc(time);
+          window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));    
+          if (window.pageYOffset === destinationOffsetToScroll) {
+            if (callback) {
+              callback();
+            }
+            return;
+          }    
+          requestAnimationFrame(scroll);
+        };
+      
+        const start = window.pageYOffset;
+        const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
+      
+        const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+        
+        let destinationOffset = destination.getBoundingClientRect().top;
+        if(destinationOffset < 0) destinationOffset = destination.offsetTop;        
+
+        const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
+        if ('requestAnimationFrame' in window === false) {
+          window.scroll(0, destinationOffsetToScroll);
+          if (callback) {
+            callback();
+          }
+          return;
+        }
+      
+        scroll();
+      };     
     },
     hideComponent(element) {
       element.style.display = 'none'
@@ -1949,53 +1987,7 @@ const controller = {
         model.cryptoBoard.chart.hashTable[key] = model.cryptoBoard.data[key];
         model.cryptoBoard.chart.hashTable[key].color = color;
       });
-    },
-    animatedScrollToTarget() {
-      const componentLinks = document.querySelectorAll("a[data-linksTo]");
-      componentLinks.forEach(link => link.addEventListener("click", evt => {
-        scrollIt(
-          document.getElementById(evt.target.getAttribute('data-linksTo')),
-          300         
-        );
-      }));     
-
-      const scrollIt = (destination, duration = 200, callback) => {
-        const easingFunc = t =>  t * (2 - t);
-        const scroll = () => {
-          const now = 'now' in window.performance ? performance.now() : new Date().getTime();
-          const time = Math.min(1, ((now - startTime) / duration));
-          const timeFunction = easingFunc(time);
-          window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));    
-          if (window.pageYOffset === destinationOffsetToScroll) {
-            if (callback) {
-              callback();
-            }
-            return;
-          }    
-          requestAnimationFrame(scroll);
-        };
-      
-        const start = window.pageYOffset;
-        const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
-      
-        const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
-        const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-
-        let destinationOffset = destination.getBoundingClientRect().top;
-        if(destinationOffset < 0) destinationOffset = destination.offsetTop;
-
-        const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
-        if ('requestAnimationFrame' in window === false) {
-          window.scroll(0, destinationOffsetToScroll);
-          if (callback) {
-            callback();
-          }
-          return;
-        }
-      
-        scroll();
-      };     
-    },
+    }    
 };
 
 controller.init();
