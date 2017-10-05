@@ -8,9 +8,8 @@
     <link rel="stylesheet" href="dest/bundle.css">
 </head>
 <body class="nav-md">
-    <div class="container body">
+    <!-- <div class="container body">
         <div class="main_container">
-            <!-- sidebar navigation -->
             <div class="col-md-3 left_col menu_fixed">
                 <div class="left_col scroll-view">
                     <div class="navbar nav_title" style="border: 0;">
@@ -56,13 +55,10 @@
                                 </li>
                             </ul>
                         </div>        
-                    </div>
-                    <!-- /sidebar menu -->                                                      
+                    </div>                
                 </div>
             </div>
-            <!-- /sidebar navigation -->
-        
-            <!-- top navigation -->
+                        
             <div class="top_nav">
                 <div class="nav_menu">
                     <nav>
@@ -72,15 +68,12 @@
                     </nav>
                 </div>
             </div>
-            <!-- /top navigation -->
-    
-            <!-- page content -->
+                
             <div class="right_col" role="main">
                 <div class="row">
 
-                    <div class="col-md-12 col-sm-12 col-xs-12">
-                        <!-- bitcoin-current-price-->
-                        <setion id="bitcoin-current-price" class="row tile_count x_panel">
+                    <div class="col-md-12 col-sm-12 col-xs-12">                        
+                        <section id="bitcoin-current-price" class="row tile_count x_panel">
                             <header class="col-md-6 col-sm-12 col-xs-12">
                                 <h2>Current Price For Bitcoin</h2>
                             </header>
@@ -100,12 +93,10 @@
                                     <i class="green"></i>
                                 </span>                     
                             </div>
-                        </setion>
-                        <!-- /bitcoin-current-price-->
+                        </section>                        
                     </div>
 
-                    <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-                        <!-- history -->
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">                        
                         <section id="history" class="row x_panel">
                             <header class="col-md-12 col-sm-12 col-xs-12 x_title">
                                 <h2>Bitcoin History</h2>
@@ -165,12 +156,10 @@
                                 </div>                                                                            
                             </div>
                             <div class="graph col-md-12 col-sm-12 col-xs-12"></div>
-                        </section>
-                        <!-- /history -->
+                        </section>                        
                     </div>
 
-                    <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-                        <!-- currency-pair -->
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">                        
                         <section id="currency-pair" class="row x_panel">
                             <header class="col-md-12 col-sm-12 col-xs-12 x_title">
                                 <h2>Currency Pair</h2>
@@ -241,12 +230,10 @@
                     
                             </div>
                             <div class="graph col-md-12 col-sm-12 col-xs-12"></div>
-                        </section>
-                        <!-- /currency-pair -->
+                        </section>                        
                     </div>
 
-                    <div class="col-md-12 col-sm-12 col-xs-12">
-                        <!-- board-of-crypto-currencies -->
+                    <div class="col-md-12 col-sm-12 col-xs-12">                       
                         <section id="board-of-crypto-currencies" class="row x_panel">
                             <header class="col-md-12 col-sm-12 col-xs-12 x_title">
                                 <h2>Table of Currencies</h2>
@@ -410,16 +397,17 @@
                             </div>                            
 
                         </section>
-                        <!-- /board-of-crypto-currencies -->
                     </div>
 
                 </div>                
-            </div>
-            <!-- /page content -->
-        </div>
-    </div>
+            </div>            
 
-    <!-- REDO -->    
+        </div>
+    </div> -->
+
+    <div class="container body" id="root"></div>
+
+    <!-- REDO -->
     <!-- jQuery -->
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap -->
@@ -433,6 +421,6 @@
     <!-- iCheck -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>     
     <!-- Custom -->
-    <script src="dest/bundle.js"></script>
+    <script src="dest/bundle.js"></script>    
 </body>
 </html>

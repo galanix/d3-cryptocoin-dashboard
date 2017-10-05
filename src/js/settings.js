@@ -9,7 +9,7 @@ import runTemplateScript from './template';
     };    
 
     const applyChanges = (btn) => {
-        if(componentStates[btn.getAttribute('data-componentName')]) {
+        if(componentStates[btn.getAttribute('data-component_name')]) {
             btn.className = 'btn btn-lg btn-success'; 
             btn.getElementsByTagName('span')[0].className = 'fa fa-check';
           } else { 
@@ -22,7 +22,7 @@ import runTemplateScript from './template';
     btns.forEach(btn => {
         applyChanges(btn);
         btn.addEventListener('click', () => {
-            const key = btn.getAttribute('data-componentName');
+            const key = btn.getAttribute('data-component_name');
             componentStates[key] = !componentStates[key];
             window.localStorage.setItem('componentState', JSON.stringify(componentStates));
             applyChanges(btn);
