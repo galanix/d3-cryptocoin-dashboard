@@ -10,7 +10,7 @@ import runTemplateScript from './template';
 
     const applyChanges = (btn) => {
         if(componentStates[btn.getAttribute('data-component_name')]) {
-            btn.className = 'btn btn-lg btn-success'; 
+            btn.className = 'btn btn-lg btn-success';
             btn.getElementsByTagName('span')[0].className = 'fa fa-check';
           } else { 
             btn.className = 'btn btn-lg btn-danger';

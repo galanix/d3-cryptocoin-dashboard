@@ -3,8 +3,8 @@ import React from 'react';
 const Dropdown = props => (
     <div className={`${props.classesCSS.container} dropdown_container`}>
         <h4>{props.titleText}</h4>
-        <div className="dropdown">
-            <button className={`btn ${props.classesCSS.btn} dropdown-toggle`} type="button" data-toggle="dropdown">
+        <div className={`dropdown ${props.classesCSS.dropdown}`}>
+            <button className={`btn ${props.classesCSS.button} dropdown-toggle`} type="button" data-toggle="dropdown">
                 <span className="caret"></span>
             </button>
             <ul className="dropdown-menu">
