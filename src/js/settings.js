@@ -6,7 +6,7 @@ import runTemplateScript from './template';
         historyView: true,
         currencyPairView: true,
         cryptoBoardView: true,
-    };    
+    };
 
     const applyChanges = (btn) => {
         if(componentStates[btn.getAttribute('data-component_name')]) {

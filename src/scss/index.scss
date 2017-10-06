@@ -63,6 +63,24 @@ svg {
     < BITCOIN CURRENT PRICE >
 */
 
+.count {
+    transition: color 1s ease-in;
+}
+
+@keyframes blink {
+    0%, 100% {
+        color: #73879C;
+    }
+    50% {
+        color: $info;
+    }
+}
+
+.blinking {
+    animation: blink 1s linear 0s normal infinite;
+}
+
+
 #bitcoin-current-price {
     h2 {
         margin-top: 25px;
