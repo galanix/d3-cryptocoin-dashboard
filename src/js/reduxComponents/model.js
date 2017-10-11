@@ -1,4 +1,8 @@
-export default {
+import { formProperDateFormat } from '../helperFunctions';
+
+const today = new Date();
+
+const model = {
     general: {
         currencySigns: {
             EUR: '&#8364;',
@@ -8,7 +12,7 @@ export default {
         },
         displayComponent: JSON.parse(window.localStorage.getItem('componentState')) || {
             BitcoinCurrentPrice: true,
-            historyView: true,
+            BitcoinHistoryGraph: true,
             currencyPairView: true,
             cryptoBoardView: true,
         }
@@ -21,10 +25,15 @@ export default {
     history: {
         url: 'https://api.coindesk.com/v1/bpi/historical/close.json',
         data: {},
-        hashTable: {},
         minWidth: 180,
         width: 380,    
         paddingVal: 60,
+        filters: {
+            currency: "USD",
+            end: formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+            start: formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()), 
+            currentTimeline: "less-than-3-month",
+        },      
         ticksInfo: {
             'from-all-time-to-year': {
                 xTicks: 4,
@@ -41,7 +50,7 @@ export default {
                 xTickFormat: '%e\'%b',
                 yTicks: 3
             }
-        }
+        }        
     },
     currencyPair: {
         data: {},
@@ -99,3 +108,6 @@ export default {
         }        
     },
 };
+
+export default model;   
+    

@@ -8,43 +8,50 @@ class BitcoinCurrentPrice extends React.Component {
         super();
     }
     shouldComponentRender() {
-        // yo
+        return this.props.display;
     }
-    componentDidMount() {
-        let { url, display } = this.props;
-        this.props.update(url, display);
-        setInterval(() => this.props.update(url, display), this.props.updateFrequency);
+    componentDidMount() {        
+        const display = this.props.display;
+        const { updateFrequency, url } = this.props.model;        
+        const componentToUpdate = 'BitcoinCurrentPrice';
+
+        this.props.update(url, display, componentToUpdate);
+        setInterval(() => this.props.update(url, display, componentToUpdate), updateFrequency);
     }
     componentWillReceiveProps(nextProps) {
         this.setState({
-            prevValEUR: !!this.props.data.bpi ? this.props.data.bpi.EUR.rate_float.toFixed(2) : 0,
-            prevValUSD: !!this.props.data.bpi ? this.props.data.bpi.USD.rate_float.toFixed(2) : 0
+            prevValEUR: !!this.props.model.data.bpi ? this.props.model.data.bpi.EUR.rate_float.toFixed(2) : 0,
+            prevValUSD: !!this.props.model.data.bpi ? this.props.model.data.bpi.USD.rate_float.toFixed(2) : 0
         });
     }
     renderDifference(sign) {
-        if(!this.props.data.bpi) {
+        if(!this.props.model.data.bpi) {
             return null;
-        }        
+        }
 
-        let insertDiffJSX = (diff, sign) => (            
-            <span className={diff > 0 ? "green" : "red"}>
-                <i className={`fa fa-sort-${diff > 0 ? "asc" : "desc"}`}></i>
-                <span dangerouslySetInnerHTML={{__html: sign + Math.abs(diff).toFixed(2)}}></span>
-                <span> From last minute</span>
-            </span>
-        );
+        const insertDiffJSX = (diff, sign) => {
+            let outputJSX = null;
+            if(diff > 0.01) outputJSX = (
+                <span className={diff > 0 ? "green" : "red"}>
+                    <i className={`fa fa-sort-${diff > 0 ? "asc" : "desc"}`}></i>
+                    <span dangerouslySetInnerHTML={{__html: sign + Math.abs(diff).toFixed(2)}}></span>
+                    <span> From last minute</span>
+                </span>
+            );
+            return outputJSX;
+        };
 
-        let price = {
+        const price = {
             ['prevVal' + sign]: !this.state['prevVal' + sign] ? 0 : this.state['prevVal' + sign],
-            ['currVal' + sign]: this.props.data.bpi[sign].rate_float
-        };         
-        
-        if(price['prevVal' + sign] !== 0 ) return insertDiffJSX(price['prevVal' + sign] - price['currVal' + sign], this.props.signs[sign]);           
+            ['currVal' + sign]: this.props.model.data.bpi[sign].rate_float
+        };
+
+        if(price['prevVal' + sign] !== 0 ) return insertDiffJSX(price['prevVal' + sign] - price['currVal' + sign], this.props.signs[sign]);    
         else return null;
-    }
+    }    
     render() {
-        let rateEUR = !!this.props.data.bpi ? this.props.data.bpi.EUR.rate_float.toFixed(2) : '';
-        let rateUSD = !!this.props.data.bpi ? this.props.data.bpi.USD.rate_float.toFixed(2) : '';
+        const rateEUR = !!this.props.model.data.bpi ? this.props.model.data.bpi.EUR.rate_float.toFixed(2) : '';
+        const rateUSD = !!this.props.model.data.bpi ? this.props.model.data.bpi.USD.rate_float.toFixed(2) : '';
         return (
             <div className="col-md-12 col-sm-12 col-xs-12">
                 <section id="bitcoin-current-price" className="row tile_count x_panel">

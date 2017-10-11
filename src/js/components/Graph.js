@@ -10,8 +10,8 @@ export default class Graph {
       this[key] = params[key];
     });
   }
-  append(dataset) {
-    const opacityVal = !!this.hidden ? 0 : 1;  
+  append(dataset) {    
+    const opacityVal = !!this.hidden ? 0 : 1;
     this.container
       .append('path')
       .attrs({
@@ -24,7 +24,7 @@ export default class Graph {
       .style('opacity', opacityVal);
   }
   update(dataset) {
-    const opacityVal = !!this.hidden ? 0 : 1;    
+    const opacityVal = !!this.hidden ? 0 : 1; 
     this.container
       .select('#graph-type--' + this.type)
       .transition()

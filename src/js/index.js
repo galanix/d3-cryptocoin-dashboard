@@ -3,11 +3,6 @@ import Graph from "./components/Graph";
 
 import "../scss/index.scss";
 
-import * as d3 from "d3";
-import { attrs } from "d3-selection-multi";
-import flatpickr from "flatpickr";
-import "flatpickr/dist/themes/material_green.css";
-
 import templateScript from "./template"; // jQuery!!!
 
 import React from "react";
@@ -21,7 +16,7 @@ import thunk from "redux-thunk";
 import reducers from "./reduxComponents/reducers";
 import App from "./reactComponents/App";
 
-const store = createStore(reducers, applyMiddleware(thunk));
+let store = createStore(reducers, applyMiddleware(thunk));
 
 render(
   <BrowserRouter>
@@ -1524,7 +1519,7 @@ const controller = {
         return output;
       }
       return model[namespace][prop];
-    },    
+    },  
     dropdownChange({ selector, callback }) {
       let prevAnchorTag = d3.select(selector).node();
       const btn = prevAnchorTag.parentElement.parentElement.parentElement.querySelector("button");
