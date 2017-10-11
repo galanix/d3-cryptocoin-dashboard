@@ -146,7 +146,11 @@ svg {
 }
 /* < CURRENCY PAIR > */
 
-#currency-pair {   
+// path[id^="graph-type"] {
+//     transition: opacity .6s ease-in;
+// }
+
+#currency-pair {
     .form-control-feedback.fa-clock-o {
         margin-top: 6px;
     }

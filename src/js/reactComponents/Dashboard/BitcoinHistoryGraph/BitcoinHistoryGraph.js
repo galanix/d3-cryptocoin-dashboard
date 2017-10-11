@@ -11,7 +11,7 @@ import LineChart from "./LineChart";
 // HELPER FUNCTIONS
 import { formProperDateFormat, createDateObj } from '../../../helperFunctions';
 
-class BitcoinHistoryGraph extends React.Component {
+export default class BitcoinHistoryGraph extends React.Component {
   constructor() {
     super();
   }
@@ -32,18 +32,19 @@ class BitcoinHistoryGraph extends React.Component {
       // create an array(dataset) from an object(data)
       const dataset = [];
       const data = this.props.model.data.bpi;
-      const keys = Object.keys(data);      
-      keys.forEach(key => {
-          dataset.push({
-              time: createDateObj(key),
-              currencyValue: data[key]
-          });
-      });     
-     
+      for(let key in data) {
+        dataset.push({
+          time: createDateObj(key),
+          currencyValue: data[key]
+        });
+      }    
+
       if(componentIsUpdated) this.chart.updateLine(dataset);
       else this.chart.buildLine(dataset);
   }
   timelineFilterChange(target) {
+    if(target.tagName !== "BUTTON") return;
+    
     const btnValue = target.getAttribute("data-timeline"); // button value
     const today = new Date(); // endDate
     const startDate = new Date();
@@ -178,6 +179,4 @@ class BitcoinHistoryGraph extends React.Component {
         </div>
     );
   }
-}
-    
-export default BitcoinHistoryGraph;
+};

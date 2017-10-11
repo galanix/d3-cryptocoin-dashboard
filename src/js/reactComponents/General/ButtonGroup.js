@@ -3,31 +3,35 @@ import React from 'react';
 class ButtonGroup extends React.Component {
     constructor() {
         super();
+        this.state = { 
+            prevClickedBtn: null
+        };
     }
-    componentDidMount() {        
+    componentDidMount() {
+        if(this.props.noSingleButtonSelection) return;
+
         this.setState({
             prevClickedBtn: this.container.querySelector('.active')
-        });           
+        });
     }
-    handleClick(e) {
-        const target = e.target;
-        if(
-            target.tagName !== 'BUTTON' ||
-            target === this.state.prevClickedBtn
-        ) return;
-        
-        this.state.prevClickedBtn.classList.remove('active');    
-        this.setState({
-            prevClickedBtn: target
-        }, () => this.state.prevClickedBtn.classList.add('active'));
+    handleClick(evt) {
+        const target = evt.target;
+        if(target === this.state.prevClickedBtn) return;
+
+        if(!!this.state.prevClickedBtn) {
+            this.state.prevClickedBtn.classList.remove('active');
+            this.setState({
+                prevClickedBtn: target
+            }, () => this.state.prevClickedBtn.classList.add('active'));
+        }
 
         this.props.onClickHandler(target);
     }
     render() {
         return (
             <div ref={div => this.container = div}
-                 className={this.props.classesCSS} 
-                 onClick={e => this.handleClick(e)}
+                 className={this.props.classesCSS}
+                 onClick={evt => this.handleClick(evt)}
                  {...this.props.containerAttrs}
             >
                 {this.props.buttons.map((btn, index) => (

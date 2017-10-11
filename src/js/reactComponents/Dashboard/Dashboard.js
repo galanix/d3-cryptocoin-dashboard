@@ -5,7 +5,7 @@ import BitcoinHistoryGraph from './BitcoinHistoryGraph/BitcoinHistoryGraph';
 import CurrencyPairGraph from './CurrencyPairGraph/CurrencyPairGraph';
 import CryptoBoard from './CryptoBoard/CryptoBoard';
 
-class Dashboard extends React.Component {
+export default class Dashboard extends React.Component {
     constructor() {
         super();
     }
@@ -22,14 +22,16 @@ class Dashboard extends React.Component {
                                          change={this.props.change}
                                          model={this.props.data.history}
                                          display={this.props.data.general.displayComponent.BitcoinHistoryGraph}
-                                         signs={this.props.data.general.currencySigns}                                         
+                                         signs={this.props.data.general.currencySigns}
                     />
-                    <CurrencyPairGraph />
+                    <CurrencyPairGraph update={this.props.update}
+                                       change={this.props.change}
+                                       model={this.props.data.currencyPair}
+                                       display={this.props.data.general.displayComponent.CurrencyPairGraph}                    
+                    />
                     <CryptoBoard />
                 </div>
             </div>
         );
     }
-} 
-
-export default Dashboard;
+};

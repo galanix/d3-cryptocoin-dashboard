@@ -18,9 +18,12 @@ class App extends React.Component {
                 <TopNav />
                 <Switch>
                     <Route exact path="/"
-                           render={props => (<Dashboard update={this.props.update.bind(this)} 
-                                                        change={this.props.change.bind(this)}
-                                                        data={this.props.appData} />)}
+                           render={props => (
+                               <Dashboard update={this.props.update.bind(this)} 
+                                          change={this.props.change.bind(this)}
+                                          data={this.props.appData} 
+                                />
+                           )}
                     />
                     <Route path="/settings" component={Settings} />
                 </Switch>

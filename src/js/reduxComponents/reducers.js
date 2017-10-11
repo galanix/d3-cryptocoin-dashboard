@@ -1,7 +1,7 @@
 import model from "./model";
 
 const reducers = (state = model, action) => {
-    const newState = Object.assign({}, state);
+    const newState = Object.assign({}, state);    
     switch(action.type) {
        case 'UPDATE_DATA':
           switch(action.forComponent) {
@@ -10,6 +10,9 @@ const reducers = (state = model, action) => {
                 break;
               case 'BitcoinHistoryGraph':
                 newState.history.data = action.data;
+                break;
+              case 'CurrencyPairGraph':
+                newState.currencyPair.data = action.data;
                 break;
           }
           break;
@@ -22,7 +25,18 @@ const reducers = (state = model, action) => {
                 })
               } else newState.history.filters[action.filterName] = action.newFilterValue;
               break;
+            case 'CurrencyPairGraph':              
+              if(action.filterName instanceof Array) {                
+                action.filterName.forEach((name, index) => {
+                  newState.currencyPair.filters[name] = action.newFilterValue[index];
+                })
+              } else newState.currencyPair.filters[action.filterName] = action.newFilterValue;
+              break;
+            default:
+              console.warn('action.forComponent switch defaulted with:', action.forComponent);
           }
+        default:
+          console.warn('action.type switch defaulted with', action.type);
     }
     return newState;
 }
