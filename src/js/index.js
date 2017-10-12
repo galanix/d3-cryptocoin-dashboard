@@ -1,5 +1,5 @@
-import WaitMessage from "./components/WaitMessage";
-import Graph from "./components/Graph";
+// import WaitMessage from "./components/WaitMessage";
+// import Graph from "./components/Graph";
 
 import "../scss/index.scss";
 

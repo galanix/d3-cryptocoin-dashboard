@@ -11,3 +11,19 @@ export function createDateObj(dateStr) {
     const day =  dateArr[2]; // - 1
     return new Date(year, month, day);
 }
+
+export function scaleGraphSize(svgSelector, callback, width, dir) {
+    const svg = document.querySelector(svgSelector);
+    if(!svg) return;
+
+    const paddingVal = parseInt(getComputedStyle(svg).paddingLeft);
+    if(
+      (dir === "down" && svg.getBoundingClientRect().width > (width + paddingVal * 2)) ||
+      (dir === "up" && Math.ceil(svg.getBoundingClientRect().width) < (width + paddingVal * 2))
+    ) {
+      svg.setAttribute("width", width);
+      svg.setAttribute("height", Math.round(width * 0.6));
+
+      if(callback) callback();
+    }
+};

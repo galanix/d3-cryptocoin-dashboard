@@ -18,7 +18,7 @@ class ButtonGroup extends React.Component {
         const target = evt.target;
         if(target === this.state.prevClickedBtn) return;
 
-        if(!!this.state.prevClickedBtn) {
+        if(!!this.state.prevClickedBtn && target.tagName === 'BUTTON') {
             this.state.prevClickedBtn.classList.remove('active');
             this.setState({
                 prevClickedBtn: target

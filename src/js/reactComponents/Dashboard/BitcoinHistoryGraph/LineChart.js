@@ -3,6 +3,8 @@ import React from "react";
 import * as d3 from "d3";
 import { attrs } from "d3-selection-multi";
 
+import WaitMessage from "../../General/WaitMessage";
+
 import Graph from "../../../components/Graph";
 import { formProperDateFormat } from "../../../helperFunctions";
 
@@ -10,10 +12,12 @@ export default class LineChart extends React.Component {
     constructor() {
         super();
     }
+    componentDidMount() {
+        this.hidePreloader();
+    }
     buildLine(dataset) {
         const { width, paddingVal } = this.props.model;
-        const height = 0.6 * width;
-        //const { yScale, xScale } = 
+        const height = 0.6 * width;        
         this.makeScales(dataset, width, height);    
         this.setState({
             graphSVG: d3.select(this.svgDiv).append("svg")
@@ -25,7 +29,6 @@ export default class LineChart extends React.Component {
                 id: "historical-data"
             })
             .style("padding", paddingVal);
-
         });
         // construct basic graph
         const lineGraph = new Graph({
@@ -94,6 +97,7 @@ export default class LineChart extends React.Component {
         this.createHashTable(dataset);               
     }
     makeScales(dataset, width, height) {
+        // chronological order
         const firstDate = dataset[0].time.getTime();
         const lastDate = dataset[dataset.length - 1].time.getTime();
         const min = d3.min(dataset, d => d.currencyValue);
@@ -113,7 +117,7 @@ export default class LineChart extends React.Component {
         this.setState({
             hashTable
         }, () => { if(callback) callback(dataset); });
-    }    
+    }
     determineTicks(dataset) {
         // recursivly finds averages
         const formTicksArray = ({ finalLevel, level, prevSm, prevLg }) => {
@@ -328,9 +332,18 @@ export default class LineChart extends React.Component {
             hideDotsAndTooltip();
         });    
     }
+    showPreloader() {
+        this.WaitMessage.show();
+    }
+    hidePreloader() {
+        this.WaitMessage.hide();
+    }
     render() {
         return (
-            <div className="graph col-md-12 col-sm-12 col-xs-12" ref={div => this.svgDiv = div}></div>
+            <div className="graph col-md-12 col-sm-12 col-xs-12" ref={div => this.svgDiv = div}>
+                <WaitMessage ref={WaitMessage => this.WaitMessage = WaitMessage} msg="Wait, please"/>
+            </div>
         );
     }
 };
+

@@ -2,11 +2,16 @@ import React from "react";
 import * as d3 from "d3";
 import { attrs } from "d3-selection-multi";
 
+import WaitMessage from "../../General/WaitMessage";
+
 import Graph from "../../../components/Graph";
 
 export default class LineCharts extends React.Component {
     constructor() {
         super();
+    }
+    componentDidUpdate() {
+        this.hidePreloader();
     }
     buildLines(dataset) {
         const { width, paddingVal } = this.props.model;
@@ -162,15 +167,21 @@ export default class LineCharts extends React.Component {
         .duration(600)
         .style("opacity", active ? 0 : 1);
         
-        const toggledGraph = this.state.graphs[id];        
+        const toggledGraph = this.state.graphs[id];
         toggledGraph.hidden = active;
-        // remake scales to fit the spread graph        
+        // remake scales to fit/unfit the spread graph
         if(id === "spread") this.updateLines(this.props.model.data);
+    }
+    showPreloader() {
+        this.WaitMessage.show();
+    }
+    hidePreloader() {
+        this.WaitMessage.hide();
     }
     render() {
         return (
-            <div ref={div => this.container = div} 
-                 className="graph col-md-12 col-sm-12 col-xs-12">
+            <div ref={div => this.container = div} className="graph col-md-12 col-sm-12 col-xs-12">
+                <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} msg="Wait, please"/>
             </div>
         );
     }

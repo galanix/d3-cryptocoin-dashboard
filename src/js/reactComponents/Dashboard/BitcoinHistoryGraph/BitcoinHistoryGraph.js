@@ -9,17 +9,25 @@ import ButtonGroup from "../../General/ButtonGroup";
 import LineChart from "./LineChart";
 
 // HELPER FUNCTIONS
-import { formProperDateFormat, createDateObj } from '../../../helperFunctions';
+import { formProperDateFormat, createDateObj, scaleGraphSize } from "../../../helperFunctions";
 
 export default class BitcoinHistoryGraph extends React.Component {
   constructor() {
     super();
+    this.state = {
+      componentToUpdate: "BitcoinHistoryGraph"
+    };
   }
   componentDidMount() {
-    const display = this.props.display;
-    const componentToUpdate = 'BitcoinHistoryGraph';
-    this.props.update(this.createURL(), display, componentToUpdate)
+    this.scaleGraph();
+
+    window.addEventListener("resize", this.scaleGraph.bind(this));
+
+    this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
     .then(() => this.renderGraph(false));
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.scaleGraph.bind(this));
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -28,7 +36,7 @@ export default class BitcoinHistoryGraph extends React.Component {
   }
   renderGraph(componentIsUpdated) {
     if(!this.props.model.data) return;
-       // transforms a string into a Date object      
+       // transforms a string into a Date object
       // create an array(dataset) from an object(data)
       const dataset = [];
       const data = this.props.model.data.bpi;
@@ -37,10 +45,25 @@ export default class BitcoinHistoryGraph extends React.Component {
           time: createDateObj(key),
           currencyValue: data[key]
         });
-      }    
+      }
 
       if(componentIsUpdated) this.chart.updateLine(dataset);
       else this.chart.buildLine(dataset);
+  }
+  scaleGraph() {
+    if(document.body.clientWidth < 500) 
+      scaleGraphSize("#historical-data", this.renderGraph.bind(this, true), this.props.model.minWidth, "down");
+    else
+      scaleGraphSize("#historical-data", this.renderGraph.bind(this, true), this.props.model.width, "up");
+  }
+  saveChangesAndRerender(newFilterValue, filterName) {
+    this.chart.showPreloader();
+    this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
+    this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+        .then(() => {
+            this.renderGraph(true);
+            this.chart.hidePreloader();
+        });
   }
   timelineFilterChange(target) {
     if(target.tagName !== "BUTTON") return;
@@ -86,22 +109,15 @@ export default class BitcoinHistoryGraph extends React.Component {
       timeline,
       formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
       formProperDateFormat(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate())
-    ];
-    const componentToUpdate = "BitcoinHistoryGraph";
-
-    this.props.change(newFilterValues, filterNames, componentToUpdate);
-    this.props.update(this.createURL(), this.props.display, componentToUpdate)
-      .then(() => this.renderGraph(true));
+    ];    
+   
+    this.saveChangesAndRerender(newFilterValues, filterNames);
   }
   currencyFilterChange(target) {
     const newFilterValue = target.getAttribute("data-value");
-    const display = this.props.display;
-    const componentToUpdate = "BitcoinHistoryGraph";
     const filterName = "currency";
 
-    this.props.change(newFilterValue, filterName, componentToUpdate)
-    this.props.update(this.createURL(), this.props.display, componentToUpdate)
-      .then(() => this.renderGraph(true));
+    this.saveChangesAndRerender(newFilterValue, filterName)
   }
   render() {
     return (
@@ -171,7 +187,7 @@ export default class BitcoinHistoryGraph extends React.Component {
                                  ]}
                     />
                 </div>
-                <LineChart ref={lineChart => this.chart = lineChart} 
+                <LineChart ref={lineChart => this.chart = lineChart}
                            model={this.props.model}
                            signs={this.props.signs}
                 />

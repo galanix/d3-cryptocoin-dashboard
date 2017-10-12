@@ -6,6 +6,8 @@ import InputForm from "../../General/InputForm";
 import ButtonGroup from "../../General/ButtonGroup";
 import LineCharts from "./LineCharts";
 
+import { scaleGraphSize } from "../../../helperFunctions";
+
 export default class CurrencyPairGraph extends React.Component {
     constructor() {
         super();
@@ -14,9 +16,15 @@ export default class CurrencyPairGraph extends React.Component {
         };
     }
     componentDidMount() {
-        const display = this.props.display;      
-        this.props.update(this.createURL(), display, this.state.componentToUpdate)
-        .then(() => this.renderGraphs());
+        this.scaleGraphs();
+
+        window.addEventListener("resize", this.scaleGraphs.bind(this));
+
+        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+        .then(() => this.renderGraphs(false));
+    }
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.scaleGraph.bind(this));
     }
     createURL() {
         const { pairName, dataPoints, hours } = this.props.model.filters;
@@ -28,18 +36,31 @@ export default class CurrencyPairGraph extends React.Component {
         // build new graphs from scratch and add event listeners for filters
         else this.charts.buildLines(this.props.model.data);   
     }
+    scaleGraphs() {
+        if(document.body.clientWidth < 500) 
+          scaleGraphSize("#ask-bid-spread", this.renderGraphs.bind(this, true), this.props.model.minWidth, "down");
+        else
+          scaleGraphSize("#ask-bid-spread", this.renderGraphs.bind(this, true), this.props.model.width, "up");
+    }
+    saveChangesAndRerender(newFilterValue, filterName) {
+        this.charts.showPreloader();
+        this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
+        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+            .then(() => {
+                this.renderGraphs(true);
+                this.charts.hidePreloader();
+            });
+    }
     currencyFilterChange(target) {
         const filterName = "pairName";
         const newFilterValue = target.getAttribute("data-value");        
-            
-        this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
-        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
-            .then(() => this.renderGraphs(true));
+         
+        this.saveChangesAndRerender(newFilterValue, filterName);
     }
     frequencyFilterChange(target) {
         const frequency = target.getAttribute("data-value") || "";
         const hours = this.props.model.filters.hours;
-        const divisor = this.props.model.dataPointDivisors[frequency];        
+        const divisor = this.props.model.dataPointDivisors[frequency];
     
         let dataPoints = Math.floor(hours / divisor);
         if(dataPoints !== 0) {
@@ -50,9 +71,7 @@ export default class CurrencyPairGraph extends React.Component {
             const filterNames = [ "dataPoints", "currentDivisor", "frequency" ];
             const newFilterValues = [ dataPoints, divisor, frequency ];
             
-            this.props.change(newFilterValues, filterNames, this.state.componentToUpdate)
-            this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
-                .then(() => this.renderGraphs(true));
+            this.saveChangesAndRerender(newFilterValues, filterNames);
         }
     }
     hoursFilterChange(evt) {
@@ -67,11 +86,9 @@ export default class CurrencyPairGraph extends React.Component {
 
         input.placeholder = hours + " Hours"
         input.value = "";
-        input.blur();      
-                        
-        this.props.change(newFilterValues, filterNames, this.state.componentToUpdate)
-        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
-            .then(() => this.renderGraphs(true));                
+        input.blur();
+
+        this.saveChangesAndRerender(newFilterValues, filterNames);
     }
     toggleGraphs(target) {
         let targetBtn = target;
@@ -83,7 +100,7 @@ export default class CurrencyPairGraph extends React.Component {
         else targetBtn.classList.remove('active');
 
         this.charts.toggleGraphs(id, active);
-    }
+    }  
     render() {
         return (
             <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
