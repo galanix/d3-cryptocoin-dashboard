@@ -96,8 +96,8 @@ export default class LineCharts extends React.Component {
           .range([0, width]);
               
         
-        const spread = !!this.state.graphInstances ? this.state.graphInstances["spread"] : null;
-            
+        const spread = !!this.state.graphs ? this.state.graphs["spread"] : null;
+
         if(!spread || !!spread.hidden) {
           const askMin = d3.min(dataset, d => +d.ticker.ask);
           const bidMin = d3.min(dataset, d => +d.ticker.bid);
@@ -162,8 +162,10 @@ export default class LineCharts extends React.Component {
         .duration(600)
         .style("opacity", active ? 0 : 1);
         
-        const graphInstance = this.state.graphs[id];
-        graphInstance.hidden = active;
+        const toggledGraph = this.state.graphs[id];        
+        toggledGraph.hidden = active;
+        // remake scales to fit the spread graph        
+        if(id === "spread") this.updateLines(this.props.model.data);
     }
     render() {
         return (

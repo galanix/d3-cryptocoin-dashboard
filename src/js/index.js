@@ -723,8 +723,8 @@ const currencyPairView = {
     d3.selectAll(".toggle-graphs label")
       .on("click", () => this.toggleGraph());
 
-    d3.select("#spread")
-      .on("click", () => controller.adjustForSpreadGraph());
+    // d3.select("#spread")
+    //   .on("click", () => controller.adjustForSpreadGraph());
 
     d3.selectAll("#currency-pair .dropdown_currency a")
       .on("click", controller.dropdownChange({
@@ -834,6 +834,12 @@ const currencyPairView = {
 
     const graphInstance = controller.getModelData({ namespace: "currencyPair", prop: "graphs" })[target.id];
     graphInstance.hidden = active;
+    if(id === "spread") {
+      self.updateLines({ 
+        dataset: model.currencyPair.data, 
+        graphInstances: model.currencyPair.graphs 
+      });
+    }
   },
    //minFuncForY() {}
 };
@@ -1774,7 +1780,7 @@ const controller = {
         dataset: model.currencyPair.data, 
         graphInstances: model.currencyPair.graphs 
       });
-    },    
+    },
     // cryptoBoardView
     renderCryptoBoardTable(customParams) {
       const { data, currency } = !!customParams ? customParams : model.cryptoBoard;
