@@ -1525,7 +1525,7 @@ const controller = {
         return output;
       }
       return model[namespace][prop];
-    },  
+    },
     dropdownChange({ selector, callback }) {
       let prevAnchorTag = d3.select(selector).node();
       const btn = prevAnchorTag.parentElement.parentElement.parentElement.querySelector("button");

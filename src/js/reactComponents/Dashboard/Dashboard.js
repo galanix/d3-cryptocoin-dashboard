@@ -9,7 +9,7 @@ export default class Dashboard extends React.Component {
     constructor() {
         super();
     }
-    render() {
+    render() {        
         return (
             <div className="right_col" role="main">
                 <div className="row">
@@ -27,9 +27,13 @@ export default class Dashboard extends React.Component {
                     <CurrencyPairGraph update={this.props.update}
                                        change={this.props.change}
                                        model={this.props.data.currencyPair}
-                                       display={this.props.data.general.displayComponent.CurrencyPairGraph}                    
+                                       display={this.props.data.general.displayComponent.CurrencyPairGraph}
                     />
-                    <CryptoBoard />
+                    <CryptoBoard update={this.props.update}
+                                 change={this.props.change}
+                                 model={this.props.data.cryptoBoard}
+                                 display={this.props.data.general.displayComponent.CryptoBoard}
+                    />
                 </div>
             </div>
         );

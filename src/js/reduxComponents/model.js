@@ -14,7 +14,7 @@ const model = {
             BitcoinCurrentPrice: true,
             BitcoinHistoryGraph: true,
             CurrencyPairGraph: true,
-            cryptoBoardView: true,
+            CryptoBoard: true,
         }
     },
     currentPrice: {
@@ -78,13 +78,19 @@ const model = {
     },
     cryptoBoard: {
         url: "https://api.coinmarketcap.com/v1/ticker/",
-        data: {},
-        width: 500,
-        height: 250,
-        additionalFilters: {
+        table: {
+          data: {},
+          filters: {
+            currency: "USD",
+            limit: 100,
+            marketCap: "0",
+            price: "0",
+            volume_24h: "0",            
+          },
+          filterValues: {
             marketCap: {
                 "0": "All",
-                "1": 1000000000, // +
+                "1": 1000000000,
                 "2": [100000000, 1000000000],
                 "3": [10000000, 100000000],
                 "4": [1000000, 10000000],
@@ -93,7 +99,7 @@ const model = {
             },
             price: {
                 "0": "All",
-                "1": 100, // +
+                "1": 100,
                 "2": [1, 100],
                 "3": [0.01, 1],
                 "4": [0.0001, 0.01],
@@ -107,14 +113,20 @@ const model = {
                 "4": 10000,
                 "5": 1000,
             },
-            keys: {
-                marketCap: "0",
-                price: "0",
-                volume_24h: "0"
-            }
-        }        
+          }
+        },
+        chart: {
+          data: {},
+          width: 500,
+          height: 250,
+          hashTable: JSON.parse(window.localStorage.getItem("hashTable")) || {},
+          filters: {
+            currency: "USD",
+            type: "bar",
+            comparisionField: "price_usd",
+          }
+        }
     },
 };
 
-export default model;   
-    
+export default model;

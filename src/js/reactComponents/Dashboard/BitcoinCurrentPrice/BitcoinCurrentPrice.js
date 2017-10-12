@@ -6,17 +6,19 @@ import CurrencyBlock from "./CurrencyBlock";
 class BitcoinCurrentPrice extends React.Component {
     constructor() {
         super();
+        this.state = {
+            componentToUpdate: "BitcoinCurrentPrice"
+        };
     }
     shouldComponentRender() {
         return this.props.display;
     }
     componentDidMount() {        
         const display = this.props.display;
-        const { updateFrequency, url } = this.props.model;        
-        const componentToUpdate = 'BitcoinCurrentPrice';
+        const { updateFrequency, url } = this.props.model;
 
-        this.props.update(url, display, componentToUpdate);
-        setInterval(() => this.props.update(url, display, componentToUpdate), updateFrequency);
+        this.props.update(url, display, this.state.componentToUpdate);
+        setInterval(() => this.props.update(url, display, this.state.componentToUpdate), updateFrequency);
     }
     componentWillReceiveProps(nextProps) {
         this.setState({

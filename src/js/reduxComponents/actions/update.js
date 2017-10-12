@@ -9,7 +9,7 @@ export const filterChange = (newFilterValue, filterName, componentToUpdate) => {
       type: 'CHANGE_FILTERS',
       forComponent: componentToUpdate,
       filterName,
-      newFilterValue,
+      newFilterValue,      
     });
   };
 };
