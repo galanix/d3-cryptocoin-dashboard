@@ -9,15 +9,22 @@ export default class Board extends React.Component {
         this.state = {
             componentToUpdate: "CryptoBoard_table",            
         };
+    }
+    componentDidMount() {
+        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+          .then(() => this.setState({
+              filteredData: this.props.model.data
+          }));
     }  
-    filterTable(filterName, target) {
+    changeFilter(filterName, target) {        
         const newFilterValue = target.getAttribute("data-value");
-       
+        
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
-
-
+             
+        this.updateTable();        
+    }
+    updateTable() {
         // UPDATES THE TABLE
-
         const { marketCap, price, volume_24h } = this.props.model.filters;
         const filterValues = this.props.model.filterValues;
 
@@ -70,11 +77,28 @@ export default class Board extends React.Component {
             filteredData: this.props.model.data
         });        
     }
-    componentDidMount() {
+    changeTableCurrency(target) {
+        const newFilterValue = target.getAttribute("data-value");
+        const filterName = "currency";
+
+        this.saveChanges(newFilterValue, filterName);
+    }
+    changeTableLength(target) {
+        const newFilterValue = +(target.getAttribute("data-value"));
+        const filterName = "limit";
+
+        this.saveChanges(newFilterValue, filterName);
+    }
+    saveChanges(newFilterValue, filterName) {
+        this.props.change(newFilterValue, filterName, this.state.componentToUpdate);             
         this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
-          .then(() => this.setState({
-              filteredData: this.props.model.data
-          }));
+        .then(() => {
+            this.setState({
+                filteredData: this.props.model.data
+            }, () => {
+                this.updateTable();
+            })
+        });
     }
     createURL() {
         const { limit, currency } = this.props.model.filters;
@@ -83,14 +107,16 @@ export default class Board extends React.Component {
     render() {        
         return (
             <div>
-                <Filters filterByMarketCap={this.filterTable.bind(this, "marketCap")}
-                         filterByPrice={this.filterTable.bind(this, "price")}
-                         filterByVolume_24h={this.filterTable.bind(this, "volume_24h")}
+                <Filters filterByMarketCap={this.changeFilter.bind(this, "marketCap")}
+                         filterByPrice={this.changeFilter.bind(this, "price")}
+                         filterByVolume_24h={this.changeFilter.bind(this, "volume_24h")}
                          clearFilters={this.clearFilters.bind(this)}
-                         filters={this.props.model.filters}
+                         changeTableCurrency={this.changeTableCurrency.bind(this)}
+                         changeTableLength={this.changeTableLength.bind(this)}
+                         filters={this.props.model.filters}                         
                 />
                 <Table dataset={ (!this.state.filteredData || Object.keys(this.state.filteredData).length === 0) ? [] : this.state.filteredData }
-                       currency={this.props.model.filters.currency}
+                       currency={this.props.model.filters.currency}                       
                 />
             </div>
         );

@@ -59,8 +59,10 @@ export default class Filters extends React.Component {
                     </button>
                 </div>
                 <div className="well full_width">
-                    <Dropdown classesCSS={{ dropdown: "dropdown_table-currency", button: "btn-success" }}
-                              titleText="Currency"
+                    <Dropdown onClickHandler={this.props.changeTableCurrency}
+                              classesCSS={{ dropdown: "dropdown_table-currency", button: "btn-success" }}
+                              titleText="Currency"                              
+                              defaultDataValue={this.props.filters.currency}
                               options={[
                                 { dataValue: "USD" },
                                 { dataValue: "EUR" },
@@ -73,9 +75,10 @@ export default class Filters extends React.Component {
                     />
                     <div className="table-length">
                         <h4>Table Length</h4>
-                        <ButtonGroup classesCSS="btn-group"
+                        <ButtonGroup onClickHandler={this.props.changeTableLength}
+                                     classesCSS="btn-group"                                     
                                      buttons={[
-                                         { attrs: { "data-value": "100" }, textValue: "Top 100" },
+                                         { classesCSS: "active", attrs: { "data-value": "100" }, textValue: "Top 100" },
                                          { textValue: "All" }
                                      ]}
                         />
