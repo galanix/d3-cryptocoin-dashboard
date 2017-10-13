@@ -67,7 +67,41 @@ export default class ModalWindow extends React.Component {
             });
           
         }
-    }    
+    }
+    changeComparisionField(target) {        
+        const btnVal = target.textContent;
+        const currency = this.props.model.filters.currency;
+        const filterName = "comparisionField";
+        let newFilterValue;
+        
+        switch(btnVal) {
+          case "Price":
+            newFilterValue = "price_" + currency.toLowerCase();
+            break;
+          case "Volume(24h)":
+            newFilterValue = "24h_volume_" + currency.toLowerCase();
+            break;
+          case "Market Cap":
+            newFilterValue = "market_cap_" + currency.toLowerCase();
+            break;
+          case "%1h":
+            newFilterValue = "percent_change_1h";
+            break;
+          case "%24h":
+            newFilterValue = "percent_change_24h";
+            break;
+          case "%7d":
+            newFilterValue = "percent_change_7d";
+            break;
+        }
+
+        this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
+    }
+    changeChartType(target) {
+        const filterName = "type";
+        const newFilterValue = target.getAttribute("data-type");
+        this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
+    } 
     render() {
         return (
             <div>
@@ -96,24 +130,26 @@ export default class ModalWindow extends React.Component {
                         <div className="btn-group_container">
                             <h4>Categories</h4>
                             <ButtonGroup classesCSS="btn-group category"
-                                        buttons={[
-                                            { classCSS:"active", textValue: "Price" },
+                                         onClickHandler={this.changeComparisionField.bind(this)}
+                                         buttons={[
+                                            { classesCSS:"active", textValue: "Price" },
                                             { textValue: "Volume(24h)" },
                                             { textValue: "Market Cap" },
                                             { textValue: "%1h" },
                                             { textValue: "%24h" },
                                             { textValue: "%7d" }
-                                        ]}
+                                         ]}
                             />
                         </div>
                         <div className="btn-group_container">
                             <h4>Graph Types</h4>
                             <ButtonGroup classesCSS="btn-group type"
-                                        buttons={[
-                                            { attrs: { "data-type": "bar"}, textValue: "Price" },
-                                            { attrs: { "data-type": "pie"}, textValue: "Volume(24h)" },
-                                            { attrs: { "data-type": "pie-donut"}, textValue: "Market Cap" },                                    
-                                        ]}
+                                         onClickHandler={this.changeChartType.bind(this)}
+                                         buttons={[
+                                            { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
+                                            { attrs: { "data-type": "pie"}, textValue: "Pie" },
+                                            { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },                                    
+                                         ]}
                             />
                         </div>
                     </div>
