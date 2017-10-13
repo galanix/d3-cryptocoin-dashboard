@@ -5,7 +5,7 @@ const reducers = (state = model, action) => {
     switch(action.type) {
        case "UPDATE_DATA":
           switch(action.forComponent) {
-              case "BitcoinCurrentPrice":              
+              case "BitcoinCurrentPrice":
                 newState.currentPrice.data = action.data;
                 break;
               case "BitcoinHistoryGraph":
@@ -47,7 +47,7 @@ const reducers = (state = model, action) => {
                 })
               } else newState.cryptoBoard.table.filters[action.filterName] = action.newFilterValue;            
               break;
-            case "CryptoBoard_chart":
+            case "CryptoBoard_chart":              
               if(action.filterName instanceof Array) {
                 action.filterName.forEach((name, index) => {
                   newState.cryptoBoard.chart.filters[name] = action.newFilterValue[index];
@@ -58,6 +58,7 @@ const reducers = (state = model, action) => {
             default:
               console.warn("action.forComponent switch defaulted with:", action.forComponent);
           }
+          break;
         default:
           console.warn("action.type switch defaulted with", action.type);
     }

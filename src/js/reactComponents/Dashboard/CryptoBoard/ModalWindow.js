@@ -39,9 +39,35 @@ export default class ModalWindow extends React.Component {
         }));
     }
     visualize() {
+        if(this.state.buttonIsDisabled) return;
+
         const { type, comparisionField } = this.props.model.filters;        
         this.chart.renderChart(type, comparisionField);
     }
+    changeCurrencyFilter(target) {
+        const filterNames = [ "currency" ];
+        const newFilterValues = [ target.getAttribute("data-value") ];
+        const comparisionField = this.props.model.filters.comparisionField;
+        
+        if(this.props.model.filters.currency !== newFilterValues[0]) {            
+          if(
+            comparisionField.indexOf("price") !== -1 ||
+            comparisionField.indexOf("volume_24h") !== -1 ||
+            comparisionField.indexOf("market_cap") !== -1
+          ) {
+            // we need to change the last three chars as they represent currency
+            filterNames.push("comparisionField");
+            newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());            
+          }
+
+          this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), this.props.display, this.state.componentToUpdate)
+            .then(() => {
+                this.props.change(newFilterValues, filterNames, this.state.componentToUpdate);
+                this.props.changeHashTableCurrency();
+            });
+          
+        }
+    }    
     render() {
         return (
             <div>
@@ -54,7 +80,8 @@ export default class ModalWindow extends React.Component {
                 <section ref={section => this.modalWindow = section} className="modal-window col-md-12 col-sm-12 col-xs-12">
                     <div className="well">
                         <Dropdown classesCSS={{ dropdown: "dropdown_chart-currency", button: "btn-success" }}
-                                  defaultDataValue={this.props.model.filters.currency}                                  
+                                  defaultDataValue={this.props.model.filters.currency}
+                                  onClickHandler={this.changeCurrencyFilter.bind(this)}
                                   titleText="Currency"
                                   options={[
                                       { dataValue: "USD" },

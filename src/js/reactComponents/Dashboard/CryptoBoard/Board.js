@@ -11,7 +11,8 @@ export default class Board extends React.Component {
         };
     }
     componentDidMount() {
-        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+        const { limit, currency } = this.props.model.filters;
+        this.props.update(this.props.createURL(limit, currency), this.props.display, this.state.componentToUpdate)
           .then(() => this.setState({
               filteredData: this.props.model.data
           }));
@@ -90,8 +91,9 @@ export default class Board extends React.Component {
         this.saveChanges(newFilterValue, filterName);
     }
     saveChanges(newFilterValue, filterName) {
+        const { limit, currency } = this.props.model.filters;
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);             
-        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+        this.props.update(this.props.createURL(limit, currency), this.props.display, this.state.componentToUpdate)
         .then(() => {
             this.setState({
                 filteredData: this.props.model.data
@@ -99,11 +101,7 @@ export default class Board extends React.Component {
                 this.updateTable();
             })
         });
-    }
-    createURL() {
-        const { limit, currency } = this.props.model.filters;
-        return this.props.url + `?convert=${currency}&limit=${limit}`;
-    } 
+    }    
     render() {
         return (
             <div>
