@@ -67,7 +67,8 @@ export default class Chart extends React.Component {
           .append("span")
           .text(d => d.name);
     }
-    renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {        
+    // PIE/DONUT PART
+    renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {
         let radius;
         if(width > 800) radius = 150;
         else if(width > 500) radius = 100;
@@ -206,6 +207,125 @@ export default class Chart extends React.Component {
     togglePieLabel(parent, opacityVal) {
         parent.getElementsByTagName("text")[0].style.opacity = opacityVal;
         parent.getElementsByTagName("polyline")[0].style.opacity = opacityVal;
+    }
+    // BAR PART
+    renderBarChart({ dataset, width, height, comparisionField }) {
+        const margin = {top: 30, right: 10, bottom: 50, left: 50};    
+        width -= (margin.left + margin.right);
+        height -= (margin.top + margin.bottom);
+    
+        let max = d3.max(dataset, d => +d[comparisionField]);
+        max = max < 0 ? 0 : max;
+        let min = d3.min(dataset, d => +d[comparisionField]);
+        min = min > 0 ? 0 : min;
+        
+        const yScale = d3.scaleLinear()
+          .domain([min, max])     
+          .range([height, 0])
+          .nice();    
+        
+        const xScale = d3.scaleBand()
+          .domain(dataset.map((_d, i) => ++i))
+          .padding(0.2)
+          .rangeRound([0, width], 0.2);
+    
+        const g = this.state.chartSVG.append("g")
+          .attrs({
+            "transform": `translate(${margin.left}, ${margin.top})`,
+            "class": "bar"
+          });
+          
+        g.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(xScale))
+          .style("shape-rendering", "crispEdges");
+          
+        g.append("g")
+          .attr("class", "axis axis--x axis--zero")
+          .attr("transform", `translate(0, ${yScale(0)})`)
+          .style("opacity", 0.4)
+          .call(d3.axisBottom(xScale).tickFormat("").tickSize(0));
+    
+        g.append("g")
+          .attr("class", "axis axis--y")
+          .call(d3.axisLeft(yScale).ticks(10))      
+    
+        const bars = g.selectAll(".col")
+          .data(dataset)
+          .enter()
+          .append("g")
+          .attr("class", "col");
+         
+        bars
+          .append("rect")
+          .attrs({
+            "fill":  d => this.color(+d[comparisionField]),
+            "width": () => xScale.bandwidth() > 200 ? 200 : xScale.bandwidth(),
+            "data-index": (_d,i) => i,
+            "x": (_d,i) => xScale(++i) + (xScale.bandwidth() > 200 ? (xScale.bandwidth() - 200)/2 : 0),
+            "y": d => +d[comparisionField] < 0 ? (yScale(0)) :  yScale(+d[comparisionField]),
+            "height": d => Math.abs(yScale(+d[comparisionField]) - (yScale(0))),
+          })
+          .on("mouseover", d => this.toggleBarLabel(d3.event.target.getAttribute("data-index"), d, comparisionField))
+          .on("mouseout", d => this.toggleBarLabel(d3.event.target.getAttribute("data-index"), d, comparisionField, true));     
+    }
+    toggleBarLabel(index, d, comparisionField, mouseOut) {
+        index = +index;
+        const tickGroups = this.svgDiv.querySelectorAll(`.bar .axis--x .tick`);
+        const line = tickGroups[index].getElementsByTagName("line")[0];
+        const text = tickGroups[index].getElementsByTagName("text")[0];
+        const callback = !mouseOut ?
+          g => {        
+            if(g !== tickGroups[index]) g.getElementsByTagName("text")[0].style.opacity = 0;
+          } :
+          g => g.getElementsByTagName("text")[0].style.opacity = 1;
+    
+        tickGroups.forEach(callback);
+        
+        if(!mouseOut) {
+          const color = this.color(+d[comparisionField]);
+          text.style.fontSize = "1.5em";
+          text.style.fill = color;
+          text.style.fontWeight = "bold";
+          text.innerHTML = `
+            <tspan x="0">${d.name}</tspan>
+            <tspan x="0" dy="1.2em">${d[comparisionField]}</tspan>
+          `;
+          line.style.stroke = color;
+          line.style["stroke-width"] = 3;
+        } else {      
+          text.style.fontSize = "1em";
+          text.style.fill = "#000";
+          text.style.fontWeight = "normal";
+          text.innerHTML = ++index;
+    
+          line.style.stroke = "#000";
+          line.style["stroke-width"] = 1;
+        }  
+    }
+    handleHoverEventBar(opacityVal, color, d, comparisionField) {
+        let item = d3.event.target;
+        if(item.tagName !== "DIV") item = item.parentElement;    
+    
+        item.getElementsByTagName("span")[1].style.color = color;
+    
+        const index = item.getAttribute("data-index");
+        const rects = document.querySelectorAll(".col rect");
+        const rect = rects[index];
+        this.toggleBarLabel(index, d, comparisionField, (opacityVal === 1 ? false : true));
+    
+        const callback = opacityVal === 1 ?
+          label => {
+            if(label !== rect) {
+              label.style.opacity = 0.25;
+            }
+          } :
+          label => {
+            label.style.opacity = 1;
+          };
+        
+        rects.forEach(callback);
     }
     render() {
         return (

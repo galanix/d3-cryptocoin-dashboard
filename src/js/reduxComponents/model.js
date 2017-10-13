@@ -121,7 +121,7 @@ const model = {
           height: 250,         
           filters: {
             currency: "USD",
-            type: "pie",
+            type: "bar",
             comparisionField: "price_usd",
           }
         }
