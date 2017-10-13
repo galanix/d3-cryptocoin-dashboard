@@ -35,7 +35,7 @@ class ButtonGroup extends React.Component {
                  {...this.props.containerAttrs}
             >
                 {this.props.buttons.map((btn, index) => (
-                    <button key={index} {...btn.attrs } 
+                    <button key={index} {...btn.attrs }
                             className={`btn ${btn.classesCSS}`}
                             id={btn.id}>{btn.textValue}                    
                     </button>

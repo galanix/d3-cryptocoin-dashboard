@@ -118,11 +118,10 @@ const model = {
         chart: {
           data: {},
           width: 500,
-          height: 250,
-          hashTable: JSON.parse(window.localStorage.getItem("hashTable")) || {},
+          height: 250,         
           filters: {
             currency: "USD",
-            type: "bar",
+            type: "pie",
             comparisionField: "price_usd",
           }
         }

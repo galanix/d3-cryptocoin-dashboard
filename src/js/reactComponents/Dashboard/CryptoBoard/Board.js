@@ -15,8 +15,8 @@ export default class Board extends React.Component {
           .then(() => this.setState({
               filteredData: this.props.model.data
           }));
-    }  
-    changeFilter(filterName, target) {        
+    }
+    changeFilter(filterName, target) {
         const newFilterValue = target.getAttribute("data-value");
         
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
@@ -103,8 +103,8 @@ export default class Board extends React.Component {
     createURL() {
         const { limit, currency } = this.props.model.filters;
         return this.props.url + `?convert=${currency}&limit=${limit}`;
-    }
-    render() {        
+    } 
+    render() {
         return (
             <div>
                 <Filters filterByMarketCap={this.changeFilter.bind(this, "marketCap")}
@@ -113,10 +113,12 @@ export default class Board extends React.Component {
                          clearFilters={this.clearFilters.bind(this)}
                          changeTableCurrency={this.changeTableCurrency.bind(this)}
                          changeTableLength={this.changeTableLength.bind(this)}
-                         filters={this.props.model.filters}                         
+                         filters={this.props.model.filters}
                 />
                 <Table dataset={ (!this.state.filteredData || Object.keys(this.state.filteredData).length === 0) ? [] : this.state.filteredData }
-                       currency={this.props.model.filters.currency}                       
+                       currency={this.props.model.filters.currency}
+                       onClickHandler={this.props.toggleCheckbox}
+                       hashTable={this.props.hashTable}
                 />
             </div>
         );
