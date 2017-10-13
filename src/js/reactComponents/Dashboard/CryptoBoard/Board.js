@@ -101,7 +101,7 @@ export default class Board extends React.Component {
                 this.updateTable();
             })
         });
-    }    
+    }   
     render() {
         return (
             <div>

@@ -33,10 +33,15 @@ export default class ModalWindow extends React.Component {
         const values = [ "0", "0", "0", "0" ];
         changeCSSProperties(this.state.propertiesCSS, values, this.modalWindow);
     }
-    toggleButton() {
-        this.setState(prevState => ({
-            buttonIsDisabled: !prevState.buttonIsDisabled
-        }));
+    enableButton() {
+        this.setState({
+            buttonIsDisabled: false
+        });
+    }
+    disableButton() {
+        this.setState({
+            buttonIsDisabled: true
+        });
     }
     visualize() {
         if(this.state.buttonIsDisabled) return;
@@ -68,7 +73,7 @@ export default class ModalWindow extends React.Component {
           
         }
     }
-    changeComparisionField(target) {        
+    changeComparisionField(target) {
         const btnVal = target.textContent;
         const currency = this.props.model.filters.currency;
         const filterName = "comparisionField";
@@ -101,7 +106,7 @@ export default class ModalWindow extends React.Component {
         const filterName = "type";
         const newFilterValue = target.getAttribute("data-type");
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
-    } 
+    }
     render() {
         return (
             <div>
@@ -148,7 +153,7 @@ export default class ModalWindow extends React.Component {
                                          buttons={[
                                             { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
                                             { attrs: { "data-type": "pie"}, textValue: "Pie" },
-                                            { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },                                    
+                                            { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },
                                          ]}
                             />
                         </div>
@@ -160,7 +165,7 @@ export default class ModalWindow extends React.Component {
                                  }}
                                  buttons={[
                                     { classesCSS: "btn-danger", id:"cancel-button", textValue: "Hide" },
-                                    { classesCSS: "btn-success", id: "build-button", textValue: "Build Chart" }
+                                    { classesCSS: `btn-success  ${this.state.buttonIsDisabled ? 'disabled' : ''}`, id: "build-button", textValue: "Build Chart" }
                                  ]}
                     
                     />

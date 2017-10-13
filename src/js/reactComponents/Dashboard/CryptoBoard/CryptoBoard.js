@@ -14,6 +14,8 @@ export default class CryptoBoard extends React.Component {
     componentDidMount() {
         this.setState({
             hashTable: JSON.parse(window.localStorage.getItem("hashTable")) || {}
+        }, () => {
+            if(Object.keys(this.state.hashTable).length <= 1) this.ModalWindow.disableButton();
         });
     }
     toggleCheckbox(evt) {
@@ -34,15 +36,18 @@ export default class CryptoBoard extends React.Component {
                     { color : getRandomColor() }
                 )
             };
-            this.setState(prevState => ({ hashTable: Object.assign({}, prevState.hashTable, newItem) }), saveHashTable);
+            this.setState(prevState => ({ hashTable: Object.assign({}, prevState.hashTable, newItem) }), () => {
+                saveHashTable();
+                if(Object.keys(this.state.hashTable).length > 1) this.ModalWindow.enableButton();
+            });
         } else {
             const newHashTable = Object.assign({}, this.state.hashTable);
             delete newHashTable[currencyId];
-
-            this.setState(prevState => ({ hashTable: newHashTable }), saveHashTable);
-        }
-
-        // check for modal window's state
+            this.setState(prevState => ({ hashTable: newHashTable }), () => {
+                saveHashTable();
+                if(Object.keys(this.state.hashTable).length <= 1) this.ModalWindow.disableButton();
+            });
+        }        
     }
     changeHashTableCurrency() {
         if(this.props.model.chart.filters.currency === this.props.model.table.filters.currency) return; // no need for changing data
@@ -68,14 +73,15 @@ export default class CryptoBoard extends React.Component {
                     <Header classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
                             titleText="Table of Currencies"
                     />
-                    <ModalWindow model={this.props.model.chart}
+                    <ModalWindow ref={mw => this.ModalWindow = mw}
+                                 model={this.props.model.chart}
                                  limit={this.props.model.table.limit}
                                  update={this.props.update}
                                  change={this.props.change}
                                  display={this.props.display}
                                  hashTable={this.state.hashTable}
                                  createURL={this.createURL.bind(this)}
-                                 changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}                                 
+                                 changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}                             
                     />
                     <Board model={this.props.model.table}                        
                            update={this.props.update}

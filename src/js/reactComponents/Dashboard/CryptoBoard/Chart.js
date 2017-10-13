@@ -66,7 +66,7 @@ export default class Chart extends React.Component {
         items
           .append("span")
           .text(d => d.name);
-    }    
+    }
     // PIE/DONUT PART
     renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {
         let radius;
