@@ -2,9 +2,9 @@ import React from "react";
 import * as d3 from "d3";
 import { attrs } from "d3-selection-multi";
 
-import WaitMessage from "../../General/WaitMessage";
+import WaitMessage from "../../../General/WaitMessage";
 
-import Graph from "../../../components/Graph";
+import Graph from "../../../../components/Graph";
 
 export default class LineCharts extends React.Component {
     constructor() {

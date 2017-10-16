@@ -5,7 +5,7 @@ import Header from "../../General/Header";
 import Dropdown from "../../General/Dropdown";
 import CalendarForm from "../../General/CalendarForm";
 import ButtonGroup from "../../General/ButtonGroup";
-import LineChart from "./LineChart";
+import LineChart from "./children/LineChart";
 
 // HELPER FUNCTIONS
 import { formProperDateFormat, createDateObj, scaleGraphSize } from "../../../helperFunctions";

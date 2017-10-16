@@ -1,7 +1,7 @@
 import React from "react";
 
 import Header from "../../General/Header";
-import CurrencyBlock from "./CurrencyBlock";
+import CurrencyBlock from "./children/CurrencyBlock";
 
 class BitcoinCurrentPrice extends React.Component {
     constructor() {

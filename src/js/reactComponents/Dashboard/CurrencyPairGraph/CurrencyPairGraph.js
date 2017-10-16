@@ -4,7 +4,7 @@ import Header from "../../General/Header";
 import Dropdown from "../../General/Dropdown";
 import InputForm from "../../General/InputForm";
 import ButtonGroup from "../../General/ButtonGroup";
-import LineCharts from "./LineCharts";
+import LineCharts from "./children/LineCharts";
 
 import { scaleGraphSize } from "../../../helperFunctions";
 

@@ -1,7 +1,7 @@
 import React from "react";
 
-import Dropdown from "../../General/Dropdown";
-import ButtonGroup from "../../General/ButtonGroup";
+import Dropdown from "../../../../General/Dropdown";
+import ButtonGroup from "../../../../General/ButtonGroup";
 
 export default class Filters extends React.Component {
     constructor() {

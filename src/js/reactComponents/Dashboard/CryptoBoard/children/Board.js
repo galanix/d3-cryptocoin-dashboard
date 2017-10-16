@@ -1,7 +1,7 @@
 import React from "react";
 
-import Filters from "./Filters";
-import Table from "./Table";
+import Filters from "./children/Filters";
+import Table from "./children/Table";
 
 export default class Board extends React.Component {
     constructor() {

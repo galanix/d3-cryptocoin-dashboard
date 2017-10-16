@@ -1,10 +1,10 @@
 import React from "react";
 
-import Dropdown from "../../General/Dropdown";
-import ButtonGroup from "../../General/ButtonGroup";
-import Chart from "./Chart";
+import Dropdown from "../../../General/Dropdown";
+import ButtonGroup from "../../../General/ButtonGroup";
+import Chart from "./children/Chart";
 
-import { changeCSSProperties } from "../../../helperFunctions";
+import { changeCSSProperties } from "../../../../helperFunctions";
 
 export default class ModalWindow extends React.Component {
     constructor() {

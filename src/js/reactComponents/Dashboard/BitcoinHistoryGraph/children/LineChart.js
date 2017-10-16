@@ -3,10 +3,10 @@ import React from "react";
 import * as d3 from "d3";
 import { attrs } from "d3-selection-multi";
 
-import WaitMessage from "../../General/WaitMessage";
+import WaitMessage from "../../../General/WaitMessage";
 
-import Graph from "../../../components/Graph";
-import { formProperDateFormat } from "../../../helperFunctions";
+import Graph from "../../../../components/Graph";
+import { formProperDateFormat } from "../../../../helperFunctions";
 
 export default class LineChart extends React.Component {
     constructor() {

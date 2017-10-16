@@ -1,8 +1,8 @@
 import React from "react";
 
 import Header from "../../General/Header";
-import ModalWindow from "./ModalWindow";
-import Board from "./Board";
+import ModalWindow from "./children/ModalWindow";
+import Board from "./children/Board";
 
 import { getRandomColor } from "../../../helperFunctions";
 

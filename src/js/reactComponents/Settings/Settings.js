@@ -1,6 +1,6 @@
 import React from "react";
 
-import Checkbox from "./Checkbox";
+import Checkbox from "./children/Checkbox";
 
 export default class Settings extends React.Component {
     componentDidMount() {
