@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Checkbox = props => (
-    <div className="col-md-12">
+    <div className="col-md-12" onClick={evt => props.onClickHandler(evt)}>
         <button data-component_name={props.componentName} className="btn">
             <span className="fa fa-check"></span>
         </button>

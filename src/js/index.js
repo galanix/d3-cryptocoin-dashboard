@@ -16,7 +16,7 @@ import thunk from "redux-thunk";
 import reducers from "./reduxComponents/reducers";
 import App from "./reactComponents/App";
 
-let store = createStore(reducers, applyMiddleware(thunk));
+const store = createStore(reducers, applyMiddleware(thunk));
 
 render(
   <BrowserRouter>
@@ -162,7 +162,7 @@ const currentPriceView = {
   },
   renderData({ rateUSD, rateEUR, signsObj }) {
     const transition = "all .5s ease-in";
-    let highlightColor = "#26B99A";
+    const highlightColor = "#26B99A";
     const blackColor = "#73879C";
 
     const setStyle = (styles) => {
@@ -410,7 +410,7 @@ const historyView = {
   determineTicks(dataset) {
     // recursivly finds averages
     const formTicksArray = ({ finalLevel, level, prevSm, prevLg }) => {
-      let outputArray = [ prevSm, prevLg ];
+      const outputArray = [ prevSm, prevLg ];
 
       if(level >= finalLevel) {
         return;

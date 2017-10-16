@@ -264,8 +264,11 @@ svg {
         background: $success;
         border: 1px solid $success_darker;
     }
+    th {
+        text-align: center;        
+    }
     td {
-        position: relative;
+        position: relative; 
         text-align: center;
         .btn {
             margin-top: 5px;
@@ -298,7 +301,9 @@ svg {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    flex-wrap: wrap;    
+    flex-wrap: wrap;
+    padding-bottom: 32px;
+    font-size: 16px;
 }
 
 .arc, 
@@ -345,10 +350,4 @@ svg {
     }
 }
 
-
 /* </ SETTINGS PAGE >  */
-
-
-// < RESPONSIVENESS >
-
-// </ RESPONSIVENESS >

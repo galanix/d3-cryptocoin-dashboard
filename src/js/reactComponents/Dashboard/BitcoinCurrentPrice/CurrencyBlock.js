@@ -9,7 +9,7 @@ class CurrencyBlock extends React.Component {
             highlightColor: "#26B99A",
             blackColor: "#73879C"
         }
-    }
+    }    
     componentWillReceiveProps() {
         this.setState({
             blink: true
@@ -17,7 +17,7 @@ class CurrencyBlock extends React.Component {
             setTimeout(() => this.setState({
                 blink: false
             }), 3000);
-        })
+        });
     }
     render() {
         return  (

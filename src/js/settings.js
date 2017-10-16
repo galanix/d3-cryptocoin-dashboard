@@ -1,4 +1,4 @@
-import runTemplateScript from './template';
+// import runTemplateScript from './template';
 
 (function() {
     const componentStates =  JSON.parse(window.localStorage.getItem('componentState')) || {
@@ -17,7 +17,7 @@ import runTemplateScript from './template';
             btn.getElementsByTagName('span')[0].className = 'fa fa-times';
           }
     }
-
+    
     const btns = [].slice.call(document.getElementsByClassName('btn'));
     btns.forEach(btn => {
         applyChanges(btn);

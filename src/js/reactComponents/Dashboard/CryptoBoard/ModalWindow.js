@@ -15,15 +15,6 @@ export default class ModalWindow extends React.Component {
             buttonIsDisabled: false,
         };
     }
-    componentDidMount() {
-        window.addEventListener("resize", this.scaleChart.bind(this));
-    }
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.scaleChart.bind(this));
-    }
-    scaleChart() {
-        console.log("window resized");
-    }
     openModalWindow() {
         if(this.state.buttonIsDisabled) return;
         const values = [ "19px", "19px", "2000px", "20px" ];

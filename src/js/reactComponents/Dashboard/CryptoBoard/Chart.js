@@ -9,7 +9,7 @@ export default class Chart extends React.Component {
     constructor() {
         super();
         this.state = {};
-    }
+    }    
     renderChart(type, comparisionField) {
         const width = Math.round(this.svgDiv.getBoundingClientRect().width);
         const height = Math.round(width / 2);
@@ -21,7 +21,7 @@ export default class Chart extends React.Component {
             this.state.chartSVG.selectAll("*").remove();
             this.state.legend.selectAll("*").remove();
             // DYNAMICLY ADDED METHOD
-            this.color = d3.scaleOrdinal(colorValues);        
+            this.color = d3.scaleOrdinal(colorValues);
             let onHoverHandler;
             switch(type) {
                 case "pie": case "pie-donut":
@@ -35,7 +35,7 @@ export default class Chart extends React.Component {
             }
             // BUILDING THE LEGEND
             this.buildLegendSection({ dataset, comparisionField, onHoverHandler });     
-        };        
+        };
 
         if(!this.state.chartSVG && !this.state.legend) {
             this.setState({
@@ -43,7 +43,7 @@ export default class Chart extends React.Component {
                 legend: d3.select(this.svgDiv).append("div").attr("class", "legend")
             }, afterAsyncIsDone);
         }
-        else afterAsyncIsDone();        
+        else afterAsyncIsDone();
     }
     buildLegendSection({ dataset, comparisionField, onHoverHandler }) {
         let index = 0;
