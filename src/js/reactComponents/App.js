@@ -7,7 +7,8 @@ import SideNav from './Navigation/SideNav';
 import Dashboard from './Dashboard/Dashboard';
 import Settings from './Settings/Settings';
 
-import { dataRequest, filterChange } from "../reduxComponents/actions/update"
+import { dataRequest } from "../reduxComponents/actions/update";
+import { filterChange } from "../reduxComponents/actions/change";
 
 
 class App extends React.Component {
