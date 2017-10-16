@@ -15,14 +15,14 @@ class App extends React.Component {
     render() {
         return (
             <div className="main_container">
-                <SideNav />
+                <SideNav location={this.props.location.pathname}/>
                 <TopNav />
                 <Switch>
                     <Route exact path="/"
                            render={() => (
                                <Dashboard update={this.props.update.bind(this)} 
                                           change={this.props.change.bind(this)}
-                                          data={this.props.appData} 
+                                          data={this.props.appData}                                                                                    
                                 />
                            )}
                     />

@@ -174,15 +174,15 @@ svg {
     }
     input[name="hours"] {
         max-width: 200px;
-    }
+    }    
 }
-
 
 /* </ CURRENCY PAIR > */
 
 /* < CRYPTOBOARD > */
 
 #board-of-crypto-currencies {
+
     .table-filters {
         h4, .dropdown {
             display: inline-block;
@@ -270,15 +270,18 @@ svg {
     td {
         position: relative; 
         text-align: center;
-        .btn {
+        .btn {         
             margin-top: 5px;
+            span.fa {
+                display: inline-block;   
+            }
         }
         .btn:not(.active) {
             .fa-check {
                 opacity: 0;
             }            
-        }    
-    }    
+        }        
+    }
 }
 
 .modal-window {    

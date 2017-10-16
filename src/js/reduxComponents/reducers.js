@@ -22,6 +22,7 @@ export default function reducers(state = model, action) {
                 break;
           }
           break;
+
         case "CHANGE_FILTERS":
           switch(action.forComponent) {
             case "BitcoinHistoryGraph":
@@ -41,13 +42,14 @@ export default function reducers(state = model, action) {
               break;
 
             case "Settings":
-              assignNewFilterValue(action, newState.settings);
+              newState.settings[action.filterName] = action.newFilterValue;
               break;
 
             default:
               console.warn("action.forComponent switch defaulted with:", action.forComponent);
           }
           break;
+
         default:
           console.warn("action.type switch defaulted with", action.type);
     }

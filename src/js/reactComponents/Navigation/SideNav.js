@@ -3,36 +3,39 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 class SideNav extends React.Component {
-    onClickHandler(evt, duration = 200) {        
-        // const destination = document.getElementById(evt.target.getAttribute("data-links_to"));
-        // const easingFunc = t =>  t * (2 - t);
-        // const scroll = () => {
-        // const now = "now" in window.performance ? performance.now() : new Date().getTime();
-        // const time = Math.min(1, ((now - startTime) / duration));
-        // const timeFunction = easingFunc(time);
-        // window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));    
-        // if (window.pageYOffset === destinationOffsetToScroll) {            
-        //     return;
-        // }    
-        // requestAnimationFrame(scroll);
-        // };
-    
-        // const start = window.pageYOffset;
-        // const startTime = "now" in window.performance ? performance.now() : new Date().getTime();
-    
-        // const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
-        // const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName("body")[0].clientHeight;
-        
-        // let destinationOffset = destination.getBoundingClientRect().top;
-        // if(destinationOffset < 0) destinationOffset = destination.offsetTop;        
+    onClickHandler(evt, duration = 200) {
+        if(this.props.location !== "/") return;
 
-        // const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
-        // if ("requestAnimationFrame" in window === false) {
-        // window.scroll(0, destinationOffsetToScroll);        
-        // return;
-        // }
+        const destination = document.getElementById(evt.target.getAttribute("data-links-to"));
+        if(!destination) return;
+        const easingFunc = t =>  t * (2 - t);
+        const scroll = () => {
+            const now = "now" in window.performance ? performance.now() : new Date().getTime();
+            const time = Math.min(1, ((now - startTime) / duration));
+            const timeFunction = easingFunc(time);
+            window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));    
+            if (window.pageYOffset === destinationOffsetToScroll) {            
+                return;
+            }    
+            requestAnimationFrame(scroll);
+        };
     
-        // scroll();        
+        const start = window.pageYOffset;
+        const startTime = "now" in window.performance ? performance.now() : new Date().getTime();
+    
+        const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName("body")[0].clientHeight;
+        
+        let destinationOffset = destination.getBoundingClientRect().top;
+        if(destinationOffset < 0) destinationOffset = destination.offsetTop;        
+
+        const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
+        if ("requestAnimationFrame" in window === false) {
+            window.scroll(0, destinationOffsetToScroll);        
+            return;
+        }
+    
+        scroll();
     }
     render() {
         return (
@@ -57,16 +60,16 @@ class SideNav extends React.Component {
                                     </a>
                                     <ul className="nav child_menu">
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links_to="bitcoin-current-price">Current Bitcoin Price</Link>
+                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="bitcoin-current-price">Current Bitcoin Price</Link>
                                         </li>
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links_to="history">Bitcoin Price History</Link>
+                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="history">Bitcoin Price History</Link>
                                         </li>
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links_to="currency-pair">Currency Comparison</Link>
+                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="currency-pair">Currency Comparison</Link>
                                         </li>
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links_to="board-of-crypto-currencies">Table of Currencies</Link>
+                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="board-of-crypto-currencies">Table of Currencies</Link>
                                         </li>                                    
                                     </ul>
                                 </li>

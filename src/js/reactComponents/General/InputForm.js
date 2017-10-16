@@ -5,10 +5,18 @@ const InputForm = props => (
           id={props.formId}
           onSubmit={evt => props.onSubmitHandler(evt)}
     >
-        <div className="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
-            <input name={props.inputName} type="text" className="form-control has-feedback-left" placeholder={props.placeholder} />
-            <span className={`${props.inputIcon} form-control-feedback left`} aria-hidden="true"></span>
-        </div>
+        <fieldset>
+            <div className="control-group">
+                <div className="controls">
+                    <div className="input-prepend input-group">                                                    
+                        <span className="add-on input-group-addon">
+                            <i className={props.inputIcon} aria-hidden="true"></i>
+                        </span>
+                        <input type="text" name={props.inputName} className="form-control" placeholder={props.placeholder} />
+                    </div>
+                </div>
+            </div>
+        </fieldset>       
     </form>
 );
 

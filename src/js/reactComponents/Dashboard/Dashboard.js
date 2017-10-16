@@ -5,50 +5,46 @@ import BitcoinHistoryGraph from './BitcoinHistoryGraph/BitcoinHistoryGraph';
 import CurrencyPairGraph from './CurrencyPairGraph/CurrencyPairGraph';
 import CryptoBoard from './CryptoBoard/CryptoBoard';
 
-export default class Dashboard extends React.Component {
-    constructor() {
-        super();
-    }
-    render() {        
-        return (
-            <div className="right_col" role="main">
-                <div className="row">
-                    { this.props.data.settings.displayComponent.BitcoinCurrentPrice ? 
-                        <BitcoinCurrentPrice update={this.props.update}
-                                         model={this.props.data.currentPrice}                                         
-                                         signs={this.props.data.general.currencySigns}
-                        />   
-                        :
-                        null
-                    }
-                    { this.props.data.settings.displayComponent.BitcoinHistoryGraph ?
-                        <BitcoinHistoryGraph update={this.props.update}
-                                         change={this.props.change}
-                                         model={this.props.data.history}                                         
-                                         signs={this.props.data.general.currencySigns}
-                        />
-                        :
-                        null
-                    }
-                    { this.props.data.settings.displayComponent.CurrencyPairGraph ?
-                        <CurrencyPairGraph update={this.props.update}
-                                       change={this.props.change}
-                                       model={this.props.data.currencyPair}                                       
-                        />
-                        :
-                        null
+const Dashboard = props => (
+    <div className="right_col" role="main">
+        <div className="row">
+            { props.data.settings.displayComponent.BitcoinCurrentPrice ? 
+                <BitcoinCurrentPrice update={props.update}
+                                    model={props.data.currentPrice}                                         
+                                    signs={props.data.general.currencySigns}
+                />   
+                :
+                null
+            }
+            { props.data.settings.displayComponent.BitcoinHistoryGraph ?
+                <BitcoinHistoryGraph update={props.update}
+                                    change={props.change}
+                                    model={props.data.history}                                         
+                                    signs={props.data.general.currencySigns}
+                />
+                :
+                null
+            }
+            { props.data.settings.displayComponent.CurrencyPairGraph ?
+                <CurrencyPairGraph update={props.update}
+                                change={props.change}
+                                model={props.data.currencyPair}                                       
+                />
+                :
+                null
 
-                    }
-                    { this.props.data.settings.displayComponent.CryptoBoard ?
-                        <CryptoBoard update={this.props.update}
-                                    change={this.props.change}
-                                    model={this.props.data.cryptoBoard}                                    
-                        />
-                        :
-                        null
-                    }             
-                </div>
-            </div>
-        );
-    }
-};
+            }
+            { props.data.settings.displayComponent.CryptoBoard ?
+                <CryptoBoard update={props.update}
+                            change={props.change}
+                            model={props.data.cryptoBoard}                                    
+                />
+                :
+                null
+            }             
+        </div>
+    </div>
+);
+
+
+export default Dashboard;
