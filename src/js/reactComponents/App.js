@@ -10,8 +10,12 @@ import Settings from './Settings/Settings';
 import { dataRequest } from "../reduxComponents/actions/update";
 import { filterChange } from "../reduxComponents/actions/change";
 
+import templateScript from "../template"; // jQuery!!!
 
 class App extends React.Component {
+    componentDidMount() {
+        templateScript();
+    }
     render() {
         return (
             <div className="main_container">

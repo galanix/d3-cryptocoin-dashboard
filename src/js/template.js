@@ -26,14 +26,14 @@ export default function() {
 	})(jQuery,'smartresize');	
 
 	var CURRENT_URL = window.location.href.split('#')[0].split('?')[0],
-			$BODY = $('body'),
-			$MENU_TOGGLE = $('#menu_toggle'),
-			$SIDEBAR_MENU = $('#sidebar-menu'),
-			$SIDEBAR_FOOTER = $('.sidebar-footer'),
-			$LEFT_COL = $('.left_col'),
-			$RIGHT_COL = $('.right_col'),
-			$NAV_MENU = $('.nav_menu'),
-			$FOOTER = $('footer');
+		$BODY = $('body'),
+		$MENU_TOGGLE = $('#menu_toggle'),
+		$SIDEBAR_MENU = $('#sidebar-menu'),
+		$SIDEBAR_FOOTER = $('.sidebar-footer'),
+		$LEFT_COL = $('.left_col'),
+		$RIGHT_COL = $('.right_col'),
+		$NAV_MENU = $('.nav_menu'),
+		$FOOTER = $('footer');
 			
 	// Sidebar
 	function init_sidebar() {
@@ -55,7 +55,7 @@ export default function() {
 
 		$SIDEBAR_MENU.find('a').on('click', function(ev) {
 			var $li = $(this).parent();
-			var $ul = $li.parent();				
+			var $ul = $li.parent();
 			if ($li.is('.active')) {
 					//$li.removeClass('active active-sm');
 					$('ul:first', $li).slideUp(function() {
@@ -103,13 +103,9 @@ export default function() {
 		});
 
 			// check active menu
-			$SIDEBAR_MENU.find('a[href="' + CURRENT_URL + '"]').parent('li').addClass('current-page');
-
-			$SIDEBAR_MENU.find('a').filter(function () {
+			$SIDEBAR_MENU.find('a').filter(function () {				
 				return this.href == CURRENT_URL;
-			}).parent('li').addClass('current-page').parents('ul').slideDown(function() {
-				setContentHeight();
-			}).parent().addClass('active');
+			}).parent().parent().css('display', 'block').parent().addClass('active');
 
 			// recompute content when resizing
 			$(window).smartresize(function(){  
