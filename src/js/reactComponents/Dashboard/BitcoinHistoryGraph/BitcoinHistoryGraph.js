@@ -1,6 +1,5 @@
 import React from "react";
 
-
 // COMPONENTS
 import Header from "../../General/Header";
 import Dropdown from "../../General/Dropdown";
@@ -23,7 +22,7 @@ export default class BitcoinHistoryGraph extends React.Component {
 
     window.addEventListener("resize", this.scaleGraph.bind(this));
 
-    this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+    this.props.update(this.createURL(), this.state.componentToUpdate)
     .then(() => this.renderGraph(false));
   }
   componentWillUnmount() {
@@ -59,7 +58,7 @@ export default class BitcoinHistoryGraph extends React.Component {
   saveChangesAndRerender(newFilterValue, filterName) {
     this.chart.showPreloader();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
-    this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+    this.props.update(this.createURL(), this.state.componentToUpdate)
         .then(() => {
             this.renderGraph(true);
             this.chart.hidePreloader();

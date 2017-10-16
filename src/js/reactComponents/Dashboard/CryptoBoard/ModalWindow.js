@@ -56,7 +56,7 @@ export default class ModalWindow extends React.Component {
             newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());            
           }
 
-          this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), this.props.display, this.state.componentToUpdate)
+          this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), this.state.componentToUpdate)
             .then(() => {
                 this.props.change(newFilterValues, filterNames, this.state.componentToUpdate);
                 this.props.changeHashTableCurrency();

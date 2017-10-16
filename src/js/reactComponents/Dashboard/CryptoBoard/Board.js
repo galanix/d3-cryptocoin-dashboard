@@ -12,7 +12,7 @@ export default class Board extends React.Component {
     }
     componentDidMount() {
         const { limit, currency } = this.props.model.filters;
-        this.props.update(this.props.createURL(limit, currency), this.props.display, this.state.componentToUpdate)
+        this.props.update(this.props.createURL(limit, currency), this.state.componentToUpdate)
           .then(() => this.setState({
               filteredData: this.props.model.data
           }));
@@ -93,7 +93,7 @@ export default class Board extends React.Component {
     saveChanges(newFilterValue, filterName) {
         const { limit, currency } = this.props.model.filters;
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);             
-        this.props.update(this.props.createURL(limit, currency), this.props.display, this.state.componentToUpdate)
+        this.props.update(this.props.createURL(limit, currency), this.state.componentToUpdate)
         .then(() => {
             this.setState({
                 filteredData: this.props.model.data

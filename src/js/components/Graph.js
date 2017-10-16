@@ -10,7 +10,7 @@ export default class Graph {
       this[key] = params[key];
     });
   }
-  append(dataset) {    
+  append(dataset) {
     const opacityVal = !!this.hidden ? 0 : 1;
     this.container
       .append('path')

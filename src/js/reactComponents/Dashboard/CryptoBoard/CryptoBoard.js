@@ -18,6 +18,9 @@ export default class CryptoBoard extends React.Component {
             if(Object.keys(this.state.hashTable).length <= 1) this.ModalWindow.disableButton();
         });
     }
+    shouldComponentRender() {
+        return this.props.display;
+    }
     toggleCheckbox(evt) {
         let target = evt.target;
         if(target.tagName !== "BUTTON") {

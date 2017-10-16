@@ -9,17 +9,13 @@ class BitcoinCurrentPrice extends React.Component {
         this.state = {
             componentToUpdate: "BitcoinCurrentPrice"
         };
-    }
-    shouldComponentRender() {
-        return this.props.display;
-    }
-    componentDidMount() {
-        const display = this.props.display;
+    }   
+    componentDidMount() {        
         const { updateFrequency, url } = this.props.model;
 
-        this.props.update(url, display, this.state.componentToUpdate);
+        this.props.update(url, this.state.componentToUpdate);
         this.setState({
-            intervalId: setInterval(() => this.props.update(url, display, this.state.componentToUpdate), updateFrequency)
+            intervalId: setInterval(() => this.props.update(url, this.state.componentToUpdate), updateFrequency)
         });
     }
     componentWillUnmount() {

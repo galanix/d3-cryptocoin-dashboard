@@ -46,9 +46,8 @@ class CalendarForm extends React.Component {
                 [filterName]: _selectedDates[0]
             }, () => {
                 const startDate = self.state.start;
-                const endDate = self.state.end;
-                console.log(startDate, endDate);
-                if(endDate.getTime() > startDate.getTime()) {
+                const endDate = self.state.end;            
+                if(endDate.getTime() > startDate.getTime()) {                                      
                   let timeline;
                   const monthDiff = endDate.getMonth() - startDate.getMonth();
                   switch(monthDiff) {
@@ -72,7 +71,7 @@ class CalendarForm extends React.Component {
                   ];
               
                   self.props.change(newFilterValues, filterNames, componentToUpdate);
-                  self.props.update(self.props.createURL(), true, componentToUpdate)
+                  self.props.update(self.props.createURL(), componentToUpdate)
                     .then(() => self.props.renderGraph(true));
                 }
             });           

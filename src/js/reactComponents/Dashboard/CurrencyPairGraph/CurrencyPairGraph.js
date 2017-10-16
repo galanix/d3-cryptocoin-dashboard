@@ -20,12 +20,12 @@ export default class CurrencyPairGraph extends React.Component {
 
         window.addEventListener("resize", this.scaleGraphs.bind(this));
 
-        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+        this.props.update(this.createURL(), this.state.componentToUpdate)
         .then(() => this.renderGraphs(false));
     }
-    // componentWillUnmount() {
-    //     window.removeEventListener("resize", this.scaleGraph.bind(this));
-    // }
+    shouldComponentRender() {
+        return this.props.display;
+    }
     createURL() {
         const { pairName, dataPoints, hours } = this.props.model.filters;
         return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
@@ -45,7 +45,7 @@ export default class CurrencyPairGraph extends React.Component {
     saveChangesAndRerender(newFilterValue, filterName) {
         this.charts.showPreloader();
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
-        this.props.update(this.createURL(), this.props.display, this.state.componentToUpdate)
+        this.props.update(this.createURL(), this.state.componentToUpdate)
             .then(() => {
                 this.renderGraphs(true);
                 this.charts.hidePreloader();

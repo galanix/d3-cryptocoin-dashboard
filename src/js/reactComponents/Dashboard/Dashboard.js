@@ -13,27 +13,40 @@ export default class Dashboard extends React.Component {
         return (
             <div className="right_col" role="main">
                 <div className="row">
-                    <BitcoinCurrentPrice update={this.props.update}
-                                         model={this.props.data.currentPrice}
-                                         display={this.props.data.general.displayComponent.BitcoinCurrentPrice}
+                    { this.props.data.settings.displayComponent.BitcoinCurrentPrice ? 
+                        <BitcoinCurrentPrice update={this.props.update}
+                                         model={this.props.data.currentPrice}                                         
                                          signs={this.props.data.general.currencySigns}
-                    />
-                    <BitcoinHistoryGraph update={this.props.update}
+                        />   
+                        :
+                        null
+                    }
+                    { this.props.data.settings.displayComponent.BitcoinHistoryGraph ?
+                        <BitcoinHistoryGraph update={this.props.update}
                                          change={this.props.change}
-                                         model={this.props.data.history}
-                                         display={this.props.data.general.displayComponent.BitcoinHistoryGraph}
+                                         model={this.props.data.history}                                         
                                          signs={this.props.data.general.currencySigns}
-                    />
-                    <CurrencyPairGraph update={this.props.update}
+                        />
+                        :
+                        null
+                    }
+                    { this.props.data.settings.displayComponent.CurrencyPairGraph ?
+                        <CurrencyPairGraph update={this.props.update}
                                        change={this.props.change}
-                                       model={this.props.data.currencyPair}
-                                       display={this.props.data.general.displayComponent.CurrencyPairGraph}
-                    />
-                    <CryptoBoard update={this.props.update}
-                                 change={this.props.change}
-                                 model={this.props.data.cryptoBoard}
-                                 display={this.props.data.general.displayComponent.CryptoBoard}
-                    />
+                                       model={this.props.data.currencyPair}                                       
+                        />
+                        :
+                        null
+
+                    }
+                    { this.props.data.settings.displayComponent.CryptoBoard ?
+                        <CryptoBoard update={this.props.update}
+                                    change={this.props.change}
+                                    model={this.props.data.cryptoBoard}                                    
+                        />
+                        :
+                        null
+                    }             
                 </div>
             </div>
         );

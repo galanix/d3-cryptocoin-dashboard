@@ -9,13 +9,7 @@ const model = {
             USD: "&#36;",
             UAH: "&#8372;",
             RUB: "&#8381;"
-        },
-        displayComponent: JSON.parse(window.localStorage.getItem("componentState")) || {
-            BitcoinCurrentPrice: true,
-            BitcoinHistoryGraph: true,
-            CurrencyPairGraph: true,
-            CryptoBoard: true,
-        }
+        },        
     },
     currentPrice: {
         url: "https://api.coindesk.com/v1/bpi/currentprice.json",
@@ -126,6 +120,14 @@ const model = {
           }
         }
     },
+    settings: {
+        displayComponent: JSON.parse(window.localStorage.getItem("displayComponent")) || {
+            BitcoinCurrentPrice: true,
+            BitcoinHistoryGraph: true,
+            CurrencyPairGraph: true,
+            CryptoBoard: true,
+        }
+    }
 };
 
 export default model;

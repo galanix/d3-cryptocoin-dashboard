@@ -33,7 +33,7 @@ const reducers = (state = model, action) => {
               break;
 
             case "CurrencyPairGraph":
-              if(action.filterName instanceof Array) {                
+              if(action.filterName instanceof Array) {
                 action.filterName.forEach((name, index) => {
                   newState.currencyPair.filters[name] = action.newFilterValue[index];
                 })
@@ -45,14 +45,17 @@ const reducers = (state = model, action) => {
                 action.filterName.forEach((name, index) => {
                   newState.cryptoBoard.table.filters[name] = action.newFilterValue[index];
                 })
-              } else newState.cryptoBoard.table.filters[action.filterName] = action.newFilterValue;            
+              } else newState.cryptoBoard.table.filters[action.filterName] = action.newFilterValue;
               break;
-            case "CryptoBoard_chart":              
+            case "CryptoBoard_chart":
               if(action.filterName instanceof Array) {
                 action.filterName.forEach((name, index) => {
                   newState.cryptoBoard.chart.filters[name] = action.newFilterValue[index];
                 })
               } else newState.cryptoBoard.chart.filters[action.filterName] = action.newFilterValue;
+              break;
+            case "Settings":
+              newState.settings[action.filterName] = action.newFilterValue;
               break;
 
             default:

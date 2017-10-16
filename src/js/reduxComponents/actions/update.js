@@ -1,5 +1,4 @@
-export const dataRequest = (url, display, componentToUpdate) => {  
-  if(!display) return; 
+export const dataRequest = (url, componentToUpdate) => {  
   return dispatch => _fetchData(dispatch, url, componentToUpdate);
 };
 
