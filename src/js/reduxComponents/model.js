@@ -2,7 +2,7 @@ import { formProperDateFormat } from "../helperFunctions";
 
 const today = new Date();
 
-const model = {
+export const model = {
     general: {
         currencySigns: {
             EUR: "&#8364;",
@@ -129,5 +129,3 @@ const model = {
         }
     }
 };
-
-export default model;

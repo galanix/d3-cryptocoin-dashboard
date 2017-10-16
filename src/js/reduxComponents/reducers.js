@@ -1,6 +1,6 @@
-import model from "./model";
+import { model } from "./model";
 
-const reducers = (state = model, action) => {
+export default function reducers(state = model, action) {
     const newState = Object.assign({}, state);    
     switch(action.type) {
        case "UPDATE_DATA":
@@ -25,37 +25,23 @@ const reducers = (state = model, action) => {
         case "CHANGE_FILTERS":
           switch(action.forComponent) {
             case "BitcoinHistoryGraph":
-              if(action.filterName instanceof Array) {
-                action.filterName.forEach((name, index) => {
-                  newState.history.filters[name] = action.newFilterValue[index];
-                })
-              } else newState.history.filters[action.filterName] = action.newFilterValue;
+              assignNewFilterValue(action, newState.history);
               break;
 
             case "CurrencyPairGraph":
-              if(action.filterName instanceof Array) {
-                action.filterName.forEach((name, index) => {
-                  newState.currencyPair.filters[name] = action.newFilterValue[index];
-                })
-              } else newState.currencyPair.filters[action.filterName] = action.newFilterValue;
+              assignNewFilterValue(action, newState.currencyPair);
               break;
 
             case "CryptoBoard_table":
-              if(action.filterName instanceof Array) {
-                action.filterName.forEach((name, index) => {
-                  newState.cryptoBoard.table.filters[name] = action.newFilterValue[index];
-                })
-              } else newState.cryptoBoard.table.filters[action.filterName] = action.newFilterValue;
+              assignNewFilterValue(action, newState.cryptoBoard.table);
               break;
+
             case "CryptoBoard_chart":
-              if(action.filterName instanceof Array) {
-                action.filterName.forEach((name, index) => {
-                  newState.cryptoBoard.chart.filters[name] = action.newFilterValue[index];
-                })
-              } else newState.cryptoBoard.chart.filters[action.filterName] = action.newFilterValue;
+              assignNewFilterValue(action, newState.cryptoBoard.chart);
               break;
+
             case "Settings":
-              newState.settings[action.filterName] = action.newFilterValue;
+              assignNewFilterValue(action, newState.settings);
               break;
 
             default:
@@ -66,6 +52,12 @@ const reducers = (state = model, action) => {
           console.warn("action.type switch defaulted with", action.type);
     }
     return newState;
-}
+};
 
-export default reducers;
+function assignNewFilterValue(action, objectToAssignTo) {
+  if(action.filterName instanceof Array) {
+    action.filterName.forEach((name, index) => {
+      objectToAssignTo.filters[name] = action.newFilterValue[index];
+    })
+  } else objectToAssignTo.filters[action.filterName] = action.newFilterValue;  
+};

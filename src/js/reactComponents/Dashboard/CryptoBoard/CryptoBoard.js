@@ -18,9 +18,6 @@ export default class CryptoBoard extends React.Component {
             if(Object.keys(this.state.hashTable).length <= 1) this.ModalWindow.disableButton();
         });
     }
-    shouldComponentRender() {
-        return this.props.display;
-    }
     toggleCheckbox(evt) {
         let target = evt.target;
         if(target.tagName !== "BUTTON") {
@@ -80,16 +77,14 @@ export default class CryptoBoard extends React.Component {
                                  model={this.props.model.chart}
                                  limit={this.props.model.table.limit}
                                  update={this.props.update}
-                                 change={this.props.change}
-                                 display={this.props.display}
+                                 change={this.props.change}                                 
                                  hashTable={this.state.hashTable}
                                  createURL={this.createURL.bind(this)}
                                  changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}                             
                     />
                     <Board model={this.props.model.table}                        
                            update={this.props.update}
-                           change={this.props.change}
-                           display={this.props.display}
+                           change={this.props.change}                           
                            hashTable={this.state.hashTable}
                            createURL={this.createURL.bind(this)}
                            toggleCheckbox={this.toggleCheckbox.bind(this)}

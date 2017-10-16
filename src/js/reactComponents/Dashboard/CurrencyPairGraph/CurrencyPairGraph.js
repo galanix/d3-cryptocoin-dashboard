@@ -23,9 +23,6 @@ export default class CurrencyPairGraph extends React.Component {
         this.props.update(this.createURL(), this.state.componentToUpdate)
         .then(() => this.renderGraphs(false));
     }
-    shouldComponentRender() {
-        return this.props.display;
-    }
     createURL() {
         const { pairName, dataPoints, hours } = this.props.model.filters;
         return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
