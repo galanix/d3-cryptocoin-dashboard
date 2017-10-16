@@ -1,5 +1,5 @@
 export default function() {
-	(function($,sr) {		
+	(function($,sr) {
 			var debounce = function (func, threshold, execAsap) {
 				var timeout;
 
@@ -53,7 +53,7 @@ export default function() {
 			$RIGHT_COL.css('min-height', contentHeight);
 		};
 
-		$SIDEBAR_MENU.find('a').on('click', function(ev) {			
+		$SIDEBAR_MENU.find('a').on('click', function(ev) {
 			var $li = $(this).parent();
 			var $ul = $li.parent();				
 			if ($li.is('.active')) {
@@ -86,7 +86,7 @@ export default function() {
 		});
 
 		// toggle small or large menu 
-		$MENU_TOGGLE.on('click', function() {				
+		$MENU_TOGGLE.on('click', function() {
 			
 			if ($BODY.hasClass('nav-md')) {
 				$SIDEBAR_MENU.find('li.active ul').hide();
@@ -99,8 +99,7 @@ export default function() {
 			$BODY.toggleClass('nav-md nav-sm');
 
 			setContentHeight();
-
-			$('.dataTable').each ( function () { $(this).dataTable().fnDraw(); });
+					
 		});
 
 			// check active menu
@@ -128,37 +127,9 @@ export default function() {
 				});
 			}
 	};
-
-	// Panel toolbox
+	
 	$(document).ready(function() {
-			$('.collapse-link').on('click', function() {
-					var $BOX_PANEL = $(this).closest('.x_panel'),
-							$ICON = $(this).find('i'),
-							$BOX_CONTENT = $BOX_PANEL.find('.x_content');
-					
-					// fix for some div with hardcoded fix class
-					if ($BOX_PANEL.attr('style')) {
-							$BOX_CONTENT.slideToggle(200, function(){
-									$BOX_PANEL.removeAttr('style');
-							});
-					} else {
-							$BOX_CONTENT.slideToggle(200); 
-							$BOX_PANEL.css('height', 'auto');  
-					}
-
-					$ICON.toggleClass('fa-chevron-up fa-chevron-down');
-			});
-
-			$('.close-link').click(function () {
-					var $BOX_PANEL = $(this).closest('.x_panel');
-
-					$BOX_PANEL.remove();
-			});
-	});
-
-	$(document).ready(function() {
-		init_sidebar();
-		
+		init_sidebar();		
 	});	
 }
 

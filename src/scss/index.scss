@@ -9,8 +9,14 @@
     < GENERAL RULES >
 */
 
+
+.left_col {
+    transition: all .4s ease-in;
+}
+
+
 body {   
-    overflow-x: hidden;
+    overflow-x: hidden;    
 }
 
 a.active,
