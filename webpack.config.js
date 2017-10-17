@@ -1,6 +1,7 @@
 const path = require("path");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const webpack = require("webpack");
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
     entry: {
@@ -8,7 +9,7 @@ module.exports = {
       "settings/bundle": "./src/js/settings.js",
     },
     output: {
-        filename: "[name].js",
+        filename: "[name].min.js",
         path: path.resolve(__dirname, "dest"),
         publicPath: "dest/"
     },
@@ -28,14 +29,22 @@ module.exports = {
                 test: /\.scss$/,
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
-                    use: ["css-loader","postcss-loader","sass-loader"]
+                    use: [
+                        { loader: "css-loader", options: { minimize: true} },
+                        { loader: "postcss-loader" },
+                        { loader: "sass-loader"}
+                    ]
                 }),
             },
             {
                 test: /\.css$/,
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
-                    use: ["css-loader","postcss-loader"]
+                    use: [
+                        { loader: "css-loader", options: { minimize: true} },
+                        { loader: "postcss-loader" },
+                        { loader: "sass-loader"}
+                    ]
                 })
             },
             {
@@ -49,10 +58,11 @@ module.exports = {
         ]
     },
     plugins: [
-        new ExtractTextPlugin("bundle.css"),
+        new ExtractTextPlugin("bundle.min.css"),
         new webpack.ProvidePlugin({
             jQuery: "jquery",
             $: "jquery"
-          })
+          }),
+        new UglifyJSPlugin(),  
     ]
 }

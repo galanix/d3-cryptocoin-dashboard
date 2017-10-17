@@ -1,4 +1,7 @@
-import runTemplateScript from './template';
+import $ from "jquery";
+import "bootstrap";
+// TEMPLATE SCRIPT
+import './template';
 
 (function() {
     const componentStates =  JSON.parse(window.localStorage.getItem('componentState')) || {
@@ -18,7 +21,7 @@ import runTemplateScript from './template';
           }
     }
 
-    const btns = [].slice.call(document.getElementsByClassName('btn'));
+    const btns = Array.from(document.getElementsByClassName('btn'));
     btns.forEach(btn => {
         applyChanges(btn);
         btn.addEventListener('click', () => {
