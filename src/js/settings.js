@@ -5,7 +5,7 @@ import './template';
 
 (function() {
     const componentStates =  JSON.parse(window.localStorage.getItem('componentState')) || {
-        currentPriceView: false,
+        currentPriceView: true,
         historyView: true,
         currencyPairView: true,
         cryptoBoardView: true,
