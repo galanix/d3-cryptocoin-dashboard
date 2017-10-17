@@ -1,45 +1,58 @@
-const path = require('path');
+const path = require("path");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = {
     entry: {
-      'bundle': './src/js/index.js',
-      'settings/bundle': './src/js/settings.js',
+      "bundle": "./src/js/index.js",
+      "settings/bundle": "./src/js/settings.js",
     },
     output: {
-        filename: '[name].js',
-        path: path.resolve(__dirname, 'dest'),
-        publicPath: 'dest/'
+        filename: "[name].js",
+        path: path.resolve(__dirname, "dest"),
+        publicPath: "dest/"
     },
     module: {
         rules: [
-        {
-            test: /\.js$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-              loader: 'babel-loader',
-              options: {
-                  presets: ['env']
-              }
-            }
-        },
-        {            
-            test: /\.scss$/,
-            use: ExtractTextPlugin.extract({
-              fallback: "style-loader",
-              use: ['css-loader','postcss-loader','sass-loader']
-            }),
-        },
-        {       
-            test: /\.css$/,
-            use: ExtractTextPlugin.extract({
-              fallback: "style-loader",
-              use: ['css-loader','postcss-loader']
-            })
-        }
+            {
+                test: /\.js$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: ["env"]
+                    }
+                }
+            },
+            {
+                test: /\.scss$/,
+                use: ExtractTextPlugin.extract({
+                    fallback: "style-loader",
+                    use: ["css-loader","postcss-loader","sass-loader"]
+                }),
+            },
+            {
+                test: /\.css$/,
+                use: ExtractTextPlugin.extract({
+                    fallback: "style-loader",
+                    use: ["css-loader","postcss-loader"]
+                })
+            },
+            {
+                test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: "url-loader"
+            },
+            {
+                test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: "file-loader"
+            }           
         ]
     },
     plugins: [
         new ExtractTextPlugin("bundle.css"),
+        new webpack.ProvidePlugin({
+            jQuery: "jquery",
+            $: "jquery"
+          })
     ]
 }
