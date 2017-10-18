@@ -1,19 +1,18 @@
-@import url('https://unpkg.com/flatpickr/dist/flatpickr.min.css');
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
-@import url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
-@import './utilities/variables';
-@import './template.css';
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+@import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+@import "../../node_modules/bootstrap/dist/css/bootstrap.min.css";
+@import "./utilities/variables";
+@import "./template.css";
+@import "../../node_modules/font-awesome/css/font-awesome.min.css";
 
 /*
     < GENERAL RULES >
 */
 
-
-.left_col {
-    transition: all .4s ease-in;
-}
-
+// .left_col,
+// .right_col {
+//     transition: all .4s ease-in;
+// }
 
 body {   
     overflow-x: hidden;    
@@ -42,7 +41,7 @@ a.active:hover {
 }
 
 svg {
-    box-sizing: content-box;
+    box-sizing: content-box;    
 }
 
 .wait-message {
@@ -92,15 +91,19 @@ svg {
     h2 {
         margin-top: 25px;
     }
+    .tile_stats_count {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .count_bottom {
+        font-style: italic;
+        font-weight: bold;
+    }
     @media screen and (max-width: 430px) {
       .tile_stats_count {
           width: 100%;
       }
     }
-}
-
-.count_bottom {
-    font-style: italic;
 }
 
 /*
