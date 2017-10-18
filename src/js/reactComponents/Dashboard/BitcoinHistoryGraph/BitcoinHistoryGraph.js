@@ -51,9 +51,9 @@ export default class BitcoinHistoryGraph extends React.Component {
   }
   scaleGraph() {
     if(document.body.clientWidth < 500) 
-      scaleGraphSize("#historical-data", this.renderGraph.bind(this, true), this.props.model.minWidth, "down");
+      scaleGraphSize("#historical-data", this.props.model.minWidth, "down", this.renderGraph.bind(this, true));
     else
-      scaleGraphSize("#historical-data", this.renderGraph.bind(this, true), this.props.model.width, "up");
+      scaleGraphSize("#historical-data", this.props.model.width, "up", this.renderGraph.bind(this, true));
   }
   saveChangesAndRerender(newFilterValue, filterName) {
     this.chart.showPreloader();

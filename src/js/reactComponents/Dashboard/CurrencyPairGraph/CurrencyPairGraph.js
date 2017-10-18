@@ -16,7 +16,7 @@ export default class CurrencyPairGraph extends React.Component {
         };
     }
     componentDidMount() {
-        this.scaleGraphs();
+        //this.scaleGraphs();
 
         window.addEventListener("resize", this.scaleGraphs.bind(this));
 
@@ -35,9 +35,9 @@ export default class CurrencyPairGraph extends React.Component {
     }
     scaleGraphs() {
         if(document.body.clientWidth < 500) 
-          scaleGraphSize("#ask-bid-spread", this.renderGraphs.bind(this, true), this.props.model.minWidth, "down");
+          scaleGraphSize("#ask-bid-spread", this.props.model.minWidth, "down", this.renderGraphs.bind(this, true));
         else
-          scaleGraphSize("#ask-bid-spread", this.renderGraphs.bind(this, true), this.props.model.width, "up");
+          scaleGraphSize("#ask-bid-spread", this.props.model.width, "up", this.renderGraphs.bind(this, true));
     }
     saveChangesAndRerender(newFilterValue, filterName) {
         this.charts.showPreloader();

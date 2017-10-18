@@ -6,7 +6,7 @@ import { attrs } from "d3-selection-multi";
 import WaitMessage from "../../../General/WaitMessage";
 
 import Graph from "../../../../components/Graph";
-import { formProperDateFormat } from "../../../../helperFunctions";
+import { formProperDateFormat, removeDuplicates } from "../../../../helperFunctions";
 
 export default class LineChart extends React.Component {
     constructor() {
@@ -16,19 +16,23 @@ export default class LineChart extends React.Component {
         this.hidePreloader();
     }
     buildLine(dataset) {
-        const { width, paddingVal } = this.props.model;
-        const height = 0.6 * width;        
-        this.makeScales(dataset, width, height);    
+        const margin = this.props.model.margin;
+        const width = this.props.model.width - margin.left - margin.right; // get initial width from model
+        const height = this.props.model.width * 0.6 - margin.top - margin.bottom;
+
+        this.makeScales(dataset, width, height);
         this.setState({
-            graphSVG: d3.select(this.svgDiv).append("svg")
-        }, () => {
-            this.state.graphSVG
-            .attrs({
-                width,
-                height,
-                id: "historical-data"
-            })
-            .style("padding", paddingVal);
+            svg: d3.select(this.svgDiv)
+                        .append("svg")
+                        .attrs({
+                            width: width + margin.left + margin.right,
+                            height: height + margin.top + margin.bottom,
+                            id: "historical-data"
+                        })
+        }, () => {        
+            this.setState(prevState => ({
+                graphG: prevState.svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`)
+            }));          
         });
         // construct basic graph
         const lineGraph = new Graph({
@@ -38,23 +42,23 @@ export default class LineChart extends React.Component {
             lineFunction:  d3.line()
                              .x(d => this.xScale(d.time.getTime()))
                              .y(d => this.yScale(d.currencyValue)),
-            container: this.state.graphSVG,
+            container: this.state.graphG,
         });
         lineGraph.append(dataset);
-        this.setState({ lineGraph });        
+        this.setState({ lineGraph });
         // add axises
         
         const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
         const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
         const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
-        const yAxis = this.state.graphSVG
+        const yAxis = this.state.graphG
                         .append("g")
                         .call(yAxisGen)
                         .attrs({
                             "class": "y-axis"
                         });
-        const xAxis = this.state.graphSVG
+        const xAxis = this.state.graphG
                         .append("g")
                         .call(xAxisGen)
                         .attrs({
@@ -62,31 +66,30 @@ export default class LineChart extends React.Component {
                             "class": "x-axis"
                         });
 
-        this.drawCurrencySign();    
-        this.createHashTable(dataset, this.addMovableParts.bind(this)); // add add movable after it
-        //this.setState({ xScale, yScale, graphSVG }, afterStateChangeCallback);
+        this.drawCurrencySign();
+        this.createHashTable(dataset, this.addMovableParts.bind(this)); // add movable after it        
     }
     updateLine(dataset) {
-        // dataset has changed, need to update #historical-data graph    
-        const paddingVal = parseInt(this.state.graphSVG.style("padding-left"));
-        const width = Math.round(this.state.graphSVG.node().getBoundingClientRect().width) - paddingVal * 2;
-        const height = Math.round(width * 0.6);
+        // dataset has changed, need to update #historical-data graph
+        const margin = this.props.model.margin;
+         // get previous svg width / height instead of assigning from model
+        const width = this.state.svg.attr("width") - margin.left - margin.right;
+        const height = this.state.svg.attr("height") - margin.top - margin.bottom;
 
         this.state.lineGraph.update(dataset);
         this.makeScales(dataset, width, height);
-        this.state.graphSVG.attrs({ width, height }); 
         // update axises
         const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
         const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
         const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
     
-        const yAxis = this.state.graphSVG
+        const yAxis = this.state.graphG
                         .selectAll("g.y-axis")
                         .transition()
                         .duration(1000)
                         .call(yAxisGen);
     
-        const xAxis = this.state.graphSVG
+        const xAxis = this.state.graphG
                         .selectAll("g.x-axis")
                         .transition()
                         .duration(1000)
@@ -97,14 +100,11 @@ export default class LineChart extends React.Component {
         this.createHashTable(dataset);               
     }
     makeScales(dataset, width, height) {
-        // chronological order
+        // dates are in chronological order
         const firstDate = dataset[0].time.getTime();
         const lastDate = dataset[dataset.length - 1].time.getTime();
-        const min = d3.min(dataset, d => d.currencyValue);
-        const max = d3.max(dataset, d => d.currencyValue);
-
         this.xScale = d3.scaleLinear().domain([ firstDate, lastDate ]).range([ 0, width ]);
-        this.yScale = d3.scaleLinear().domain([ min, max ]).range([ height, 0 ]);
+        this.yScale = d3.scaleLinear().domain(d3.extent(dataset, d => d.currencyValue)).range([ height, 0 ]);
     }
     createHashTable(dataset, callback) {
         const hashTable = {};
@@ -137,17 +137,17 @@ export default class LineChart extends React.Component {
             prevLg
             });
             if(!!valuesDown) {
-            outputArray = [ ...new Set([...outputArray, ...valuesDown]) ];
+            outputArray = removeDuplicates(outputArray.concat(valuesDown));          
             }
             
             const valuesUp = formTicksArray({
-            finalLevel,
-            level,
-            prevSm,
-            prevLg: currTick
-            })        
+                finalLevel,
+                level,
+                prevSm,
+                prevLg: currTick
+            })
             if(!!valuesUp) {
-            outputArray = [ ...new Set([...outputArray, ...valuesUp]) ];
+                 outputArray = removeDuplicates(outputArray.concat(valuesUp));
             }
             return outputArray;
         };        
@@ -252,54 +252,52 @@ export default class LineChart extends React.Component {
             .transition()
             .duration(100)
             .style("opacity", 0);
-        };        
-        const graphSVG = this.state.graphSVG;
-        const lineFunction =
-            d3.line()
-            .x(d => 0)
-            .y(d => this.yScale(d.currencyValue));
-        
-        graphSVG.append("path")
-            .attrs({
-            "d": lineFunction(dataset),
-            "stroke": "#717A84",
-            "stroke-width": 2,
-            "fill": "none",
-            "id": "movable",
-            "transform": `translate(-100, 0)`,
-            });
+        };     
+        const lineFunction = d3.line()
+                               .x(d => 0)
+                               .y(d => this.yScale(d.currencyValue));
+        const margin = this.props.model.margin;
+
+        this.setState(prevState => ({
+            hoverG: prevState.svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`)
+        }), () => {
+            this.state.hoverG.append("path")
+                .attrs({
+                    "d": lineFunction(dataset),
+                    "stroke": "#717A84",
+                    "stroke-width": 2,
+                    "fill": "none",
+                    "id": "movable",
+                    "transform": `translate(-100, 0)`,
+                });
+            this.state.hoverG.append("circle")
+                .attrs({
+                    "r": 5,
+                    "class": "dot",
+                    "fill": "#26B99A"
+                })
+                .style("opacity", 0);
+        });
 
         d3.select("#history .graph").append("div") // adding tooltip
-        .attr("class", "tooltip")
-        .style("opacity", 0);
-        
-        d3.select("#historical-data").append("circle") // adding dots
-            .attrs({
-            r: 5,
-            "class": "dot",
-            "fill": "#26B99A"
-            })
+            .attr("class", "tooltip")
             .style("opacity", 0);
-            
-        
-        const graphSVGStyles = getComputedStyle(graphSVG.node());    
-        graphSVG.on("mousemove", () => {
-            const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
-            const offsetLeft = this.state.graphSVG.node().getBoundingClientRect().left;        
-            let xPos = Math.round(d3.event.clientX - offsetLeft - paddingLeft);
+                
+        this.state.svg.on("mousemove", () => {
+            const svgDOMRect = this.state.svg.node().getBoundingClientRect();
+            const offsetLeft = svgDOMRect.left;
+            const svgWidth = svgDOMRect.width;
 
-            const hashTable = this.state.hashTable;
+            let xPos = Math.round(d3.event.clientX - offsetLeft - margin.left);
+            const hashTable = this.state.hashTable;            
 
-            const graphWidth = parseInt(graphSVGStyles.width);
-            const padRight = parseInt(graphSVGStyles.paddingRight);
-            const padLeft = parseInt(graphSVGStyles.paddingLeft);
-            
+            // 10 is for padding
             if(
-            xPos > (graphWidth + 10) ||
-            xPos < -10
+                xPos > svgWidth - margin.right - margin.left + 10 ||
+                xPos < 0
             ) {
-            hideDotsAndTooltip();
-            return;
+                hideDotsAndTooltip();
+                return;
             }
 
             let rightDist = xPos;
@@ -307,26 +305,30 @@ export default class LineChart extends React.Component {
             let valueKey;
 
             // looks for closest point relative to the mouse
-            while( !hashTable["" + leftDist] && leftDist < (graphWidth - padRight - padLeft + 10) ) {
-            leftDist++;
+            while( !hashTable["" + leftDist] && leftDist < (svgWidth + 10) ) {
+                leftDist++;
             }
             while( !hashTable["" + rightDist] && rightDist > -10 ) {
-            rightDist--;
-            }                
-            if(rightDist < leftDist) valueKey = rightDist; 
-            else valueKey = leftDist;
+                rightDist--;
+            }
+            if(rightDist < leftDist) {
+                valueKey = rightDist;
+            }
+            else {
+                valueKey = leftDist;
+            }
             
             const value = hashTable["" + valueKey];
             if(!!value) {
-            showDotsAndTooltip(Object.assign({}, value));
+                showDotsAndTooltip(Object.assign({}, value));
             } else {
-            hideDotsAndTooltip();
+                hideDotsAndTooltip();
             }
 
             d3.select("#movable")
-            .attrs({
+              .attrs({
                 "transform": `translate(${xPos}, 0)`,
-            });
+              });
         })
         .on("mouseout", () => {
             hideDotsAndTooltip();

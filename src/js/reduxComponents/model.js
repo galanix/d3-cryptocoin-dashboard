@@ -19,9 +19,9 @@ export const model = {
     history: {
         url: "https://api.coindesk.com/v1/bpi/historical/close.json",
         data: {},
-        minWidth: 180,
-        width: 380,    
-        paddingVal: 60,
+        minWidth: 300,
+        width: 500,
+        margin: { top: 60, right: 60, bottom: 60, left: 60 },
         filters: {
             currency: "USD",
             end: formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
@@ -48,9 +48,9 @@ export const model = {
     },
     currencyPair: {
         data: {},
-        minWidth: 180,
-        width: 380,
-        paddingVal: 60,
+        minWidth: 300,
+        width: 500,
+        margin: { top: 60, right: 60, bottom: 60, left: 60 }, 
         filters: {
             pairName: "BTCLTC",
             hours: 2,
