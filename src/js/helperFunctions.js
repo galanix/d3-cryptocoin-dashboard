@@ -12,18 +12,19 @@ export function createDateObj(dateStr) {
     return new Date(year, month, day);
 }
 
-export function scaleGraphSize(svgSelector, callback, width, dir) {
+export function scaleGraphSize(svgSelector, width, dir, callback) {
     const svg = document.querySelector(svgSelector);
-    if(!svg) return;
+    if(!svg) {
+        return;
+    }
 
-    const paddingVal = parseInt(getComputedStyle(svg).paddingLeft);
+    const svgWidth = +svg.getAttribute("width");    
     if(
-      (dir === "down" && svg.getBoundingClientRect().width > (width + paddingVal * 2)) ||
-      (dir === "up" && Math.ceil(svg.getBoundingClientRect().width) < (width + paddingVal * 2))
+      (dir === "down" && svgWidth > width) ||
+      (dir === "up" && svgWidth < width)
     ) {
       svg.setAttribute("width", width);
       svg.setAttribute("height", Math.round(width * 0.6));
-
       if(callback) callback();
     }
 };
@@ -42,3 +43,14 @@ export function changeCSSProperties (properties, values, element) {
         element.style[property] = values[index];
     });
 };
+
+export function removeDuplicates(array) {
+    const a = array.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+    return a;
+}
