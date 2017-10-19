@@ -17,7 +17,7 @@
     transition: margin-left .5s ease-out;
 }
 
-body {   
+body {
     overflow-x: hidden;
 }
 
@@ -44,14 +44,15 @@ a.active:hover {
 }
 
 svg {
-    box-sizing: content-box;
+    box-sizing: content-box;    
 }
 
 .wait-message {
     position: absolute;
     margin: auto;
     top: 0; right: 0; bottom: 0; left: 0;
-
+    
+    
     pointer-events: none;
     color: $dark;
     letter-spacing: 1px;
@@ -66,24 +67,44 @@ svg {
     </ GENERAL RULES >
 */
 
-
 /*
     < BITCOIN CURRENT PRICE >
 */
 
+.count {
+    transition: color 1s ease-in;
+}
+
+@keyframes blink {
+    0%, 100% {
+        color: #73879C;
+    }
+    50% {
+        color: $info;
+    }
+}
+
+.blinking {
+    animation: blink 1s linear 0s normal infinite;
+}
+
 #bitcoin-current-price {
     h2 {
         margin-top: 25px;
+    }
+    .tile_stats_count {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .count_bottom {
+        font-style: italic;
+        font-weight: bold;
     }
     @media screen and (max-width: 430px) {
       .tile_stats_count {
           width: 100%;
       }
     }
-}
-
-.count_bottom {
-    font-style: italic;
 }
 
 /*
@@ -95,6 +116,9 @@ svg {
 */
 
 #history {
+    .graph {
+        display: inline-block !important;
+    }
     button.active {
         color: #E9EDEF;
         background-color: $dark;
@@ -136,7 +160,14 @@ svg {
 }
 /* < CURRENCY PAIR > */
 
-#currency-pair {   
+// path[id^="graph-type"] {
+//     transition: opacity .6s ease-in;
+// }
+
+#currency-pair {
+    .graph {
+        display: inline-block !important;
+    }
     .form-control-feedback.fa-clock-o {
         margin-top: 6px;
     }
@@ -159,26 +190,27 @@ svg {
     }
     input[name="hours"] {
         max-width: 200px;
-    }
+    }    
 }
-
 
 /* </ CURRENCY PAIR > */
 
 /* < CRYPTOBOARD > */
 
 #board-of-crypto-currencies {
+
     .table-filters {
         h4, .dropdown {
             display: inline-block;
         }
         h4 {
             margin-bottom:  3px;
+            padding-right: 3px;
         }
         .dropdown-group {
             .dropdown_container {
                 h4 {
-                  display: block;
+                  display: block;                 
                 }
             }       
             .dropdown_container {
@@ -195,7 +227,7 @@ svg {
                 .dropdown_container {
                     margin-left: 0;
                 }
-                #reset_dropdown-group {                    
+                #reset_dropdown-group {
                     margin-left: 0;
                 }
             }
@@ -223,9 +255,12 @@ svg {
             }
         }
     }       
-    .modal-window {
-        .category {
-            margin-top: 5px;
+    .modal-window {        
+        .btn-group_container {
+            margin-top: 25px;
+            h4 {
+                margin-bottom: 5px;
+            }
         }
         @media screen and (max-width: 560px) {
             .btn-group_container {
@@ -233,10 +268,7 @@ svg {
                     margin-top: 5px;
                 }
             }
-        }
-        .type {
-           margin-top: 10px;
-        }    
+        }          
         .controll-group {         
             position: relative;
             right: 10px;
@@ -248,18 +280,24 @@ svg {
         background: $success;
         border: 1px solid $success_darker;
     }
+    th {
+        text-align: center;        
+    }
     td {
-        position: relative;
+        position: relative; 
         text-align: center;
-        .btn {
+        .btn {         
             margin-top: 5px;
+            span.fa {
+                display: inline-block;   
+            }
         }
         .btn:not(.active) {
             .fa-check {
                 opacity: 0;
             }            
-        }    
-    }    
+        }        
+    }
 }
 
 .modal-window {    
@@ -279,10 +317,14 @@ svg {
 }
 
 .legend {
+    max-width: 720px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    flex-wrap: wrap;    
+    flex-wrap: wrap;
+    padding-bottom: 32px;
+    font-size: 16px;
 }
 
 .arc, 
@@ -321,6 +363,7 @@ svg {
 /* < SETTINGS PAGE >  */
 
 #component-display {
+    height: 100vh;
     span.title {
         font-size: 24px;
     }
@@ -329,10 +372,4 @@ svg {
     }
 }
 
-
 /* </ SETTINGS PAGE >  */
-
-
-// < RESPONSIVENESS >
-
-// </ RESPONSIVENESS >
