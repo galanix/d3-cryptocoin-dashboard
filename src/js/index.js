@@ -37,9 +37,9 @@ const model = {
     url: "https://api.coindesk.com/v1/bpi/historical/close.json",
     data: {},
     hashTable: {},
-    minWidth: 180,
-    width: 380,    
-    paddingVal: 60,
+    minWidth: 300,
+    width: 500,    
+    margin: { left: 60, top: 60, right: 60, bottom: 60 },
     ticksInfo: {
       "from-all-time-to-year": {
         xTicks: 4,
@@ -60,9 +60,9 @@ const model = {
   },
   currencyPair: {
     data: {},
-    minWidth: 180,
-    width: 380,
-    paddingVal: 60,
+    minWidth: 300,
+    width: 500,
+    margin: { left: 60, top: 60, right: 60, bottom: 60 },
     dataPointDivisors: { // to get data_point we need to divide hours by these values
       "1 min": 0.0167, // (1 / 60)      
       "5 mins": 0.0833,// (5 / 60)      
@@ -215,7 +215,7 @@ const historyView = {
       }
     });    
   },
-  renderGraph({ data, isModuleBeingUpdated, width, height, paddingVal }) {
+  renderGraph({ data, isModuleBeingUpdated, width, height, margin }) {
       // transforms a string into a Date object
       const createDateObj = (dateStr) => {
           const dateArr = dateStr.split("-");
@@ -235,18 +235,31 @@ const historyView = {
         }
       }      
       if(isModuleBeingUpdated) { // substitute dataset and update current graph
-        this.updateLine(dataset);
+        this.updateLine({ dataset, margin });
       } else {
         // build new graph from scratch and add event listeners for filters
-        this.buildLine({ dataset, width, height, paddingVal });
+        this.buildLine({ dataset, width, height, margin });
         this.attachFiltersEvents();
         controller.initCalendar();
       }
   },
-  buildLine({ dataset, width, height, paddingVal }) {
-    this.makeScales({ dataset, width, height });
+  buildLine({ dataset, width, height, margin }) {
+    this.makeScales({
+      dataset,
+      width: width - margin.left - margin.right,
+      height: height - margin.top - margin.bottom
+    });
     
-    this.graphSVG = d3.select("#history .graph").append("svg");
+    this.svg = d3.select("#history .graph")
+      .append("svg")
+      .attrs({
+        width,
+        height,
+        id: "historical-data",
+      });
+    this.graphG = this.svg.append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
     // constructed basic graph
     const graphObj = new Graph({
       type: "bitcoin-rate",
@@ -255,7 +268,7 @@ const historyView = {
       lineFunction:  d3.line()
                         .x(d => this.xScale(d.time.getTime()))
                         .y(d => this.yScale(d.currencyValue)),
-      container: this.graphSVG,
+      container: this.graphG,
     });
 
     controller.setModelData({
@@ -265,15 +278,7 @@ const historyView = {
           [graphObj.type]: graphObj
         }
       },
-    });
-            
-    this.graphSVG
-      .attrs({
-        width,
-        height,
-        id: "historical-data",
-      })
-      .style("padding", paddingVal);
+    });                
 
     graphObj.append(dataset);
     // add axises
@@ -284,54 +289,48 @@ const historyView = {
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
     const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
-    const yAxis = this.graphSVG
+    const yAxis = this.graphG
                     .append("g")
                     .call(yAxisGen)
                     .attrs({
                         "class": "y-axis"
                     });
-    const xAxis = this.graphSVG
+    const xAxis = this.graphG
                     .append("g")
                     .call(xAxisGen)
                     .attrs({
-                        "transform": `translate(0, ${height})`,
+                        "transform": `translate(0, ${height - margin.top - margin.bottom})`,
                         "class": "x-axis"
                     });
     this.drawCurrencySign();
     controller.createHashTable(dataset);
     this.addMovableParts({ dataset });
   },
-  updateLine(dataset) {
-    //debugger;
-    // dataset has changed, need to update #historical-data graph
-    const paddingVal = parseInt(this.graphSVG.style("padding-left"));
-    const width = Math.round(document.querySelector("#historical-data").getBoundingClientRect().width) - paddingVal * 2;
-    const height = Math.round(width * 0.6);
-
-    this.graphSVG.attrs({
-      width,
-      height,
-    })
+  updateLine({ dataset, margin }) {
+    // dataset has changed, need to update #historical-data graph    
+    const width = this.svg.attr("width") - margin.left - margin.right;
+    const height = this.svg.attr("height") - margin.top - margin.bottom;
+    
     // data is in chronological order
     this.makeScales({ dataset, width, height });
       // update basic graph
     const graphInstances = controller.getModelData({ namespace: "history", prop: "graphs" });
     for(let key in graphInstances) {
-      if(graphInstances.hasOwnProperty(key)) graphInstances[key].update(dataset);
-    }    
+      if(graphInstances.hasOwnProperty(key)) { graphInstances[key].update(dataset); }
+    }
 
     // update axises
     const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
     const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
-    const yAxis = this.graphSVG
+    const yAxis = this.graphG
                     .selectAll("g.y-axis")
                     .transition()
                     .duration(1000)
                     .call(yAxisGen);
 
-    const xAxis = this.graphSVG
+    const xAxis = this.graphG
                     .selectAll("g.x-axis")
                     .transition()
                     .duration(1000)
@@ -467,7 +466,7 @@ const historyView = {
         .x(d => 0)
         .y(d => this.yScale(d.currencyValue));
     
-    this.graphSVG
+    this.graphG
       .append("path")
       .attrs({
         "d": lineFunction(dataset),
@@ -492,8 +491,8 @@ const historyView = {
         
 
     const svgEl = d3.select("#historical-data").node();
-    const graphSVGStyles = getComputedStyle(this.graphSVG.node());    
-    this.graphSVG
+    const graphSVGStyles = getComputedStyle(this.graphG.node());    
+    this.graphG
       .on("mousemove", () => {
         const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
         const offsetLeft = svgEl.getBoundingClientRect().left;
@@ -626,27 +625,31 @@ const currencyPairView = {
       }
     });
   },
-  renderGraph({ dataset, isModuleBeingUpdated, width, height, paddingVal, graphInstances }) {
+  renderGraph({ dataset, isModuleBeingUpdated, width, height, margin, graphInstances }) {
     if(isModuleBeingUpdated) { // substitute dataset and update current graphs(max3)
-      this.updateLines({ dataset, graphInstances });
+      this.updateLines({ dataset, graphInstances, margin });
     } else {
       // build new graphs from scratch and add event listeners for filters
-      this.buildLines({ dataset, width, height, paddingVal });
+      this.buildLines({ dataset, width, height, margin });
       this.attachFiltersEvents();
     }
   },
-  buildLines({ dataset, width, height, paddingVal }) {
-    this.graphSVG = d3.select("#currency-pair .graph").append("svg");
-
-    this.makeScales({ dataset, width, height });
-    
-    this.graphSVG
+  buildLines({ dataset, width, height, margin }) {
+    this.svg = d3.select("#currency-pair .graph").append("svg")
       .attrs({
         width,
         height,
         id: "ask-bid-spread",
-      })
-      .style("padding", paddingVal);      
+      });
+    this.graphG = this.svg.append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    
+    this.makeScales({
+      dataset,
+      width: width - margin.left - margin.right,
+      height: height - margin.top - margin.bottom,
+    });
 
     //INSTANTIATE GRAPH OBJECTS
     this.createGraphInstances(dataset);
@@ -655,56 +658,52 @@ const currencyPairView = {
     const yAxisGen = d3.axisLeft(this.yScale);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
 
-    const yAxis = this.graphSVG
+    const yAxis = this.graphG
                     .append("g")
                     .call(yAxisGen)
                     .attrs({
                         "class": "y-axis"
                     });
-    const xAxis = this.graphSVG
+    const xAxis = this.graphG
                     .append("g")
                     .call(xAxisGen)
                     .attrs({
-                        "transform": `translate(0, ${height})`,
+                        "transform": `translate(0, ${height - margin.top - margin.bottom})`,
                         "class": "x-axis"
                     });
   },
-  updateLines({ dataset, graphInstances }) {
+  updateLines({ dataset, graphInstances, margin }) {
     if(!dataset) {
       return;
     }
-    const paddingVal = parseInt(this.graphSVG.style("padding-left"));
-    const width = Math.round(document.querySelector("#ask-bid-spread").getBoundingClientRect().width) - paddingVal * 2;    
-    const height = Math.round(width * 0.6);
 
-    this.graphSVG.attrs({
-      width: width,
-      height: height
-    });
+    const width = this.svg.attr("width") - margin.left - margin.right;
+    const height = this.svg.attr("height") - margin.top - margin.bottom;
     // dataset has changed, need to update #historical-data graph
     // data is in chronological order
     this.makeScales({ dataset, width, height, graphInstances });
     // update basic graph
     
     for(let key in graphInstances) {
-      if(graphInstances.hasOwnProperty(key)) graphInstances[key].update(dataset);            
-    }   
+      if(graphInstances.hasOwnProperty(key)) { graphInstances[key].update(dataset); }
+    }
+
     // update axises
     const yAxisGen = d3.axisLeft(this.yScale);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
 
-    const yAxis = this.graphSVG
-                    .select("g.y-axis")
-                    .transition()
-                    .duration(1000)
-                    .call(yAxisGen);
-                    
-    const xAxis = this.graphSVG
-                    .select("g.x-axis")
-                    .transition()
-                    .duration(1000)
-                    .attr("transform", `translate(0, ${height})`)
-                    .call(xAxisGen);
+    const yAxis = this.graphG
+      .select("g.y-axis")
+      .transition()
+      .duration(1000)
+      .call(yAxisGen);
+      
+    const xAxis = this.graphG
+      .select("g.x-axis")
+      .transition()
+      .duration(1000)
+      .attr("transform", `translate(0, ${height})`)
+      .call(xAxisGen);
   },
   attachFiltersEvents() {
     d3.selectAll(".toggle-graphs label")
@@ -769,7 +768,7 @@ const currencyPairView = {
       lineFunction:  d3.line()
                        .x(d => this.xScale(new Date(d.created_on).getTime()))
                        .y(d => this.yScale(+d.ticker.ask)),
-      container: this.graphSVG
+      container: this.graphG
     });
     ask.append(dataset);
 
@@ -780,7 +779,7 @@ const currencyPairView = {
       lineFunction: d3.line()
                       .x(d => this.xScale(new Date(d.created_on).getTime()))
                       .y(d => this.yScale(+d.ticker.bid)),
-      container: this.graphSVG
+      container: this.graphG
     });
     bid.append(dataset,);
 
@@ -791,7 +790,7 @@ const currencyPairView = {
       lineFunction: d3.line()
                       .x(d => this.xScale(new Date(d.created_on).getTime()))
                       .y(d => this.yScale((+d.ticker.ask) - (+d.ticker.bid))),
-      container: this.graphSVG
+      container: this.graphG
     });
     spread.append(dataset);
     
@@ -1397,19 +1396,20 @@ const controller = {
     // general methods
     scaleGraphs() {
       // FOR historyView and currentPairView
-      const scale = (selector, callback, width, dir) => {
-        const svg = d3.select(selector);
-        if(!svg.node()) return;
-        const paddingVal = parseInt(svg.style("padding-left"));
+      const scale = (svgSelector, callback, width, dir) => {
+        const svg = document.querySelector(svgSelector);
+        if(!svg) {
+            return;
+        }
+    
+        const svgWidth = +svg.getAttribute("width");    
         if(
-          (dir === "down" && svg.node().getBoundingClientRect().width > (width + paddingVal * 2)) ||
-          (dir === "up" && Math.ceil(svg.node().getBoundingClientRect().width) < (width + paddingVal * 2))
+          (dir === "down" && svgWidth > width) ||
+          (dir === "up" && svgWidth < width)
         ) {
-          svg.attrs({
-            "width": width,
-            "height": width * 0.6
-          });
-          callback();
+          svg.setAttribute("width", width);
+          svg.setAttribute("height", Math.round(width * 0.6));
+          if(callback) callback();
         }
       };
       if(document.body.clientWidth < 500) {
@@ -1500,7 +1500,7 @@ const controller = {
         namespaceObj.waitMessageObj.hide();
       }
     },
-    setModelData({ namespace, params }) {      
+    setModelData({ namespace, params }) {
       for(let key in params) {
         if(params.hasOwnProperty(key)) model[namespace][key] = params[key];
       }
@@ -1683,13 +1683,13 @@ const controller = {
       return url + `?start=${start}&end=${end}&currency=${currency}`;
     },
     renderHistoryGraph(isModuleBeingUpdated) {
-      const { data, width, paddingVal } = model.history;      
+      const { data, width, margin } = model.history;      
       historyView.renderGraph({
           data: data.bpi,
           isModuleBeingUpdated,
           width, 
           height: width * 0.6,
-          paddingVal
+          margin
       });
     },
     // currencyPairGraphView
@@ -1698,13 +1698,13 @@ const controller = {
       return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
     },
     renderCurrencyPairGraph(isModuleBeingUpdated) {
-      const { data, width, paddingVal, graphs } = model.currencyPair;
+      const { data, width, margin, graphs } = model.currencyPair;
       currencyPairView.renderGraph({
         dataset: data,
         isModuleBeingUpdated,
         width, 
         height: width * 0.6,
-        paddingVal,
+        margin,
         graphInstances: graphs,
       });
     },
