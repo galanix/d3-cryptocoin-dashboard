@@ -233,7 +233,7 @@ const historyView = {
             currencyValue: data[key]
           });
         }
-      }      
+      }
       if(isModuleBeingUpdated) { // substitute dataset and update current graph
         this.updateLine({ dataset, margin });
       } else {
@@ -304,7 +304,7 @@ const historyView = {
                     });
     this.drawCurrencySign();
     controller.createHashTable(dataset);
-    this.addMovableParts({ dataset });
+    this.addMovableParts({ dataset, margin });
   },
   updateLine({ dataset, margin }) {
     // dataset has changed, need to update #historical-data graph    
@@ -397,7 +397,7 @@ const historyView = {
   determineTicks(dataset) {
     const { ticksInfo , currentTimeline } = controller.getModelData({
       namespace: "history",
-      props: ["ticksInfo", "currentTimeline"]
+      prop: ["ticksInfo", "currentTimeline"]
     });        
 
     const { xTicks, yTicks, xTickFormat } = ticksInfo[currentTimeline];
@@ -427,14 +427,14 @@ const historyView = {
       xTickFormat
     };
   },
-  addMovableParts({ dataset }) {
-    const lineFunction =
-      d3.line()
-        .x(d => 0)
-        .y(d => this.yScale(d.currencyValue));
+  addMovableParts({ dataset, margin, hashTable }) {
+    const lineFunction = d3.line()
+      .x(d => 0)
+      .y(d => this.yScale(d.currencyValue));
     
-    this.graphG
-      .append("path")
+    this.hoverG = this.graphG.append("g");
+
+    this.hoverG.append("path")
       .attrs({
         "d": lineFunction(dataset),
         "stroke": "#717A84",
@@ -444,37 +444,39 @@ const historyView = {
         "transform": `translate(-100, 0)`,
       });
 
-    this.tooltip = d3.select("#history .graph").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
-
-    this.dot = d3.select("#historical-data").append("circle")
+    this.dot = this.hoverG.append("circle")
       .attrs({
         r: 5,
         "class": "dot",
         "fill": "#26B99A"
       })
       .style("opacity", 0);
-        
 
-    const svgEl = d3.select("#historical-data").node();
-    const graphSVGStyles = getComputedStyle(this.graphG.node());    
-    this.graphG
+    this.tooltip = d3.select("#history .graph").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+    
+    this.svg
       .on("mousemove", () => {
-        const paddingLeft = parseInt(graphSVGStyles.paddingLeft);
-        const offsetLeft = svgEl.getBoundingClientRect().left;
-        let xPos = Math.round(d3.event.clientX - offsetLeft - paddingLeft);                
-        const hashTable = controller.getModelData({ namespace: "history", prop: "hashTable" });      
-        const graphWidth = parseInt(graphSVGStyles.width);
-        const padRight = parseInt(graphSVGStyles.paddingRight);
-        const padLeft = parseInt(graphSVGStyles.paddingLeft);
-        
+        if(this.timeoutId) { clearTimeout(this.timeoutId); } // reset time
+
+        const svgDOMRect = this.svg.node().getBoundingClientRect();
+        const offsetLeft = svgDOMRect.left;
+        const svgWidth = svgDOMRect.width;
+        const hashTable = controller.getModelData({
+          namespace: "history",
+          prop: "hashTable"
+        });
+
+        let xPos = Math.round(d3.event.clientX - offsetLeft - margin.left);        
+
+        // 10 is for padding
         if(
-          xPos > (graphWidth + 10) ||
-          xPos < -10
+            xPos > svgWidth - margin.right - margin.left + 10 ||
+            xPos < 0
         ) {
-          this.hideDotsAndTooltip();
-          return;
+            this.hideDotsAndTooltip();
+            return;
         }
 
         let rightDist = xPos;
@@ -482,33 +484,37 @@ const historyView = {
         let valueKey;
 
         // looks for closest point relative to the mouse
-        while( !hashTable["" + leftDist] && leftDist < (graphWidth - padRight - padLeft + 10) ) {
-          leftDist++;
+        while( !hashTable["" + leftDist] && leftDist < (svgWidth + 10) ) {
+            leftDist++;
         }
         while( !hashTable["" + rightDist] && rightDist > -10 ) {
-          rightDist--;
-        }                
-        if(rightDist < leftDist) valueKey = rightDist; 
-        else valueKey = leftDist;
+            rightDist--;
+        }
+        if(rightDist < leftDist) {
+            valueKey = rightDist;
+        }
+        else {
+            valueKey = leftDist;
+        }
         
         const value = hashTable["" + valueKey];
         if(!!value) {
-          this.showDotsAndTooltip(Object.assign({}, value));
+            this.showDotsAndTooltip(Object.assign({}, value));
         } else {
-          this.hideDotsAndTooltip();
+            this.hideDotsAndTooltip();
         }
 
         d3.select("#movable")
           .attrs({
             "transform": `translate(${xPos}, 0)`,
-        });                
-      })
-      .on("mouseout", () => {
-        this.hideDotsAndTooltip();
-      });    
+          });
+
+        // tooltip will disappear if cursor gets inactive - instead of using mouseout that works inconsistently in Firefox
+        this.timeoutId = setTimeout(this.hideDotsAndTooltip.bind(this), 3000);
+      });
   },
   showDotsAndTooltip({ time, currencyValue }) {
-    d3.selectAll(".dot")
+    this.dot
       .attrs({
         cy: this.yScale(currencyValue),
         cx: this.xScale(time.getTime())
@@ -539,12 +545,12 @@ const historyView = {
     d3.select("#movable")
     .attrs({
       "transform": `translate(-999, 0)`,
-    })
+    });
 
-    d3.selectAll(".dot")         
-    .transition()
-    .duration(100)
-    .style("opacity", 0);                        
+    this.dot
+      .transition()
+      .duration(100)
+      .style("opacity", 0);
   
     this.tooltip.transition()
       .duration(100)
@@ -1484,14 +1490,14 @@ const controller = {
         if(params.hasOwnProperty(key)) model[namespace][key] = params[key];
       }
     },
-    getModelData({ namespace, prop, props }) {
-      if(!!props) {
+    getModelData({ namespace, prop }) {
+      if(prop instanceof Array) {
         const output = {};
-        props.forEach(prop => {
-          output[prop] = model[namespace][prop];
-        });        
+        prop.forEach(item => {
+          output[item] = model[namespace][item];
+        });
         return output;
-      }
+      }        
       return model[namespace][prop];
     },    
     dropdownChange({ selector, callback }) {
