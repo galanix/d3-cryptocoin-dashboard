@@ -216,10 +216,18 @@
                                     </div>
                                 </div>
                                 <form class="well form-horizontal form-label-left input_mask" id="hours-input">
-                                    <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
-                                        <input name="hours" type="text" class="form-control has-feedback-left" placeholder="Hours">
-                                        <span class="fa fa-clock-o form-control-feedback left" aria-hidden="true"></span>
-                                    </div>
+                                    <fieldset>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <div class="input-prepend input-group">                                                    
+                                                    <span class="add-on input-group-addon">
+                                                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                                                    </span>
+                                                    <input type="text" name="hours" class="form-control" placeholder="Hours" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>                                   
                                 </form>
                                 
                                 <div class="well toggle-graphs">                                    
