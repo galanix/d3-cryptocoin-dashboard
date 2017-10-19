@@ -395,39 +395,6 @@ const historyView = {
     }, 500);
   },
   determineTicks(dataset) {
-    // recursivly finds averages
-    const formTicksArray = ({ finalLevel, level, prevSm, prevLg }) => {
-      let outputArray = [ prevSm, prevLg ];
-
-      if(level >= finalLevel) {
-        return;
-      }
-      const currTick = (prevLg + prevSm) / 2;
-      outputArray.push(currTick);
-
-      ++level;
-      const  valuesDown = formTicksArray({
-        finalLevel,
-        level,
-        prevSm: currTick,
-        prevLg
-      });
-      if(!!valuesDown) {
-        outputArray = [ ...new Set([...outputArray, ...valuesDown]) ];
-      }
-      
-      const valuesUp = formTicksArray({
-        finalLevel,
-        level,
-        prevSm,
-        prevLg: currTick
-      })        
-      if(!!valuesUp) {
-        outputArray = [ ...new Set([...outputArray, ...valuesUp]) ];
-      }
-      return outputArray;
-    };
-    
     const { ticksInfo , currentTimeline } = controller.getModelData({
       namespace: "history",
       props: ["ticksInfo", "currentTimeline"]
@@ -437,7 +404,7 @@ const historyView = {
 
     let prevLarger = d3.max(dataset, d=> d.currencyValue);
     let prevSmaller = d3.min(dataset, d => d.currencyValue);
-    const yTicksArray = formTicksArray({
+    const yTicksArray = controller.formTicksArray({
       finalLevel: yTicks || 0,
       level: 1,
       prevSm: prevSmaller,
@@ -447,7 +414,7 @@ const historyView = {
     prevSmaller = dataset[0].time.getTime();
     prevLarger = dataset[dataset.length - 1].time.getTime();
 
-    const xTicksArray = formTicksArray({
+    const xTicksArray = controller.formTicksArray({
       finalLevel: xTicks || 0,
       level: 1,
       prevSm: prevSmaller,
@@ -655,7 +622,13 @@ const currencyPairView = {
     this.createGraphInstances(dataset);
     // add axises
     // ONLY ONE PAIR OF AXISES
-    const yAxisGen = d3.axisLeft(this.yScale);
+    const yTicks = controller.formTicksArray({
+      finalLevel: 3,
+      level: 1,
+      prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+      prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+    });
+    const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
 
     const yAxis = this.graphG
@@ -689,7 +662,13 @@ const currencyPairView = {
     }
 
     // update axises
-    const yAxisGen = d3.axisLeft(this.yScale);
+    const yTicks = controller.formTicksArray({
+      finalLevel: 3,
+      level: 1,
+      prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+      prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+    });
+    const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
 
     const yAxis = this.graphG
@@ -1545,6 +1524,38 @@ const controller = {
   
         if(!!callback) callback();
       };
+    },
+    // recursivly finds averages
+    formTicksArray({ finalLevel, level, prevSm, prevLg }) {
+      let outputArray = [ prevSm, prevLg ];
+
+      if(level >= finalLevel) {
+        return;
+      }
+      const currTick = (prevLg + prevSm) / 2;
+      outputArray.push(currTick);
+
+      ++level;
+      const  valuesDown = this.formTicksArray({
+        finalLevel,
+        level,
+        prevSm: currTick,
+        prevLg
+      });
+      if(!!valuesDown) {
+        outputArray = [ ...new Set([...outputArray, ...valuesDown]) ];
+      }
+      
+      const valuesUp = this.formTicksArray({
+        finalLevel,
+        level,
+        prevSm,
+        prevLg: currTick
+      })        
+      if(!!valuesUp) {
+        outputArray = [ ...new Set([...outputArray, ...valuesUp]) ];
+      }
+      return outputArray;
     },
     // currentPriceView
     renderCurrentPrice() {
