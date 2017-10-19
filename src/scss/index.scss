@@ -9,13 +9,16 @@
     < GENERAL RULES >
 */
 
-// .left_col,
-// .right_col {
-//     transition: all .4s ease-in;
-// }
+.left_col {    
+    transition: all .5s ease-out;
+}
 
-body {   
-    overflow-x: hidden;    
+.right_col {
+    transition: margin-left .5s ease-out;
+}
+
+body {
+    overflow-x: hidden;
 }
 
 a.active,
@@ -49,7 +52,7 @@ svg {
     margin: auto;
     top: 0; right: 0; bottom: 0; left: 0;
     
-    padding-left: 60px;
+    
     pointer-events: none;
     color: $dark;
     letter-spacing: 1px;
@@ -63,7 +66,6 @@ svg {
 /*
     </ GENERAL RULES >
 */
-
 
 /*
     < BITCOIN CURRENT PRICE >
@@ -85,7 +87,6 @@ svg {
 .blinking {
     animation: blink 1s linear 0s normal infinite;
 }
-
 
 #bitcoin-current-price {
     h2 {
@@ -115,6 +116,9 @@ svg {
 */
 
 #history {
+    .graph {
+        display: inline-block !important;
+    }
     button.active {
         color: #E9EDEF;
         background-color: $dark;
@@ -161,6 +165,9 @@ svg {
 // }
 
 #currency-pair {
+    .graph {
+        display: inline-block !important;
+    }
     .form-control-feedback.fa-clock-o {
         margin-top: 6px;
     }
@@ -310,6 +317,8 @@ svg {
 }
 
 .legend {
+    max-width: 720px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-around;
     align-items: center;
