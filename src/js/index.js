@@ -628,11 +628,16 @@ const currencyPairView = {
     this.createGraphInstances(dataset);
     // add axises
     // ONLY ONE PAIR OF AXISES
+    const spread = controller.getModelData({
+      namespace: "currencyPair",
+      prop: "graphs"
+    })["spread"];
+
     const yTicks = controller.formTicksArray({
       finalLevel: 3,
       level: 1,
       prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
-      prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+      prevSm: d3.min(dataset, d => spread.hidden ? (+d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid) :  Math.abs((+d.ticker.ask) - (+d.ticker.bid))),
     });
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
@@ -668,11 +673,12 @@ const currencyPairView = {
     }
 
     // update axises
+    console.log(dataset[0]);
     const yTicks = controller.formTicksArray({
       finalLevel: 3,
       level: 1,
       prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
-      prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+      prevSm: d3.min(dataset, d => graphInstances["spread"].hidden ? (+d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid) :  Math.abs((+d.ticker.ask) - (+d.ticker.bid))),
     });
     const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
     const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
@@ -800,13 +806,17 @@ const currencyPairView = {
       .duration(600)
       .style("opacity", active ? 0 : 1);
 
-    const graphInstance = controller.getModelData({ namespace: "currencyPair", prop: "graphs" })[target.id];
+
+    const requestedData = controller.getModelData({ namespace: "currencyPair", prop: [ "graphs", "margin" ] });
+    const graphInstance = requestedData.graphs[target.id];
+    
     graphInstance.hidden = active;
 
     if(target.id === "spread") {
       this.updateLines({
         dataset: model.currencyPair.data,
-        graphInstances: model.currencyPair.graphs
+        graphInstances: requestedData.graphs,
+        margin: requestedData.margin
       });
     }
   }
@@ -838,7 +848,7 @@ const cryptoBoardView = {
           waitMessageObj
         }        
       }
-    });        
+    });
     
     this.attachFiltersEvents();
   },
@@ -979,10 +989,11 @@ const cryptoBoardView = {
         
     for(let key in hashTable) {
       if(hashTable.hasOwnProperty(key)) {
+        console.log(key, hashTable[key]);
         dataset.push(hashTable[key]);
         colorValues.push(hashTable[key].color);
       }
-    }    
+    }
 
     this.chartSVG.selectAll("*").remove();
     this.legend.selectAll("*").remove();
@@ -1029,7 +1040,7 @@ const cryptoBoardView = {
       .text(d => d.name);
   },
   // PIE / PIE-DONUT
-  renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {  
+  renderPieChart({ dataset, width, height, comparisionField, chartIsDonut }) {
     let radius;
     
     if(width > 800) radius = 150;
@@ -1184,6 +1195,7 @@ const cryptoBoardView = {
   },
   // BAR
   renderBarChart({ dataset, width, height, comparisionField }) {
+    console.log(dataset);
     const margin = {top: 30, right: 10, bottom: 50, left: 50};    
     width -= (margin.left + margin.right);
     height -= (margin.top + margin.bottom);
@@ -1807,8 +1819,7 @@ const controller = {
         callback: this.renderCryptoBoardTable,
       });
     },
-    toggleItemForGraphDraw() {
-      //debugger;
+    toggleItemForGraphDraw() {      
       let target = d3.event.target;
       if(target.tagName !== "BUTTON") target = target.parentElement;
 
@@ -1823,8 +1834,16 @@ const controller = {
         return color;
       };
 
-      if(checked) model.cryptoBoard.chart.hashTable[id] = Object.assign({}, model.cryptoBoard.data[id], { color: getRandomColor() });
-      else delete model.cryptoBoard.chart.hashTable[id];
+      if(checked)  {
+        model.cryptoBoard.chart.hashTable[id] = Object.assign(
+          {}, 
+          model.cryptoBoard.data.find(d => d.id === id), 
+          { color: getRandomColor() }
+        );       
+      }
+      else {
+        delete model.cryptoBoard.chart.hashTable[id];
+      }
           
       if(Object.keys(model.cryptoBoard.chart.hashTable).length > 1) {
         // display that submenu
