@@ -9,6 +9,14 @@
     < GENERAL RULES >
 */
 
+.left_col {    
+    transition: all .5s ease-out;
+}
+
+.right_col {
+    transition: margin-left .5s ease-out;
+}
+
 body {   
     overflow-x: hidden;
 }
