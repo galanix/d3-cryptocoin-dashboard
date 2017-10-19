@@ -42,7 +42,7 @@ export default class LineCharts extends React.Component {
             finalLevel: 3,
             level: 1,
             prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
-            prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+            prevSm: d3.min(dataset, d => this.state.graphs.spread.hidden ? (+d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid) :  Math.abs((+d.ticker.ask) - (+d.ticker.bid)))
         });
         const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
         const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
@@ -85,7 +85,7 @@ export default class LineCharts extends React.Component {
             finalLevel: 3,
             level: 1,
             prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
-            prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+            prevSm: d3.min(dataset, d => this.state.graphs.spread.hidden ? (+d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid) :  Math.abs((+d.ticker.ask) - (+d.ticker.bid)))
         });
         const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks)
         const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
