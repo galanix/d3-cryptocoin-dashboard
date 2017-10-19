@@ -2,9 +2,11 @@ import React from "react";
 import * as d3 from "d3";
 import { attrs } from "d3-selection-multi";
 
-import WaitMessage from "../../../General/WaitMessage";
+import WaitMessage from "../../../General/WaitMessage.js";
 
-import Graph from "../../../../components/Graph";
+import Graph from "../../../../components/Graph.js";
+
+import { formTickValues } from "../../../../helperFunctions.js";
 
 export default class LineCharts extends React.Component {
     constructor() {
@@ -36,7 +38,13 @@ export default class LineCharts extends React.Component {
         this.createGraphInstances(dataset);
         // add axises
         // ONLY ONE PAIR OF AXISES
-        const yAxisGen = d3.axisLeft(this.yScale);
+        const yTicks = formTickValues({
+            finalLevel: 3,
+            level: 1,
+            prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+            prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+        });
+        const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
         const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
     
         const yAxis = this.state.graphG
@@ -73,7 +81,13 @@ export default class LineCharts extends React.Component {
         }
 
         // update axises
-        const yAxisGen = d3.axisLeft(this.yScale);
+        const yTicks = formTickValues({
+            finalLevel: 3,
+            level: 1,
+            prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+            prevSm: d3.min(dataset, d => +d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+        });
+        const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks)
         const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
     
         const yAxis = this.state.graphG
@@ -173,16 +187,14 @@ export default class LineCharts extends React.Component {
         if(id === "spread") this.updateLines(this.props.model.data);
     }
     showPreloader() {
-        console.log("reloader starts");
         this.WaitMessage.show();
     }
     hidePreloader() {
-        console.log("reloader ends");
         this.WaitMessage.hide();
     }
     render() {
         return (
-            <div ref={div => this.container = div} className="graph col-md-12 col-sm-12 col-xs-12">
+            <div ref={div => this.container = div} className="graph">
                 <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} msg="Wait, please"/>
             </div>
         );
