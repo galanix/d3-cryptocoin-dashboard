@@ -203,22 +203,20 @@ export default class LineChart extends React.Component {
 
             tooltip
             .style("left", this.xScale(time.getTime()) + parseInt(getComputedStyle(tooltip.node()).width) / 2 + "px")
-            .style("top", this.yScale(currencyValue) + "px")
+            .style("top", this.yScale(currencyValue) + "px");
         };
         const hideDotsAndTooltip = () => {
             d3.select("#movable")
-            .attrs({
-            "transform": `translate(-999, 0)`,
-            })
+            .attr("transform", `translate(-999, 0)`);
         
             d3.selectAll(".dot")         
             .transition()
-            .duration(100)
+            .duration(300)
             .style("opacity", 0);
         
             d3.select("#history .tooltip")
             .transition()
-            .duration(100)
+            .duration(300)
             .style("opacity", 0);
         };     
         const lineFunction = d3.line()
@@ -252,6 +250,8 @@ export default class LineChart extends React.Component {
             .style("opacity", 0);
                 
         this.state.svg.on("mousemove", () => {
+            if(this.state.timeoutId) { clearTimeout(this.state.timeoutId); } // reset time
+
             const svgDOMRect = this.state.svg.node().getBoundingClientRect();
             const offsetLeft = svgDOMRect.left;
             const svgWidth = svgDOMRect.width;
@@ -289,7 +289,7 @@ export default class LineChart extends React.Component {
             const value = hashTable["" + valueKey];
             if(!!value) {
                 showDotsAndTooltip(Object.assign({}, value));
-            } else {
+            } else {             
                 hideDotsAndTooltip();
             }
 
@@ -297,10 +297,10 @@ export default class LineChart extends React.Component {
               .attrs({
                 "transform": `translate(${xPos}, 0)`,
               });
-        })
-        .on("mouseout", () => {
-            hideDotsAndTooltip();
-        });    
+
+            // tooltip will disappear if cursor gets inactive - instead of using mouseout that works inconsistently in Firefox
+            this.setState({ timeoutId: setTimeout(hideDotsAndTooltip, 3000) });
+        });       
     }
     showPreloader() {
         this.WaitMessage.show();
