@@ -6,7 +6,7 @@ import { attrs } from "d3-selection-multi";
 import WaitMessage from "../../../General/WaitMessage";
 
 import Graph from "../../../../components/Graph";
-import { formProperDateFormat, removeDuplicates } from "../../../../helperFunctions";
+import { formProperDateFormat, removeDuplicates, formTickValues } from "../../../../helperFunctions";
 
 export default class LineChart extends React.Component {
     constructor() {
@@ -119,44 +119,12 @@ export default class LineChart extends React.Component {
         }, () => { if(callback) callback(dataset); });
     }
     determineTicks(dataset) {
-        // recursivly finds averages
-        const formTicksArray = ({ finalLevel, level, prevSm, prevLg }) => {
-            let outputArray = [ prevSm, prevLg ];
-
-            if(level >= finalLevel) {
-            return;
-            }
-            const currTick = (prevLg + prevSm) / 2;
-            outputArray.push(currTick);
-
-            ++level;
-            const  valuesDown = formTicksArray({
-            finalLevel,
-            level,
-            prevSm: currTick,
-            prevLg
-            });
-            if(!!valuesDown) {
-            outputArray = removeDuplicates(outputArray.concat(valuesDown));          
-            }
-            
-            const valuesUp = formTicksArray({
-                finalLevel,
-                level,
-                prevSm,
-                prevLg: currTick
-            })
-            if(!!valuesUp) {
-                 outputArray = removeDuplicates(outputArray.concat(valuesUp));
-            }
-            return outputArray;
-        };        
         const { xTicks, yTicks, xTickFormat } = this.props.model.ticksInfo[this.props.model.filters.currentTimeline];
 
         let prevLarger = d3.max(dataset, d=> d.currencyValue);
         let prevSmaller = d3.min(dataset, d => d.currencyValue);
 
-        const yTicksArray = formTicksArray({
+        const yTicksArray = formTickValues({
             finalLevel: yTicks || 0,
             level: 1,
             prevSm: prevSmaller,
@@ -166,7 +134,7 @@ export default class LineChart extends React.Component {
         prevSmaller = dataset[0].time.getTime();
         prevLarger = dataset[dataset.length - 1].time.getTime();
 
-        const xTicksArray = formTicksArray({
+        const xTicksArray = formTickValues({
             finalLevel: xTicks || 0,
             level: 1,
             prevSm: prevSmaller,
@@ -342,7 +310,7 @@ export default class LineChart extends React.Component {
     }
     render() {
         return (
-            <div className="graph col-md-12 col-sm-12 col-xs-12" ref={div => this.svgDiv = div}>
+            <div className="graph" ref={div => this.svgDiv = div}>
                 <WaitMessage ref={WaitMessage => this.WaitMessage = WaitMessage} msg="Wait, please"/>
             </div>
         );

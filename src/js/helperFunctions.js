@@ -27,7 +27,7 @@ export function scaleGraphSize(svgSelector, width, dir, callback) {
       svg.setAttribute("height", Math.round(width * 0.6));
       if(callback) callback();
     }
-};
+}
 
 export function getRandomColor() {
     const letters = "0123456789ABCDEF";
@@ -36,13 +36,13 @@ export function getRandomColor() {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
-};
+}
 
 export function changeCSSProperties (properties, values, element) {
     properties.forEach((property, index) => {
         element.style[property] = values[index];
     });
-};
+}
 
 export function removeDuplicates(array) {
     const a = array.concat();
@@ -54,3 +54,36 @@ export function removeDuplicates(array) {
     }
     return a;
 }
+
+// recursivly finds averages
+export function formTickValues({ finalLevel, level, prevSm, prevLg }) {
+    let outputArray = [ prevSm, prevLg ];
+
+    if(level >= finalLevel) {
+    return;
+    }
+    const currTick = (prevLg + prevSm) / 2;
+    outputArray.push(currTick);
+
+    ++level;
+    const  valuesDown = formTickValues({
+    finalLevel,
+    level,
+    prevSm: currTick,
+    prevLg
+    });
+    if(!!valuesDown) {
+    outputArray = removeDuplicates(outputArray.concat(valuesDown));          
+    }
+    
+    const valuesUp = formTickValues({
+        finalLevel,
+        level,
+        prevSm,
+        prevLg: currTick
+    })
+    if(!!valuesUp) {
+         outputArray = removeDuplicates(outputArray.concat(valuesUp));
+    }
+    return outputArray;
+}   
