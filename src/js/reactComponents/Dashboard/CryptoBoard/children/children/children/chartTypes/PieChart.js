@@ -57,7 +57,7 @@ export default class PieChart extends React.Component {
           "class": "pie"
         }),
       labelr
-    }, () => {      
+    }, () => {
       this.path = d3.arc()
         .outerRadius(radius - 10)
         .innerRadius(this.props.chartIsDonut ? holeRadius : 0);
@@ -137,6 +137,10 @@ export default class PieChart extends React.Component {
     arcs.selectAll("text")
       .each((d, _i, el) => updateChildData(d, el))
       .attr("transform", setTransform)
+
+    arcs.selectAll("tspan:last-child")
+      .text((_d, _i, el) => el[0].parentElement._current.data[this.props.comparisionField]);
+    
     
     const text = enterArcs.selectAll("text")
       .each((d, _i, el) => updateChildData(d, el))
@@ -150,7 +154,7 @@ export default class PieChart extends React.Component {
           dy: "-0.35em",
         })
         .style("font-style", "italic")
-      .merge(arcs.selectAll("text:first-child"))
+      .merge(arcs.selectAll("tspan:first-child"))
         .text(d => d.data.name);
 
     text
@@ -160,7 +164,7 @@ export default class PieChart extends React.Component {
           dy: "1.1em",
         })
         .style("font-size", ".75em")
-      .merge(arcs.selectAll("text:last-child"))
+      .merge(arcs.selectAll("tspan:last-child"))
         .text((_d, _i, el) => el[0].parentElement._current.data[this.props.comparisionField]);
 
     text
