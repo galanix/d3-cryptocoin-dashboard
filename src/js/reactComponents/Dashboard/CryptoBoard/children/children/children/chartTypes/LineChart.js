@@ -77,7 +77,8 @@ export default class LineChart extends React.Component {
         const comparisionField = this.props.comparisionField;
         const dataset = this.props.dataset;
         const ids = dataset.map(d => d.id);
-        const [min, max] = d3.extent(dataset, d => +d[comparisionField]);        
+        const [min, max] = d3.extent(dataset, d => +d[comparisionField]); 
+        const type = this.props.type;
         //const yTicks = this.props.dataset.map(item => +item[comparisionField]);
         const yTicks = formTickValues({
             finalLevel: 3,
@@ -106,30 +107,36 @@ export default class LineChart extends React.Component {
                 }
             })
             .style("stroke", "#73879C")
-            .style("cursor", "pointer")
-            // .style("transform", () => {
-            //     if(dataset.length > 7) {
-            //         return "rotate(90deg)";
-            //     } else {
-            //         return "rotate(0deg)";
-            //     }
-            // })
-            // .attr("dy", () => {
-            //     if(dataset.length > 7) {
-            //         return "0em";
-            //     } else {
-            //         return "0.71em"
-            //     }
-            // })
+            .style("cursor", "pointer")           
             .on("mouseover", d => this.handleHoverEvtHandler(d, false))
-            .on("mouseout", d => this.handleHoverEvtHandler(d, true));            
+            .on("mouseout", d => this.handleHoverEvtHandler(d, true));
 
         this.state.g.select("g.axis--y")
             .transition()
             .duration(300)
             .call(d3.axisLeft(this.yScale).tickValues(yTicks));
 
-        // BUILD LINE
+        if(type === "line") {
+            // BUILD LINE CHART
+            this.buildLine();
+        } else if(type === "line-scatter") {
+            // BUILD SCATTER PLOT
+            /*
+                TODO
+            */
+            this.buildScatterPlot();
+        } else if(type === "line-area") {
+            // BUILD AREA PLOT
+            /*
+                this.buildAreaPlot();
+                TODO
+            */
+        }
+
+        this.drawCurrencySign();
+        //this.legend.build();
+    }
+    buildLine() {
         if(!this.state.line) {
             this.setState({
                 line: new Graph({
@@ -138,29 +145,54 @@ export default class LineChart extends React.Component {
                         hidden: false,
                         lineFunction:  d3.line()
                                          .x(d => this.xScale(d.id))
-                                         .y(d => this.yScale(+d[comparisionField])),
+                                         .y(d => this.yScale(+d[this.props.comparisionField])),
                         container: this.state.g
                     })
             }, () => {
-                this.state.line.append(dataset);
+                this.state.line.append(this.props.dataset);
             });
         } else {
             // update comparisonField value to prevent getting old value from closure
-            this.state.line.lineFunction.y(d => this.yScale(+d[comparisionField]));
-            this.state.line.update(dataset);
+            this.state.line.lineFunction.y(d => this.yScale(+d[this.props.comparisionField]));
+            this.state.line.update(this.props.dataset);
+        }
+    }
+    buildScatterPlot() {
+        const { dataset, comparisionField } = this.props;
+
+        let scatterPlot = this.state.g.select(".scatter-plot");
+        if(!scatterPlot.node()) {
+            scatterPlot = this.state.g.append("g")
+                .attr("class", "scatter-plot");
         }
 
-        // BUILD SCATTER PLOT
-        /*
-            TODO
-        */
-        // BUILD AREA PLOT
-        /*
-            TODO
-        */
+        const dots = scatterPlot.selectAll("circle")
+            .data(dataset);
 
-        this.drawCurrencySign();
-        //this.legend.build();
+        dots
+            .transition()
+            .duration(this.state.duration)
+            .attr("cx", d => this.xScale(d.id))
+            .attr("cy", d => this.yScale(d[comparisionField]))
+        
+        dots.enter()
+            .append("circle")
+            .attr("r", 6)
+            .attr("cx", d => this.xScale(d.id))
+            .attr("cy", d => this.yScale(d[comparisionField]))
+            .style("stroke", "#169F85")
+            .style("fill", "#169F85")
+            .style("stroke-width", 2)
+            .style("cursor", "pointer")
+            .merge(dots)
+            .on("mouseover", (d, _i, el) => {
+                this.handleHoverEvtHandler(d.id, false);
+            })
+            .on("mouseout", (d, _i, el) => {
+                this.handleHoverEvtHandler(d.id, true)
+            });
+
+        dots.exit().remove();            
     }
     showPreloader() {
         this.WaitMessage.show();
@@ -218,8 +250,8 @@ export default class LineChart extends React.Component {
         const d = this.props.dataset.find(item => item.id === id);
 
         // mw - modal window
-        if(mouseOut) {         
-            this.state.g.select(".tooltip--mw").remove();
+        if(mouseOut) {
+            this.state.g.selectAll(".tooltip--mw").transition().duration(100).style("opacity", 0).remove();
         } else {
             const tooltip = this.state.g.append("g").attr("class", "tooltip--mw");
             
@@ -231,31 +263,30 @@ export default class LineChart extends React.Component {
                 .attr("text-anchor", "middle")
                 .html(d => this.props.currentSign + d[this.props.comparisionField]);
         
-            const appendCircle = (fill, radius, strokeWidth = 2) => {
+            const appendCircle = (fill, radius, stroke = "#364B5F", strokeWidth = 2) => {
                 tooltip.append("circle")
                 .datum(d)
                 .attr("r", radius)
                 .attr("fill", fill)
-                .attr("stroke", "#364B5F")
+                .attr("stroke", stroke)
                 .attr("stroke-width", strokeWidth)
                 .attr("cx", d => this.xScale(d.id))
                 .attr("cy", d => this.yScale(+d[this.props.comparisionField]));
             }
+                        
+            if(this.props.type === "line-scatter") {
+                appendCircle("#169F85", 8, "#169F85");
+            } else {
+                appendCircle("#364B5F", 4);
+                appendCircle("none", 8);
+            }
             
-            appendCircle("none", 8);
-            appendCircle("#364B5F", 4);
         }
     }
     render() {
         return (
             <div>
-                <svg ref={svg => this.svg = svg}></svg>
-                {/* <Legend ref={legend => this.legend = legend}
-                        onHoverHandler={this.handleHoverEvtHandler.bind(this)}
-                        color={this.props.color}
-                        comparisionField={this.props.comparisionField}
-                        dataset={this.props.dataset}
-                /> */}
+                <svg ref={svg => this.svg = svg}></svg>                
                 <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} 
                              msg="Wait, please"
                 />
