@@ -69,7 +69,7 @@ export default class PieChart extends React.Component {
       this.updateSVG();
     });
   }
-  updateSVG() {    
+  updateSVG() {
     this.pie = d3.pie()
       .value(d => this.pieValueCallback()(d))
       .sort(null);
@@ -100,24 +100,23 @@ export default class PieChart extends React.Component {
     const newPaths = enterArcs.selectAll("path");        
 
     arcs.selectAll("path")
+      .each((d, _i, el) => updateChildData(d, el))
+      .attr("fill", (_d, _i, el) => this.props.color(el[0]._current.data[this.props.comparisionField]))
       .transition()
       .duration(this.state.duration)
-      .attrTween("d", (d, _i, el) => {        
-        updateChildData(d, el);
-        return this.arcTween(el[0]._current);
-      });
+      .attrTween("d", (d, _i, el) => this.arcTween(el[0]._current));
 
-    newPaths      
+    newPaths
       .each((d, _i, el) => updateChildData(d, el))
       .on("mouseover", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 1))
-      .on("mouseout", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 0))      
+      .on("mouseout", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 0))
       .attr("fill", (_d, _i, el) => this.props.color(el[0]._current.data[this.props.comparisionField]))
       .attr("stroke", "#fff")
       .transition()
-      .duration(this.state.duration)      
+      .duration(this.state.duration)
       .attrTween("d", (_d, _i, el) => this.arcTween(el[0]._current));
         
-    newPaths.merge(arcs.selectAll("path"));    
+    newPaths.merge(arcs.selectAll("path"));
     
     // UPDATE TEXT
     const setTransform = (_d, _i, el) => {
