@@ -143,8 +143,12 @@ export default class ModalWindow extends React.Component {
                                          onClickHandler={this.changeChartType.bind(this)}
                                          buttons={[
                                             { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
+                                            { attrs: { "data-type": "bar-horizontal"}, textValue: "Horizontal Bar" },
                                             { attrs: { "data-type": "pie"}, textValue: "Pie" },
                                             { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },
+                                            { attrs: { "data-type": "line_chart"}, textValue: "Line"},                                            
+                                            { attrs: { "data-type": "line_chart-scatter"}, textValue: "Scatter Plot"},
+                                            { attrs: { "data-type": "line_chart-area"}, textValue: "Area Plot"},
                                          ]}
                             />
                         </div>
