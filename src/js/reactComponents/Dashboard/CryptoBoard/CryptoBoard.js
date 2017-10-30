@@ -50,11 +50,13 @@ export default class CryptoBoard extends React.Component {
         }        
     }
     changeHashTableCurrency() {
-        if(this.props.model.chart.filters.currency === this.props.model.table.filters.currency) return; // no need for changing data
+        if(this.props.model.chart.filters.currency === this.props.model.table.filters.currency) { 
+            return; // no need for changing data
+        }
+        
           // rewrite hashtable with the data that user has set and not the one that was in the table
         const newHashTable = {};
-        for(let key in this.state.hashTable) {
-            console.log(key);
+        for(let key in this.state.hashTable) {            
             const color = this.state.hashTable[key].color;
             newHashTable[key] = this.props.model.chart.data.find((item, id = key) => item.id === key);
             newHashTable[key].color = color;            
@@ -73,14 +75,15 @@ export default class CryptoBoard extends React.Component {
                     <Header classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
                             titleText="Table of Currencies"
                     />
-                    <ModalWindow ref={mw => this.ModalWindow = mw}
+                    <ModalWindow ref={mw => this.ModalWindow = mw}                                 
+                                 currentSign={this.props.signs[this.props.model.chart.filters.currency]}
                                  model={this.props.model.chart}
                                  limit={this.props.model.table.limit}
                                  update={this.props.update}
                                  change={this.props.change}                                 
                                  hashTable={this.state.hashTable}
                                  createURL={this.createURL.bind(this)}
-                                 changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}                             
+                                 changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}
                     />
                     <Board model={this.props.model.table}                        
                            update={this.props.update}

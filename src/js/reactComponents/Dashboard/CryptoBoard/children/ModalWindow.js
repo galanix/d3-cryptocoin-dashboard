@@ -35,16 +35,18 @@ export default class ModalWindow extends React.Component {
         });
     }
     visualize() {
-        if(this.state.buttonIsDisabled) return;
+        if(this.state.buttonIsDisabled) {
+            return;
+        }
 
         const { type, comparisionField } = this.props.model.filters;        
         this.chart.renderChart(type, comparisionField);
     }
-    changeCurrencyFilter(target) {
+    changeCurrencyFilter(target) {        
         const filterNames = [ "currency" ];
         const newFilterValues = [ target.getAttribute("data-value") ];
-        const comparisionField = this.props.model.filters.comparisionField;
-        
+        const comparisionField = this.props.model.filters.comparisionField;    
+
         if(this.props.model.filters.currency !== newFilterValues[0]) {            
           if(
             comparisionField.indexOf("price") !== -1 ||
@@ -55,13 +57,12 @@ export default class ModalWindow extends React.Component {
             filterNames.push("comparisionField");
             newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());            
           }
-
+          
           this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), this.state.componentToUpdate)
             .then(() => {
                 this.props.change(newFilterValues, filterNames, this.state.componentToUpdate);
                 this.props.changeHashTableCurrency();
             });
-          
         }
     }
     changeComparisionField(target) {
@@ -143,12 +144,12 @@ export default class ModalWindow extends React.Component {
                                          onClickHandler={this.changeChartType.bind(this)}
                                          buttons={[
                                             { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
-                                            { attrs: { "data-type": "bar-horizontal"}, textValue: "Horizontal Bar" },
+                                            { attrs: { "data-type": "hbar"}, textValue: "Horizontal Bar" },
                                             { attrs: { "data-type": "pie"}, textValue: "Pie" },
                                             { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },
-                                            { attrs: { "data-type": "line_chart"}, textValue: "Line"},                                            
-                                            { attrs: { "data-type": "line_chart-scatter"}, textValue: "Scatter Plot"},
-                                            { attrs: { "data-type": "line_chart-area"}, textValue: "Area Plot"},
+                                            { attrs: { "data-type": "line"}, textValue: "Line"},                                            
+                                            { attrs: { "data-type": "line-scatter"}, textValue: "Scatter Plot"},
+                                            { attrs: { "data-type": "line-area"}, textValue: "Area Plot"},
                                          ]}
                             />
                         </div>
@@ -166,6 +167,7 @@ export default class ModalWindow extends React.Component {
                     />
                     <Chart ref={chart => this.chart = chart}
                            hashTable={this.props.hashTable}
+                           currentSign={this.props.currentSign}
                     />
                 </section>
             </div>

@@ -10,25 +10,25 @@ const Dashboard = props => (
         <div className="row">
             { props.data.settings.displayComponent.BitcoinCurrentPrice ? 
                 <BitcoinCurrentPrice update={props.update}
-                                    model={props.data.currentPrice}                                         
-                                    signs={props.data.general.currencySigns}
+                                     model={props.data.currentPrice}                                         
+                                     signs={props.data.general.currencySigns}
                 />   
                 :
                 null
             }
             { props.data.settings.displayComponent.BitcoinHistoryGraph ?
                 <BitcoinHistoryGraph update={props.update}
-                                    change={props.change}
-                                    model={props.data.history}                                         
-                                    signs={props.data.general.currencySigns}
+                                     change={props.change}
+                                     model={props.data.history}                                         
+                                     signs={props.data.general.currencySigns}
                 />
                 :
                 null
             }
             { props.data.settings.displayComponent.CurrencyPairGraph ?
                 <CurrencyPairGraph update={props.update}
-                                change={props.change}
-                                model={props.data.currencyPair}                                       
+                                   change={props.change}
+                                   model={props.data.currencyPair}                                       
                 />
                 :
                 null
@@ -36,8 +36,9 @@ const Dashboard = props => (
             }
             { props.data.settings.displayComponent.CryptoBoard ?
                 <CryptoBoard update={props.update}
-                            change={props.change}
-                            model={props.data.cryptoBoard}                                    
+                             change={props.change}
+                             model={props.data.cryptoBoard}
+                             signs={props.data.general.currencySigns}                               
                 />
                 :
                 null
