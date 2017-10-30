@@ -38,7 +38,7 @@ export default class LineChart extends React.Component {
         this.updateSVG();
     }
     renderSVG() {
-        const margin = { top: 30, right: 10, bottom: 50, left: 50 };
+        const margin = { top: 30, right: 10, bottom: 50, left: 80 };
         const fixedWidth = this.props.width - (margin.left + margin.right);
         const fixedHeight = this.props.height - (margin.top + margin.bottom);
         this.setState({ fixedHeight });
@@ -75,8 +75,10 @@ export default class LineChart extends React.Component {
     }
     updateSVG() {
         const comparisionField = this.props.comparisionField;
-        const ids = this.props.dataset.map(d => d.id);
-        const [min, max] = d3.extent(this.props.dataset, d => +d[comparisionField]);
+        const dataset = this.props.dataset;
+        const ids = dataset.map(d => d.id);
+        const [min, max] = d3.extent(dataset, d => +d[comparisionField]);        
+        //const yTicks = this.props.dataset.map(item => +item[comparisionField]);
         const yTicks = formTickValues({
             finalLevel: 3,
             level: 1,
@@ -87,39 +89,78 @@ export default class LineChart extends React.Component {
         this.yScale.domain([min, max]);
         this.xScale.domain(ids);
 
-        console.log(comparisionField);
-
         this.state.g.select("g.axis--x")
             .transition()
             .duration(300)
             .call(d3.axisBottom(this.xScale).tickValues(ids));
+
+        this.state.g.selectAll(".axis--x text")
+            .style("font-size", () => {
+                const length = dataset.length;
+                if(length > 12) {
+                    return "10px";
+                } else if(length > 7) {
+                    return "14px";
+                } else {
+                    return "18px";
+                }
+            })
+            .style("stroke", "#73879C")
+            .style("cursor", "pointer")
+            // .style("transform", () => {
+            //     if(dataset.length > 7) {
+            //         return "rotate(90deg)";
+            //     } else {
+            //         return "rotate(0deg)";
+            //     }
+            // })
+            // .attr("dy", () => {
+            //     if(dataset.length > 7) {
+            //         return "0em";
+            //     } else {
+            //         return "0.71em"
+            //     }
+            // })
+            .on("mouseover", d => this.handleHoverEvtHandler(d, false))
+            .on("mouseout", d => this.handleHoverEvtHandler(d, true));            
 
         this.state.g.select("g.axis--y")
             .transition()
             .duration(300)
             .call(d3.axisLeft(this.yScale).tickValues(yTicks));
 
-        if(!this.state.line) {            
+        // BUILD LINE
+        if(!this.state.line) {
             this.setState({
                 line: new Graph({
                         type: this.props.type,
                         color: "#169F85",
                         hidden: false,
                         lineFunction:  d3.line()
-                                        .x(d => this.xScale(d.id))
-                                        .y(d => this.yScale(+d[comparisionField])),
+                                         .x(d => this.xScale(d.id))
+                                         .y(d => this.yScale(+d[comparisionField])),
                         container: this.state.g
                     })
-            }, () => {               
-                this.state.line.append(this.props.dataset);
+            }, () => {
+                this.state.line.append(dataset);
             });
         } else {
             // update comparisonField value to prevent getting old value from closure
             this.state.line.lineFunction.y(d => this.yScale(+d[comparisionField]));
-            this.state.line.update(this.props.dataset);
+            this.state.line.update(dataset);
         }
+
+        // BUILD SCATTER PLOT
+        /*
+            TODO
+        */
+        // BUILD AREA PLOT
+        /*
+            TODO
+        */
+
         this.drawCurrencySign();
-        this.legend.build();    
+        //this.legend.build();
     }
     showPreloader() {
         this.WaitMessage.show();
@@ -130,7 +171,7 @@ export default class LineChart extends React.Component {
     drawCurrencySign() {
         let sign = this.props.currentSign;
         const comparisionField = this.props.comparisionField;
-        
+
         if(
             comparisionField.indexOf("price") === -1 &&
             comparisionField.indexOf("volume_24h") === -1 &&
@@ -173,18 +214,48 @@ export default class LineChart extends React.Component {
                 });            
         }, 500);
     }
-    handleHoverEvtHandler() {    
+    handleHoverEvtHandler(id, mouseOut) {
+        const d = this.props.dataset.find(item => item.id === id);
+
+        // mw - modal window
+        if(mouseOut) {         
+            this.state.g.select(".tooltip--mw").remove();
+        } else {
+            const tooltip = this.state.g.append("g").attr("class", "tooltip--mw");
+            
+            tooltip.append("text")
+                .datum(d)                
+                .attr("stroke", "#364B5F")
+                .attr("x", d => this.xScale(d.id))
+                .attr("y", d => this.yScale(+d[this.props.comparisionField]) - 15)
+                .attr("text-anchor", "middle")
+                .html(d => this.props.currentSign + d[this.props.comparisionField]);
+        
+            const appendCircle = (fill, radius, strokeWidth = 2) => {
+                tooltip.append("circle")
+                .datum(d)
+                .attr("r", radius)
+                .attr("fill", fill)
+                .attr("stroke", "#364B5F")
+                .attr("stroke-width", strokeWidth)
+                .attr("cx", d => this.xScale(d.id))
+                .attr("cy", d => this.yScale(+d[this.props.comparisionField]));
+            }
+            
+            appendCircle("none", 8);
+            appendCircle("#364B5F", 4);
+        }
     }
     render() {
         return (
-            <div>              
+            <div>
                 <svg ref={svg => this.svg = svg}></svg>
-                <Legend ref={legend => this.legend = legend}
+                {/* <Legend ref={legend => this.legend = legend}
                         onHoverHandler={this.handleHoverEvtHandler.bind(this)}
                         color={this.props.color}
                         comparisionField={this.props.comparisionField}
                         dataset={this.props.dataset}
-                />
+                /> */}
                 <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} 
                              msg="Wait, please"
                 />
