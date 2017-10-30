@@ -9,7 +9,6 @@ import Graph from "../../../../../../../components/Graph.js";
 
 import { formTickValues, twoArraysAreEqual } from "../../../../../../../helperFunctions.js";
 
-
 export default class LineChart extends React.Component {
     constructor() {
         super();
@@ -52,8 +51,8 @@ export default class LineChart extends React.Component {
             .padding(0.1)
 
         this.yScale = d3.scaleLinear()
-            .range([fixedHeight, 0]);
-    
+            .range([fixedHeight, 0]);            
+
         this.setState({
             g: svg.append("g")
         }, () => {
@@ -119,30 +118,28 @@ export default class LineChart extends React.Component {
         if(type === "line") {
             // BUILD LINE CHART
             this.buildLine();
-        } else if(type === "line-scatter") {
-            // BUILD SCATTER PLOT
-            /*
-                TODO
-            */
+        } else if(type === "line-scatter") {            
             this.buildScatterPlot();
         } else if(type === "line-area") {
             // BUILD AREA PLOT
-            /*
-                this.buildAreaPlot();
+            /*               
                 TODO
             */
+            this.buildAreaPlot();
         }
 
         this.drawCurrencySign();
         //this.legend.build();
     }
-    buildLine() {
+    buildLine(customStrokeWidth) {
+
         if(!this.state.line) {
             this.setState({
                 line: new Graph({
                         type: this.props.type,
                         color: "#169F85",
                         hidden: false,
+                        strokeWidth: !!customStrokeWidth ? customStrokeWidth : 2,
                         lineFunction:  d3.line()
                                          .x(d => this.xScale(d.id))
                                          .y(d => this.yScale(+d[this.props.comparisionField])),
@@ -193,6 +190,54 @@ export default class LineChart extends React.Component {
             });
 
         dots.exit().remove();            
+    }
+    buildAreaPlot() {
+        this.buildLine(3.5);
+
+        if(!this.state.area) {
+            this.setState({
+                area: new Graph({
+                        type: "area",
+                        color: "#169F85",
+                        hidden: false,
+                        lineFunction: d3.area()
+                                        .x(d => this.xScale(d.id))
+                                        .y0(this.state.fixedHeight)
+                                        .y1(d => this.yScale(d[this.props.comparisionField])),
+                        container: this.state.g
+                    })
+            }, () => {
+                this.state.area.append(this.props.dataset);
+
+                this.state.g.select("#graph-type--area")
+                    .style("opacity", 0.5)
+                    .style("fill", "#169F85");                
+            });
+        } else {
+            // update comparisonField value to prevent getting old value from closure
+            this.state.area.lineFunction.y1(d => this.yScale(+d[this.props.comparisionField]));
+            this.state.area.update(this.props.dataset);
+
+            setTimeout(() => {
+                this.state.g.select("#graph-type--area")                                
+                    .transition()
+                    .duration(100)
+                    .style("opacity", 0.5)
+            }, 1200);
+        }
+
+        // let areaPath = this.state.g.select("path.area")
+        // if(!areaPath.node()) {
+        //     areaPath = this.state.g.append("path")
+        //         .attr("class", "area")
+        //         .style("fill", "169F85")
+        //         .style("opacity", 0.5)
+        // }
+        
+        // areaPath.datum(this.props.dataset)            
+        //     .transition()
+        //     .duration(1200)
+        //     .attr("d", this.area);
     }
     showPreloader() {
         this.WaitMessage.show();
