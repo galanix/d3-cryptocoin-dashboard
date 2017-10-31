@@ -70,6 +70,9 @@ export default class LineChart extends React.Component {
         this.createHashTable(dataset, this.addMovableParts.bind(this)); // add movable after it        
     }
     updateLine(dataset) {
+        if(!this.state) {
+            this.buildLine(dataset);
+        }
         // dataset has changed, need to update #historical-data graph
         const margin = this.props.model.margin;
          // get previous svg width / height instead of assigning from model
@@ -171,14 +174,14 @@ export default class LineChart extends React.Component {
             .attrs({
             y: "-100"
             });
-        setTimeout(() => {      
+        setTimeout(() => {
             text
+            .html(this.props.signs[this.props.model.filters.currency])
             .transition()
             .duration(500)
             .attrs({
                 y: "-10"
             })
-            .node().innerHTML = this.props.signs[this.props.model.filters.currency];        
         }, 500);
     }
     addMovableParts(dataset) {
@@ -316,4 +319,3 @@ export default class LineChart extends React.Component {
         );
     }
 };
-
