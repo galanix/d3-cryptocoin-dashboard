@@ -48,7 +48,7 @@ export default class LineChart extends React.Component {
 
         this.xScale = d3.scalePoint()
             .range([0, fixedWidth])
-            .padding(0.1)
+            .padding(0.2)
 
         this.yScale = d3.scaleLinear()
             .range([fixedHeight, 0]);            
@@ -78,7 +78,6 @@ export default class LineChart extends React.Component {
         const ids = dataset.map(d => d.id);
         const [min, max] = d3.extent(dataset, d => +d[comparisionField]); 
         const type = this.props.type;
-        //const yTicks = this.props.dataset.map(item => +item[comparisionField]);
         const yTicks = formTickValues({
             finalLevel: 3,
             level: 1,
@@ -120,39 +119,46 @@ export default class LineChart extends React.Component {
             this.buildLine();
         } else if(type === "line-scatter") {            
             this.buildScatterPlot();
-        } else if(type === "line-area") {
-            // BUILD AREA PLOT
-            /*               
-                TODO
-            */
+        } else if(type === "line-area") {            
             this.buildAreaPlot();
         }
 
         this.drawCurrencySign();
         //this.legend.build();
     }
-    buildLine(customStrokeWidth) {
-
-        if(!this.state.line) {
+    createGraphInstance(graph, appendCallback, updateCallback, params) {
+        // typeof graph === string
+        if(!this.state.graph) {
             this.setState({
-                line: new Graph({
-                        type: this.props.type,
-                        color: "#169F85",
-                        hidden: false,
-                        strokeWidth: !!customStrokeWidth ? customStrokeWidth : 2,
-                        lineFunction:  d3.line()
-                                         .x(d => this.xScale(d.id))
-                                         .y(d => this.yScale(+d[this.props.comparisionField])),
-                        container: this.state.g
-                    })
-            }, () => {
-                this.state.line.append(this.props.dataset);
-            });
+                [graph]: new Graph(Object.assign({}, params))
+            }, () => {                
+                appendCallback(graph);
+            })
         } else {
-            // update comparisonField value to prevent getting old value from closure
-            this.state.line.lineFunction.y(d => this.yScale(+d[this.props.comparisionField]));
-            this.state.line.update(this.props.dataset);
+            updateCallback(graph);
         }
+    }
+    buildLine(customStrokeWidth) {
+        const appendCallback = graph => {
+            this.state[graph].append(this.props.dataset);
+        };
+        const updateCallback = graph => {
+            // update comparisonField value to prevent getting old value from closure
+            this.state[graph].lineFunction.y(d => this.yScale(+d[this.props.comparisionField]));
+            this.state[graph].update(this.props.dataset);
+        };
+        const params = {
+            type: "line",
+            color: "#169F85",
+            hidden: false,
+            strokeWidth: customStrokeWidth || 2,
+            lineFunction:  d3.line()
+                             .x(d => this.xScale(d.id))
+                             .y(d => this.yScale(+d[this.props.comparisionField])),
+            container: this.state.g
+        };
+
+        this.createGraphInstance("line", appendCallback, updateCallback, params);        
     }
     buildScatterPlot() {
         const { dataset, comparisionField } = this.props;
@@ -192,52 +198,28 @@ export default class LineChart extends React.Component {
         dots.exit().remove();            
     }
     buildAreaPlot() {
-        this.buildLine(3.5);
-
-        if(!this.state.area) {
-            this.setState({
-                area: new Graph({
-                        type: "area",
-                        color: "#169F85",
-                        hidden: false,
-                        lineFunction: d3.area()
-                                        .x(d => this.xScale(d.id))
-                                        .y0(this.state.fixedHeight)
-                                        .y1(d => this.yScale(d[this.props.comparisionField])),
-                        container: this.state.g
-                    })
-            }, () => {
-                this.state.area.append(this.props.dataset);
-
-                this.state.g.select("#graph-type--area")
-                    .style("opacity", 0.5)
-                    .style("fill", "#169F85");                
-            });
-        } else {
-            // update comparisonField value to prevent getting old value from closure
-            this.state.area.lineFunction.y1(d => this.yScale(+d[this.props.comparisionField]));
-            this.state.area.update(this.props.dataset);
-
-            setTimeout(() => {
-                this.state.g.select("#graph-type--area")                                
-                    .transition()
-                    .duration(100)
-                    .style("opacity", 0.5)
-            }, 1200);
-        }
-
-        // let areaPath = this.state.g.select("path.area")
-        // if(!areaPath.node()) {
-        //     areaPath = this.state.g.append("path")
-        //         .attr("class", "area")
-        //         .style("fill", "169F85")
-        //         .style("opacity", 0.5)
-        // }
+        const appendCallback = graph => {
+            this.state[graph].append(this.props.dataset);
+        };
+        const updateCallback = graph => {
+            this.state[graph].lineFunction.y1(d => this.yScale(+d[this.props.comparisionField]));
+            this.state[graph].update(this.props.dataset);
+        };
+        const params = {
+            type: "area",
+            color: "#169F85",
+            fill: "#169F85",
+            opacityVal: 0.5,
+            hidden: false,
+            lineFunction: d3.area()
+                            .x(d => this.xScale(d.id))
+                            .y0(this.state.fixedHeight)
+                            .y1(d => this.yScale(d[this.props.comparisionField])),
+            container: this.state.g
+        };
         
-        // areaPath.datum(this.props.dataset)            
-        //     .transition()
-        //     .duration(1200)
-        //     .attr("d", this.area);
+        this.createGraphInstance("area", appendCallback, updateCallback, params);
+        this.buildLine(4);
     }
     showPreloader() {
         this.WaitMessage.show();
