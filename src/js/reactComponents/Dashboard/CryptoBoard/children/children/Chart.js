@@ -6,6 +6,7 @@ import { attrs } from "d3-selection-multi";
 import PieChart from "./children/chartTypes/PieChart.js";
 import BarChart from "./children/chartTypes/BarChart.js";
 import LineChart from "./children/chartTypes/LineChart.js";
+import HBarChart from "./children/chartTypes/HBarChart.js";
 
 export default class Chart extends React.Component {
     constructor() {
@@ -13,10 +14,7 @@ export default class Chart extends React.Component {
         this.state = { ChartJSX: null };
     }
     renderChart(type, comparisionField) {
-      let width = Math.round(this.svgDiv.getBoundingClientRect().width);
-      // if(width > 500) {
-      //   width = 500;
-      // }
+      const width = Math.round(this.svgDiv.getBoundingClientRect().width);      
       const height = Math.round(width / 2);
       const keys = Object.keys(this.props.hashTable);
       const dataset = keys.map(key => this.props.hashTable[key]);
@@ -41,15 +39,21 @@ export default class Chart extends React.Component {
         case "pie-donut":
           ChartJSX = ( <PieChart {...props} /> );
           break;
+
         case "bar":
-        case "hbar":
           ChartJSX = ( <BarChart {...props} />);
           break;
+
+        case "hbar":          
+          ChartJSX = ( <HBarChart {...props} />);
+          break;
+          
         case "line":
         case "line-scatter":
         case "line-area":
           ChartJSX = ( <LineChart {...props} />);
           break;
+
         default:
           console.warn("chart has not been rendered");
       }
