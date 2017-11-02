@@ -1,4 +1,4 @@
-export const filterChange = (newFilterValue, filterName, componentToUpdate) => {
+export function filterChange(newFilterValue, filterName, componentToUpdate) {
     return dispatch => {
       dispatch({
         type: 'CHANGE_FILTERS',
@@ -7,4 +7,4 @@ export const filterChange = (newFilterValue, filterName, componentToUpdate) => {
         newFilterValue,      
       });
     };
-};
+}
