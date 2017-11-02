@@ -23,7 +23,7 @@ export default class BitcoinHistoryGraph extends React.Component {
     window.addEventListener("resize", this.scaleGraph.bind(this));
 
     this.props.update(this.createURL(), this.state.componentToUpdate)
-    .then(() => this.renderGraph(false));
+    .then(() => this.renderGraph(false)).catch(err => { console.warn("failed fetch") });
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this.scaleGraph.bind(this));
