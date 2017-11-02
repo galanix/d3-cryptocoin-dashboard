@@ -9,7 +9,7 @@ export default class HBarChart extends React.Component {
         super();
         this.state = {
             duration: 300,
-            margin: { top: 30, right: 10, bottom: 30, left: 70 }
+            margin: { top: 30, right: 10, bottom: 45, left: 100 }
         };
     }
     componentDidMount() {
@@ -62,15 +62,18 @@ export default class HBarChart extends React.Component {
                 this.state.g.append("g")
                     .attr("class", "axis axis--x");
 
+                this.state.g.append("g")
+                    .attr("class", "axis axis--hidden");
+
                 this.updateSVG();
             });
     }
     updateSVG() {
         const {dataset, comparisionField, type} = this.props;
         const g = this.state.g;
-        const {fixedWidth, fixedHeight, duration} = this.state;        
+        const {fixedWidth, fixedHeight, duration} = this.state;
 
-        let [min, max] = d3.extent(dataset, d => +d[comparisionField]);       
+        let [min, max] = d3.extent(dataset, d => +d[comparisionField]);
 
         this.yScale.domain(dataset.map(d => d.id));
         this.xScale.domain([min, max]);
@@ -81,7 +84,7 @@ export default class HBarChart extends React.Component {
                 return 0;
             }
             if(val > fixedWidth) {
-                return fixedWidth;                
+                return fixedWidth;
             }
             return val;
         }
@@ -90,20 +93,22 @@ export default class HBarChart extends React.Component {
         
         yAxis.transition()
             .duration(duration)
-            .attr("transform", `translate(${inRange(this.xScale(0))}, 0)`) //  > 0 ? this.xScale(0) : 0 
-            .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));
-
-        yAxis.selectAll(".tick")
+            .attr("transform", `translate(${inRange(this.xScale(0))}, 0)`)
+            .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));        
+        
+        yAxis.selectAll("text")
             .data(dataset)
-            .select("text")
+            .on("mouseover", d => this.toggleBar(d.id, false))
+            .on("mouseout", d => this.toggleBar(d.id, true))
             .transition()
             .duration(duration)
             .attr("x", d => +d[comparisionField] < 0 ? 10 : -10)
-            .style("font-size", "14px")
-            .style("text-anchor", d => {
-                console.log(+d[comparisionField])
-                return +d[comparisionField] < 0 ? "start" : "end";
-            });
+            .style("text-anchor", d => +d[comparisionField] < 0 ? "start" : "end")
+            .style("cursor", "pointer")
+            .style("font-size", "14px");
+
+        yAxis.selectAll("line")
+            .style("display", "none");
 
         // ADD X AXIS
         g.select(".axis--x")
@@ -111,25 +116,41 @@ export default class HBarChart extends React.Component {
             .transition()
             .duration(duration)
             .call(d3.axisBottom(this.xScale).ticks(5));
-
        
+        // ADD HIDDEN ADITIONAL X AXIS
+        const f = d3.format(".2f");
+        const hiddenAxis = g.select(".axis--hidden");
+
+        hiddenAxis.attr("transform", `translate(0, ${fixedHeight})`)
+            .call(d3.axisBottom(this.xScale).tickValues(dataset.map(d => f(+d[comparisionField]))));
+
+        hiddenAxis.selectAll(".tick")
+            .data(dataset)
+            .attr("data-currency-id", d => d.id)
+            .attr("stroke", d => d.color)
+            .style("font-weight", "bold")
+            .style("font-size", "14px")
+            .style("opacity", 0)
+            .select("text")
+                .attr("y", 20)
+                    
         // APPEND RECTANGLES
         const rects = g.selectAll("rect")
             .data(dataset);
-
+        
         rects.exit()
             .remove();
 
         rects.enter()
             .append("rect")
             .merge(rects)
-                .on("mouseover", d => this.toggleBar(d3.event.target, d, false))
-                .on("mouseout", d => this.toggleBar(d3.event.target, d, true))
+                .on("mouseover", d => this.toggleBar(d.id, false))
+                .on("mouseout", d => this.toggleBar(d.id, true))
+                .style("cursor", "pointer")
                 .transition()
                 .duration(duration)
                 .attrs({
-                    "fill":  d => this.props.color(+d[comparisionField]),
-                    "data-currency-id": d => d.id, // ???
+                    "fill":  d => this.props.color(+d[comparisionField]),                    
                     "height": () => this.yScale.bandwidth(),
                     "y": d => this.yScale(d.id),
                     "width": d => Math.abs(this.xScale(+d[comparisionField]) - this.xScale(0)),
@@ -143,12 +164,23 @@ export default class HBarChart extends React.Component {
                         }
                         return this.xScale(Math.min(val, +d[comparisionField]))
                     }
-                });
-
-        console.log(yAxis.selectAll(".tick").style("font-size"));
+                });        
     }
-    toggleBar(el, d, mouseOut) {
-        // show the exact value
+    toggleBar(id, mouseOut) {
+        const hiddenTicks = Array.from(this.state.g.selectAll(".axis--hidden .tick").nodes());
+        const tick = hiddenTicks.find(tick => tick.getAttribute("data-currency-id") === id);
+        let opacityVal;
+
+        if(mouseOut) {
+            opacityVal = 0;
+        } else {
+            opacityVal = 0.9;
+        }
+
+        d3.select(tick)
+            .transition()
+            .duration(this.state.duration)
+            .style("opacity", opacityVal);        
     }
     render() {
         return (
