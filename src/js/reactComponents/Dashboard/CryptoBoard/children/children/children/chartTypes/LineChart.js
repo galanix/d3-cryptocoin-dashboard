@@ -114,7 +114,7 @@ export default class LineChart extends React.Component {
             this.buildLine();
         } else if(type === "line-scatter") {            
             this.buildScatterPlot();
-        } else if(type === "line-area") {            
+        } else if(type === "line-area") {
             this.buildAreaPlot();
         }
 
@@ -122,8 +122,8 @@ export default class LineChart extends React.Component {
         //this.legend.build();
     }
     createGraphInstance(graph, appendCallback, updateCallback, params) {
-        // typeof graph === string
-        if(!this.state.graph) {
+        // typeof graph === string        
+        if(!this.state[graph]) {
             this.setState({
                 [graph]: new Graph(Object.assign({}, params))
             }, () => {                
