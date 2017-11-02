@@ -6,25 +6,26 @@ export default class extends React.Component {
         const legend = d3.select(this.legend);
         
         legend.selectAll(".legend_item").remove();
-
+        
         const items = legend.selectAll(".legend_item")
-          .data(this.props.dataset)
-          .enter()
-          .append("div")
-          .attr("data-currency-id", d => d.id)
-          .attr("class", "legend_item")       
-          .on("mouseover", d => this.props.onHoverHandler(1, this.props.color(d[this.props.comparisionField]), d))
-          .on("mouseout", d => this.props.onHoverHandler(0, "#333", d));
+            .data(this.props.dataset)
+            .enter()
+            .append("div")
+            .attr("data-currency-id", d => d.id)
+            .attr("class", "legend_item")       
+            .on("mouseover", d => this.props.onHoverHandler(1, this.props.color(d[this.props.comparisionField]), d))
+            .on("mouseout", d => this.props.onHoverHandler(0, "#333", d));
         
         items
-          .append("span")
-          .attr("class", "square")
-          .style("background-color", d => this.props.color(d[this.props.comparisionField]));
+            .append("span")
+            .attr("class", "square")
+            .style("background-color", d => this.props.color(d[this.props.comparisionField]));
         
         items
-          .append("span")
-          .text(d => d.name)
-          .style("font-weight", "bold");
+            .append("span")
+            .text(d => d.name)
+            .style("font-weight", "bold");
+        
     }
     render() {
         return (
