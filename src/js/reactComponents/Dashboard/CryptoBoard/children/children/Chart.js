@@ -59,13 +59,21 @@ export default class Chart extends React.Component {
             console.warn("chart has not been rendered");
       }
       
-      this.setState({ 
-        ChildChartJSX: null
-      }, () => {
+      const callback = () => {
           this.setState({
-              ChildChartJSX: ChartJSX
+              ChildChartJSX: ChartJSX,
+              prevType: type
           });
-      });
+      };
+
+      if(this.state.prevType !== type) {
+          this.setState({ 
+            ChildChartJSX: null
+          }, callback);
+      } else {
+          callback();
+      }
+      
     }
     render() {
       return (
