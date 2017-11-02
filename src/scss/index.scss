@@ -198,7 +198,6 @@ svg {
 /* < CRYPTOBOARD > */
 
 #board-of-crypto-currencies {
-
     .table-filters {
         h4, .dropdown {
             display: inline-block;
@@ -295,10 +294,11 @@ svg {
         .btn:not(.active) {
             .fa-check {
                 opacity: 0;
-            }            
-        }        
+            }
+        }
     }
 }
+
 
 .modal-window {    
     overflow-y: hidden;
@@ -328,12 +328,12 @@ svg {
 }
 
 .arc, 
-.col rect {
+.bar rect {
     transition: opacity .5s ease-in;
 }
 
 .arc:hover,
-.col:hover {
+.bar rect:hover {
     cursor: pointer;
 }
 
