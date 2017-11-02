@@ -15,11 +15,6 @@ export default class HBarChart extends React.Component {
     componentDidMount() {
         this.renderSVG();      
     }
-    componentWillReceiveProps(nextProps) {
-        if(nextProps.type !== this.props.type) {
-            d3.select(this.svg.parentElement).remove();        
-        }      
-    }
     shouldComponentUpdate(nextProps) {
          return !(
             twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
@@ -27,7 +22,7 @@ export default class HBarChart extends React.Component {
             nextProps.type === this.props.type &&
             nextProps.width === this.props.width  // width can not change without changing height
         );
-    }
+    }    
     componentDidUpdate() {
         this.updateSVG();
     }

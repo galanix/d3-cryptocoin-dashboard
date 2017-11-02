@@ -14,19 +14,6 @@ export default class PieChart extends React.Component {
   componentDidMount() {
     this.renderSVG();
   }
-  componentWillReceiveProps(newProps) {
-    if(newProps.type !== this.props.type) {
-      d3.select(this.svg).remove();
-      if(
-        newProps.type.indexOf(this.props.type) !== -1 ||
-        this.props.type.indexOf(newProps.type) !== -1
-      ) {
-        this.renderSVG();
-      } else {
-        d3.select(this.svg.parentElement).remove();
-      }
-    }
-  }
   shouldComponentUpdate(nextProps) {
     return !(
       twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
@@ -34,7 +21,7 @@ export default class PieChart extends React.Component {
       nextProps.type === this.props.type &&
       nextProps.width === this.props.width  // width can not change without changing height
     );
-  }
+  }  
   componentDidUpdate() {
     this.updateSVG();
   }

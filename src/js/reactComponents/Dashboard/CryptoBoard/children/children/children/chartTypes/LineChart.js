@@ -19,12 +19,7 @@ export default class LineChart extends React.Component {
     componentDidMount() {
         this.hidePreloader();
         this.renderSVG();      
-    }
-    componentWillReceiveProps(nextProps) {
-      if(nextProps.type !== this.props.type) {
-        d3.select(this.svg.parentElement).remove();        
-      }      
-    }
+    }    
     shouldComponentUpdate(nextProps) {
       return !(
         twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
@@ -32,7 +27,7 @@ export default class LineChart extends React.Component {
         nextProps.type === this.props.type &&
         nextProps.width === this.props.width  // height depends on width
       );
-    }
+    }   
     componentDidUpdate() {
         this.updateSVG();
     }
@@ -114,8 +109,8 @@ export default class LineChart extends React.Component {
             .duration(300)
             .call(d3.axisLeft(this.yScale).tickValues(yTicks));
 
-        if(type === "line") {
-            // BUILD LINE CHART
+        // ACTUAL CHART BUILDING
+        if(type === "line") {            
             this.buildLine();
         } else if(type === "line-scatter") {            
             this.buildScatterPlot();

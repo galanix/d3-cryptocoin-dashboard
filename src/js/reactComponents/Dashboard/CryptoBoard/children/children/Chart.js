@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 import * as d3 from "d3";
 import { attrs } from "d3-selection-multi";
@@ -11,10 +12,10 @@ import HBarChart from "./children/chartTypes/HBarChart.js";
 export default class Chart extends React.Component {
     constructor() {
         super();
-        this.state = { ChartJSX: null };
+        this.state = { ChildChartJSX: null };
     }
     renderChart(type, comparisionField) {
-      const width = Math.round(this.svgDiv.getBoundingClientRect().width);      
+      const width = Math.round(this.svgDiv.getBoundingClientRect().width);
       const height = Math.round(width / 2);
       const keys = Object.keys(this.props.hashTable);
       const dataset = keys.map(key => this.props.hashTable[key]);
@@ -32,38 +33,44 @@ export default class Chart extends React.Component {
           chartIsDonut: type === "pie-donut",
           type,
           currentSign
-      };      
+      };
 
       switch(type) {
         case "pie":
         case "pie-donut":
-          ChartJSX = ( <PieChart {...props} /> );
-          break;
+            ChartJSX = ( <PieChart {...props} /> );
+            break;
 
         case "bar":
-          ChartJSX = ( <BarChart {...props} />);
-          break;
+            ChartJSX = ( <BarChart {...props} /> );
+            break;
 
         case "hbar":          
-          ChartJSX = ( <HBarChart {...props} />);
-          break;
+            ChartJSX = ( <HBarChart {...props} /> );
+            break;
           
         case "line":
         case "line-scatter":
         case "line-area":
-          ChartJSX = ( <LineChart {...props} />);
-          break;
+            ChartJSX = ( <LineChart {...props} /> );
+            break;
 
         default:
-          console.warn("chart has not been rendered");
+            console.warn("chart has not been rendered");
       }
-
-      this.setState({ ChartJSX });
+      
+      this.setState({ 
+        ChildChartJSX: null
+      }, () => {
+          this.setState({
+              ChildChartJSX: ChartJSX
+          });
+      });
     }
     render() {
       return (
         <div ref={div => this.svgDiv = div} className="graph">
-            { this.state.ChartJSX }
+            { this.state.ChildChartJSX }
         </div>
       );
     }
