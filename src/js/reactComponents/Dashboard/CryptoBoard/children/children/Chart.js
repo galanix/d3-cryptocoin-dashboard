@@ -12,68 +12,74 @@ import HBarChart from "./children/chartTypes/HBarChart.js";
 export default class Chart extends React.Component {
     constructor() {
         super();
-        this.state = { ChildChartJSX: null };
+        this.state = {};
     }
-    renderChart(type, comparisionField) {
-      const width = Math.round(this.svgDiv.getBoundingClientRect().width);
-      const height = Math.round(width / 2);
-      const keys = Object.keys(this.props.hashTable);
-      const dataset = keys.map(key => this.props.hashTable[key]);
-      const colorValues = keys.map(key => this.props.hashTable[key].color);
-      const color = d3.scaleOrdinal(colorValues);
-      const currentSign = this.props.currentSign;
+    componentDidMount() {
+      window.addEventListener("resize", () => {          
+          if(!!this.state.prevType) {
+              this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
+          }
+      });
+    }
+    renderChart(type, comparisionField, reMountForcefully) {
+        const width = Math.round(this.svgDiv.getBoundingClientRect().width);        
+        const height = Math.round(width / 2);
+        const keys = Object.keys(this.props.hashTable);
+        const dataset = keys.map(key => this.props.hashTable[key]);
+        const colorValues = keys.map(key => this.props.hashTable[key].color);
+        const color = d3.scaleOrdinal(colorValues);
+        const currentSign = this.props.currentSign;        
+        const props = {
+            color: color.bind(this),
+            dataset,
+            width,
+            height,
+            comparisionField,
+            chartIsDonut: type === "pie-donut",
+            type,
+            currentSign
+        };
+        let ChartJSX = null;
 
-      let ChartJSX = null;
-      const props = {
-          color: color.bind(this),
-          dataset,
-          width,
-          height,
-          comparisionField,
-          chartIsDonut: type === "pie-donut",
-          type,
-          currentSign
-      };
+        switch(type) {
+            case "pie":
+            case "pie-donut":
+                ChartJSX = ( <PieChart {...props} /> );
+                break;
 
-      switch(type) {
-        case "pie":
-        case "pie-donut":
-            ChartJSX = ( <PieChart {...props} /> );
-            break;
+            case "bar":
+                ChartJSX = ( <BarChart {...props} /> );
+                break;
 
-        case "bar":
-            ChartJSX = ( <BarChart {...props} /> );
-            break;
+            case "hbar":
+                ChartJSX = ( <HBarChart {...props} /> );
+                break;
+  
+            case "line":
+            case "line-scatter":
+            case "line-area":
+                ChartJSX = ( <LineChart {...props} /> );
+                break;
 
-        case "hbar":          
-            ChartJSX = ( <HBarChart {...props} /> );
-            break;
-          
-        case "line":
-        case "line-scatter":
-        case "line-area":
-            ChartJSX = ( <LineChart {...props} /> );
-            break;
+            default:
+                console.warn("chart has not been rendered");
+        }
+       
+        const callback = () => {
+            this.setState({
+                ChildChartJSX: ChartJSX,
+                prevType: type,
+                prevComparisonField: comparisionField // for resize function
+            });
+        };
 
-        default:
-            console.warn("chart has not been rendered");
-      }
-      
-      const callback = () => {
-          this.setState({
-              ChildChartJSX: ChartJSX,
-              prevType: type
-          });
-      };
-
-      if(this.state.prevType !== type) {
-          this.setState({ 
-            ChildChartJSX: null
-          }, callback);
-      } else {
-          callback();
-      }
-      
+        if(this.state.prevType !== type || reMountForcefully) {
+            this.setState({
+                ChildChartJSX: null
+            }, callback);
+        } else {
+            callback();
+        }
     }
     render() {
       return (
