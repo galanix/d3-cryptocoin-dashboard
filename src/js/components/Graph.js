@@ -11,32 +11,27 @@ export default class Graph {
     });
   }
   append(dataset) {
-    const opacityVal = !!this.hidden ? 0 : 1;
     this.container
       .append('path')
       .attrs({
           'd': this.lineFunction(dataset),
           'stroke': this.color,
-          'stroke-width': 2,
-          'fill': 'none',
+          'stroke-width': this.strokeWidth || 2,
+          'fill': this.fill || "none",
           'id': 'graph-type--' + this.type,
       })
-      .style('opacity', opacityVal);
+      .style('opacity', this.opacityVal || (!!this.hidden ? 0 : 1));
   }
-  update(dataset) {
-    const opacityVal = !!this.hidden ? 0 : 1; 
+  update(dataset) {    
     this.container
       .select('#graph-type--' + this.type)
       .transition()
       .duration(1200)
-      .attrTween('d',  (() => {
-        const self = this;
-        return function() {
-          const previous = d3.select(this).attr('d');
-          const current = self.lineFunction(dataset);
-          return interpolatePath(previous, current); // adds/removes points from prev to match current => for better graph transformations
-        };
-      })())
-      .style('opacity', opacityVal);
+      .attrTween('d',  (_d, _i, el) => {
+          const previous = d3.select(el[0]).attr('d');
+          const current = this.lineFunction(dataset);
+          return interpolatePath(previous, current); // adds/removes points from prev to match current => for better graph transformations        
+      })
+      .style('opacity', this.opacityVal || (!!this.hidden ? 0 : 1));
   }
 };
