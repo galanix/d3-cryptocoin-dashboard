@@ -8,10 +8,7 @@ import Graph from "../../../../components/Graph.js";
 
 import { formTickValues } from "../../../../helperFunctions.js";
 
-export default class LineCharts extends React.Component {
-    constructor() {
-        super();
-    }
+export default class LineCharts extends React.Component {    
     componentDidMount() {
         this.hidePreloader();
     }
@@ -147,7 +144,7 @@ export default class LineCharts extends React.Component {
                          .y(d => this.yScale(+d.ticker.ask)),
         container: this.state.graphG
         });
-        ask.append(dataset);        
+        ask.append(dataset);    
     
         const bid = new Graph({
         type: "bid",
