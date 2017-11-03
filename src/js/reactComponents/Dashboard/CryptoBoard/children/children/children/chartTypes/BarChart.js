@@ -132,10 +132,10 @@ export default class BarChart extends React.Component {
                 "height": d => Math.abs(this.yScale(+d[comparisionField]) - (this.yScale(0))),
             });
           
+      this.props.drawCurrencySign(comparisionField, g);
       this.legend.build();
-    }
+    }    
     toggleBar(id, d, mouseOut) {
-      //debugger;
       const xTicks = Array.from(this.svg.parentElement.parentElement.querySelectorAll(".axis--x .tick"));
       const rects = Array.from(this.state.g.selectAll(".bar rect").nodes());
       

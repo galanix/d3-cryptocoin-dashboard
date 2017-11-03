@@ -12,7 +12,9 @@ import HBarChart from "./children/chartTypes/HBarChart.js";
 export default class Chart extends React.Component {
     constructor() {
         super();
-        this.state = {};
+        this.state = {
+            duration: 300
+        };
     }
     componentDidMount() {
       window.addEventListener("resize", () => {          
@@ -30,17 +32,15 @@ export default class Chart extends React.Component {
         const keys = Object.keys(this.props.hashTable);
         const dataset = keys.map(key => this.props.hashTable[key]);
         const colorValues = keys.map(key => this.props.hashTable[key].color);
-        const color = d3.scaleOrdinal(colorValues);
-        const currentSign = this.props.currentSign;        
+        const color = d3.scaleOrdinal(colorValues);            
         const props = {
             color: color.bind(this),
             dataset,
             width,
             height,
-            comparisionField,
-            chartIsDonut: type === "pie-donut",
+            comparisionField,            
             type,
-            currentSign
+            drawCurrencySign: this.drawCurrencySign.bind(this)
         };
         let ChartJSX = null;
 
@@ -83,6 +83,51 @@ export default class Chart extends React.Component {
         } else {
             callback();
         }
+    }
+    drawCurrencySign(comparisionField, g, pos = {axis: "y"}) {
+        const duration = this.state.duration;
+        let sign = this.props.currentSign;        
+
+        if(
+            comparisionField.indexOf("price") === -1 &&
+            comparisionField.indexOf("24h_volume") === -1 &&
+            comparisionField.indexOf("market_cap") === -1
+        ) {
+            sign = "%";
+        }
+
+        const yAxis = g.select("g.axis--" + pos.axis);
+        
+        if(!yAxis.select("g.currency-sign").node()) {
+            yAxis.append("g")
+                .attrs({
+                    "class": "currency-sign",                    
+                })
+                .append("text")
+                .attrs({
+                    "fill": "#000",
+                    "font-size": "18",
+                    "x": pos.axis === "x" ? pos.x : "4",                    
+                });
+        }
+        const text = g.select(".currency-sign text");
+
+        text            
+            .transition()
+            .duration(duration)
+            .attrs({
+                y: pos.axis === "x" ? "100" : "-100"
+            });        
+
+        setTimeout(() => {
+            text         
+                .html(sign)    
+                .transition()
+                .duration(duration)
+                .attrs({
+                    y: pos.axis === "x" ? pos.y : "-10"
+                });            
+        }, duration);
     }
     render() {
       return (

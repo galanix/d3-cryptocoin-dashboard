@@ -168,7 +168,9 @@ export default class HBarChart extends React.Component {
                         }
                         return this.xScale(Math.min(val, +d[comparisionField]))
                     }
-                });        
+                });
+        
+        this.props.drawCurrencySign(comparisionField, g, {axis: "x", x: fixedWidth + 15, y: 15});
     }
     toggleBar(id, mouseOut) {
         const hiddenTicks = Array.from(this.state.g.selectAll(".axis--hidden .tick").nodes());

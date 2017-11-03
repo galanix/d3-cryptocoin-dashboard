@@ -68,6 +68,7 @@ export default class LineChart extends React.Component {
         });       
     }
     updateSVG() {
+        const g = this.state.g;
         const comparisionField = this.props.comparisionField;
         const dataset = this.props.dataset;
         const ids = dataset.map(d => d.id);
@@ -83,12 +84,12 @@ export default class LineChart extends React.Component {
         this.yScale.domain([min, max]);
         this.xScale.domain(ids);
 
-        this.state.g.select("g.axis--x")
+        g.select("g.axis--x")
             .transition()
             .duration(300)
             .call(d3.axisBottom(this.xScale).tickValues(ids));
 
-        this.state.g.selectAll(".axis--x text")
+        g.selectAll(".axis--x text")
             .style("font-size", () => {
                 const length = dataset.length;
                 if(length > 12) {
@@ -104,7 +105,7 @@ export default class LineChart extends React.Component {
             .on("mouseover", d => this.handleHoverEvtHandler(d, false))
             .on("mouseout", d => this.handleHoverEvtHandler(d, true));
 
-        this.state.g.select("g.axis--y")
+        g.select("g.axis--y")
             .transition()
             .duration(300)
             .call(d3.axisLeft(this.yScale).tickValues(yTicks));
@@ -118,8 +119,7 @@ export default class LineChart extends React.Component {
             this.buildAreaPlot();
         }
 
-        this.drawCurrencySign();
-        //this.legend.build();
+        this.props.drawCurrencySign(comparisionField, g);        
     }
     createGraphInstance(graph, appendCallback, updateCallback, params) {
         // typeof graph === string        
@@ -221,53 +221,7 @@ export default class LineChart extends React.Component {
     }
     hidePreloader() {
         this.WaitMessage.hide();
-    }
-    drawCurrencySign() {
-        let sign = this.props.currentSign;
-        const comparisionField = this.props.comparisionField;
-
-        if(
-            comparisionField.indexOf("price") === -1 &&
-            comparisionField.indexOf("volume_24h") === -1 &&
-            comparisionField.indexOf("market_cap") === -1
-        ) {
-            sign = "%";
-        }
-
-        const yAxis = this.state.g.select("g.axis--y");
-        
-        if(!yAxis.select("g.currency-sign").node()) {
-            yAxis.append("g")
-                .attrs({
-                    "class": "currency-sign",
-                })
-                .append("text")
-                .attrs({
-                    "fill": "#000",
-                    "font-size": "18",
-                    "x": "4",
-                    "y": "-10"
-                });
-        }
-        const text = this.state.g.select(".currency-sign text");
-
-        text            
-            .transition()
-            .duration(500)
-            .attrs({
-                y: "-100"
-            });        
-
-        setTimeout(() => {
-            text         
-                .html(sign)    
-                .transition()
-                .duration(500)
-                .attrs({
-                    y: "-10"
-                });            
-        }, 500);
-    }
+    }    
     handleHoverEvtHandler(id, mouseOut) {
         const d = this.props.dataset.find(item => item.id === id);
 
