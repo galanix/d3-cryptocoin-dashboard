@@ -31,7 +31,7 @@ module.exports = {
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
                     use: [
-                        { loader: 'css-loader', options: { minimize: true} },
+                        { loader: 'css-loader', /*options: { minimize: true}*/ },
                         { loader: 'postcss-loader' },
                         { loader: 'sass-loader'}
                     ]
@@ -42,12 +42,12 @@ module.exports = {
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
                     use: [
-                        { loader: "css-loader", options: { minimize: true}},
+                        { loader: "css-loader", /*options: { minimize: true}*/ },
                         { loader: "postcss-loader" },
                         { loader: "sass-loader"}
                     ]
                 })
-            },        
+            },
             {
                 test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "url-loader"
@@ -55,20 +55,20 @@ module.exports = {
             {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "file-loader"
-            } 
+            }
         ]
     },
     plugins: [
         new ExtractTextPlugin("bundle.min.css"),
-        new UglifyJSPlugin(),
+        //new UglifyJSPlugin(),
         new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery'
           }),
-        new webpack.DefinePlugin({
-            'process.env': {
-              NODE_ENV: JSON.stringify('production')
-            }
-          }),
+        // new webpack.DefinePlugin({
+        //     'process.env': {
+        //       NODE_ENV: JSON.stringify('production')
+        //     }
+        //   }),
     ]
 };
