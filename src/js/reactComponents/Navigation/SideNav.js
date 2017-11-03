@@ -3,6 +3,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 class SideNav extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            relativePath: "/d3-cryptocoin-dashboard" // path that is appended at github pages
+        };
+    }
     onClickHandler(evt, duration = 200) {
         if(this.props.location !== "/") return;
 
@@ -38,6 +44,10 @@ class SideNav extends React.Component {
         scroll();
     }
     render() {
+        const relativePath = this.state.relativePath;
+        const mainPagePath = relativePath + "/";
+        const settingsPagePath = relativePath + "/settings";
+        
         return (
             <div className="col-md-3 left_col menu_fixed">
                 <div className="left_col scroll-view">
@@ -60,16 +70,16 @@ class SideNav extends React.Component {
                                     </a>
                                     <ul className="nav child_menu">
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="bitcoin-current-price">Current Bitcoin Price</Link>
+                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="bitcoin-current-price">Current Bitcoin Price</Link>
                                         </li>
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="history">Bitcoin Price History</Link>
+                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="history">Bitcoin Price History</Link>
                                         </li>
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="currency-pair">Currency Comparison</Link>
+                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="currency-pair">Currency Comparison</Link>
                                         </li>
                                         <li>
-                                            <Link to="/" onClick={evt => this.onClickHandler(evt, 300)} data-links-to="board-of-crypto-currencies">Table of Currencies</Link>
+                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="board-of-crypto-currencies">Table of Currencies</Link>
                                         </li>                                    
                                     </ul>
                                 </li>
@@ -81,7 +91,7 @@ class SideNav extends React.Component {
                                     </a>                                    
                                     <ul className="nav child_menu">
                                         <li>
-                                            <Link to="/settings">Components</Link>
+                                            <Link to={settingsPagePath}>Components</Link>
                                         </li>
                                     </ul>
                                 </li>
