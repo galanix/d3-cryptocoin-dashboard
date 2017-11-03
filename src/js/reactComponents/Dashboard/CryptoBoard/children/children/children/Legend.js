@@ -14,7 +14,7 @@ export default class extends React.Component {
             .attr("data-currency-id", d => d.id)
             .attr("class", "legend_item")       
             .on("mouseover", d => this.props.onHoverHandler(1, this.props.color(d[this.props.comparisionField]), d))
-            .on("mouseout", d => this.props.onHoverHandler(0, "#333", d));
+            .on("mouseout", d => this.props.onHoverHandler(0, "#73879C", d));
         
         items
             .append("span")
