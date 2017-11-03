@@ -10,13 +10,23 @@ import Settings from './Settings/Settings';
 import { dataRequest } from "../reduxComponents/actions/update";
 import { filterChange } from "../reduxComponents/actions/change";
 
-import templateScript from "../template"; // jQuery!!!
+import templateScript from "../template"; // jQuery
+
+const mapStateToProps = state => ({
+    appData: state
+});
+
+const mapDispatchToProps = dispatch => ({
+    update: (url, display, componentToUpdate) => dispatch(dataRequest(url, display, componentToUpdate)),
+    change: (newFilterValue, filterName, componentToUpdate) => dispatch(filterChange(newFilterValue, filterName, componentToUpdate))
+});
 
 class App extends React.Component {
     componentDidMount() {
         templateScript();
     }
     render() {
+        console.log(this.props);
         return (
             <div className="main_container">
                 <SideNav location={this.props.location.pathname}/>
@@ -42,14 +52,5 @@ class App extends React.Component {
         );
     }
 };
-
-const mapStateToProps = state => ({
-    appData: state
-});
-
-const mapDispatchToProps = dispatch => ({
-    update: (url, display, componentToUpdate) => dispatch(dataRequest(url, display, componentToUpdate)),
-    change: (newFilterValue, filterName, componentToUpdate) => dispatch(filterChange(newFilterValue, filterName, componentToUpdate))
-});
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));
