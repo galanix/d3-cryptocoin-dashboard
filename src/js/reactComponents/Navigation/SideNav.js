@@ -2,13 +2,7 @@ import React from 'react';
 
 import { Link } from 'react-router-dom';
 
-class SideNav extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            relativePath: "/d3-cryptocoin-dashboard" // path that is appended at github pages
-        };
-    }
+class SideNav extends React.Component {      
     onClickHandler(evt, duration = 200) {
         if(this.props.location !== "/") return;
 
@@ -44,10 +38,10 @@ class SideNav extends React.Component {
         scroll();
     }
     render() {
-        const relativePath = this.state.relativePath;
-        const mainPagePath = relativePath + "/";
-        const settingsPagePath = relativePath + "/settings";
-        
+        const relativePath = this.props.location.pathname || "/";
+        const mainPagePath = relativePath;
+        const settingsPagePath = relativePath + "settings";        
+
         return (
             <div className="col-md-3 left_col menu_fixed">
                 <div className="left_col scroll-view">

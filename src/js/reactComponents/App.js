@@ -21,23 +21,18 @@ const mapDispatchToProps = dispatch => ({
     change: (newFilterValue, filterName, componentToUpdate) => dispatch(filterChange(newFilterValue, filterName, componentToUpdate))
 });
 
-class App extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            relativePath: "/d3-cryptocoin-dashboard" // path that is appended at github pages
-        };
-    }
+class App extends React.Component {   
     componentDidMount() {
-        templateScript();
+        templateScript();        
     }
     render() {
+        const locationPath = this.props.location.pathname || "/";
         return (
             <div className="main_container">
-                <SideNav location={this.props.location.pathname}/>
+                <SideNav location={locationPath}/>
                 <TopNav />
                 <Switch>
-                    <Route exact path={`${this.state.relativePath}/`}
+                    <Route exact path={locationPath}
                            render={() => (
                                <Dashboard update={this.props.update.bind(this)} 
                                           change={this.props.change.bind(this)}
@@ -45,7 +40,7 @@ class App extends React.Component {
                                 />
                            )}
                     />
-                    <Route path={`${this.state.relativePath}/settings`}
+                    <Route path={`${locationPath}settings`}
                            render={() => (
                                 <Settings displayComponent={this.props.appData.settings.displayComponent}
                                           change={this.props.change.bind(this)}
