@@ -22,7 +22,10 @@ export default class Chart extends React.Component {
       });
     }
     renderChart(type, comparisionField, reMountForcefully) {
-        const width = Math.round(this.svgDiv.getBoundingClientRect().width);        
+        let width = Math.round(this.svgDiv.getBoundingClientRect().width);
+        if(width > 600) {
+            width = 600;
+        }
         const height = Math.round(width / 2);
         const keys = Object.keys(this.props.hashTable);
         const dataset = keys.map(key => this.props.hashTable[key]);
