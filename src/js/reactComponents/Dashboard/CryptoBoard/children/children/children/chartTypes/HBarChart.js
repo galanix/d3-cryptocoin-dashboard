@@ -30,7 +30,7 @@ export default class HBarChart extends React.Component {
         const margin = this.state.margin;
         const fixedWidth = this.props.width - (margin.left + margin.right);
         const fixedHeight = this.props.height - (margin.top + margin.bottom);
-        const svg = d3.select(this.svg);        
+        const svg = d3.select(this.svg);
 
         this.setState({fixedWidth, fixedHeight}); // will need this variable later on
   
@@ -66,7 +66,7 @@ export default class HBarChart extends React.Component {
     updateSVG() {
         const {dataset, comparisionField, type} = this.props;
         const g = this.state.g;
-        const {fixedWidth, fixedHeight, duration} = this.state;
+        const {fixedWidth, fixedHeight, duration, margin} = this.state;
 
         let [min, max] = d3.extent(dataset, d => +d[comparisionField]);
 
@@ -84,8 +84,7 @@ export default class HBarChart extends React.Component {
             return val;
         }
 
-        const yAxis = g.select(".axis--y");
-        
+        const yAxis = g.select(".axis--y");        
         yAxis.transition()
             .duration(duration)
             .attr("transform", `translate(${inRange(this.xScale(0))}, 0)`)
@@ -97,7 +96,8 @@ export default class HBarChart extends React.Component {
             .on("mouseout", d => this.toggleBar(d.id, true))
             .transition()
             .duration(duration)
-            .attr("x", d => +d[comparisionField] < 0 ? 10 : -10)
+            .attr("x", d => +d[comparisionField] < 0 ? 10 : -10)            
+            .style("width", margin.left)
             .style("text-anchor", d => +d[comparisionField] < 0 ? "start" : "end")
             .style("cursor", "pointer")
             .style("font-size", "14px");
@@ -106,24 +106,27 @@ export default class HBarChart extends React.Component {
             .style("display", "none");
 
         // ADD X AXIS
+        
         g.select(".axis--x")
             .attr("transform", `translate(0, ${fixedHeight})`)
             .transition()
             .duration(duration)
             .call(d3.axisBottom(this.xScale).ticks(5));
        
-        // ADD HIDDEN ADITIONAL X AXIS
-        const f = d3.format(".2f");
+        // ADD HIDDEN ADITIONAL X AXIS        
         const hiddenAxis = g.select(".axis--hidden");
 
         hiddenAxis.attr("transform", `translate(0, ${fixedHeight})`)
-            .call(d3.axisBottom(this.xScale).tickValues(dataset.map(d => f(+d[comparisionField]))));
+            .call(
+                    d3.axisBottom(this.xScale)
+                        .tickValues(dataset.map(d => +d[comparisionField]))
+                        .tickFormat(d3.format(".2f"))
+                );
 
         hiddenAxis.selectAll(".tick")
             .data(dataset)
             .attr("data-currency-id", d => d.id)
-            .attr("stroke", d => d.color)
-            //.style("font-weight", "bold")
+            .attr("stroke", d => d.color)            
             .style("font-size", "14px")
             .style("opacity", 0)
             .select("text")
