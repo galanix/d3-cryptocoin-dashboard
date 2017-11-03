@@ -2,9 +2,11 @@ import React from 'react';
 
 import { Link } from 'react-router-dom';
 
-class SideNav extends React.Component {      
+class SideNav extends React.Component {    
     onClickHandler(evt, duration = 200) {
-        if(this.props.location !== "/") return;
+        if(evt.target.tagName === "UL") {
+            return;
+        }
 
         const destination = document.getElementById(evt.target.getAttribute("data-links-to"));
         if(!destination) return;
@@ -37,16 +39,12 @@ class SideNav extends React.Component {
     
         scroll();
     }
-    render() {
-        const relativePath = this.props.location.pathname || "/";
-        const mainPagePath = relativePath;
-        const settingsPagePath = relativePath + "settings";        
-
+    render() {        
         return (
             <div className="col-md-3 left_col menu_fixed">
                 <div className="left_col scroll-view">
                     <div className="navbar nav_title" style={{border: "0"} }>
-                        <Link to={mainPagePath} className="site_title">
+                        <Link to={this.props.mainPagePath} className="site_title">
                             <i className="fa fa-line-chart"></i>
                             <span>D3 Dashboard</span>
                         </Link>
@@ -62,18 +60,18 @@ class SideNav extends React.Component {
                                         Dashboard
                                         <span className="fa fa-chevron-down"></span>
                                     </a>
-                                    <ul className="nav child_menu">
+                                    <ul className="nav child_menu" onClick={evt => this.onClickHandler(evt, 300)} >
                                         <li>
-                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="bitcoin-current-price">Current Bitcoin Price</Link>
+                                            <Link to={this.props.mainPagePath} data-links-to="bitcoin-current-price">Current Bitcoin Price</Link>
                                         </li>
                                         <li>
-                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="history">Bitcoin Price History</Link>
+                                            <Link to={this.props.mainPagePath} data-links-to="history">Bitcoin Price History</Link>
                                         </li>
                                         <li>
-                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="currency-pair">Currency Comparison</Link>
+                                            <Link to={this.props.mainPagePath} data-links-to="currency-pair">Currency Comparison</Link>
                                         </li>
                                         <li>
-                                            <Link to={mainPagePath} onClick={evt => this.onClickHandler(evt, 300)} data-links-to="board-of-crypto-currencies">Table of Currencies</Link>
+                                            <Link to={this.props.mainPagePath} data-links-to="board-of-crypto-currencies">Table of Currencies</Link>
                                         </li>                                    
                                     </ul>
                                 </li>
@@ -85,7 +83,7 @@ class SideNav extends React.Component {
                                     </a>                                    
                                     <ul className="nav child_menu">
                                         <li>
-                                            <Link to={settingsPagePath}>Components</Link>
+                                            <Link to={this.props.settingsPagePath}>Components</Link>
                                         </li>
                                     </ul>
                                 </li>
