@@ -9,7 +9,7 @@ export default class HBarChart extends React.Component {
         super();
         this.state = {
             duration: 300,
-            margin: { top: 30, right: 10, bottom: 45, left: 100 }
+            margin: { top: 30, right: 80, bottom: 45, left: 80 }
         };
     }
     componentDidMount() {
@@ -32,7 +32,7 @@ export default class HBarChart extends React.Component {
         const fixedHeight = this.props.height - (margin.top + margin.bottom);
         const svg = d3.select(this.svg);        
 
-        this.setState({fixedHeight}); // will need this variable later on
+        this.setState({fixedWidth, fixedHeight}); // will need this variable later on
   
         svg.attr("width", this.props.width)
             .attr("height", this.props.height)
@@ -123,7 +123,7 @@ export default class HBarChart extends React.Component {
             .data(dataset)
             .attr("data-currency-id", d => d.id)
             .attr("stroke", d => d.color)
-            .style("font-weight", "bold")
+            //.style("font-weight", "bold")
             .style("font-size", "14px")
             .style("opacity", 0)
             .select("text")
@@ -148,7 +148,13 @@ export default class HBarChart extends React.Component {
                     "fill":  d => this.props.color(+d[comparisionField]),                    
                     "height": () => this.yScale.bandwidth(),
                     "y": d => this.yScale(d.id),
-                    "width": d => Math.abs(this.xScale(+d[comparisionField]) - this.xScale(0)),
+                    "width": d => {                         
+                        let res = Math.abs(this.xScale(+d[comparisionField]) - this.xScale(0));
+                        if(res > fixedWidth) {
+                            res = fixedWidth;
+                        }
+                        return res;
+                    },
                     "x": d => {
                         let val = 0;
                         if(min > 0) {
