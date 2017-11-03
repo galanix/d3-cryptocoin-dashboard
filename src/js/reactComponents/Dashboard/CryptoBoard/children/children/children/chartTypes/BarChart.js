@@ -13,15 +13,15 @@ export default class BarChart extends React.Component {
     }
     componentDidMount() {
       this.renderSVG();      
-    }    
+    }
     shouldComponentUpdate(nextProps) {
         return !(
             twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
             nextProps.comparisionField === this.props.comparisionField &&
             nextProps.type === this.props.type &&
-            nextProps.width === this.props.width  // width can not change without changing height
+            nextProps.width === this.props.width
         );
-    }    
+    }
     componentDidUpdate() {
       this.updateSVG();
     }
@@ -86,12 +86,18 @@ export default class BarChart extends React.Component {
           .attr("data-currency-id", d => d.id)
           .attr("data-index", (_d, i) => ++i);
 
-      g.select("g.axis--zero")
+      const zerothAxis = g.select("g.axis--zero");
+
+      zerothAxis
           .attr("transform", `translate(0, ${this.yScale(0)})`)
           .style("opacity", 0.4)
           .transition()
           .duration(300)
           .call(d3.axisBottom(this.xScale));
+
+      zerothAxis.selectAll("text")
+          .style("opacity", 0);
+
 
       g.select("g.axis--y")
           .transition()
@@ -129,41 +135,60 @@ export default class BarChart extends React.Component {
       this.legend.build();
     }
     toggleBar(id, d, mouseOut) {
-      const xTicks = Array.from(this.svg.parentElement.parentElement.querySelector(".axis--x").querySelectorAll(" .tick"));      
-      const rects = Array.from(d3.selectAll(".bar rect").nodes());
+      //debugger;
+      const xTicks = Array.from(this.svg.parentElement.parentElement.querySelectorAll(".axis--x .tick"));
+      const rects = Array.from(this.state.g.selectAll(".bar rect").nodes());
       
-      const elementInArray = d => d.getAttribute("data-currency-id") === id;
+      const elementInArray = d => {
+          return d.getAttribute("data-currency-id") === id;
+      };
 
       const tick = xTicks.find(elementInArray);
       const rect = rects.find(elementInArray);
-
-      const show = r => { if(r !== rect) r.style.opacity = 0.2; }; // r - rect
-      const hide = r => r.style.opacity = 1;
-      const display = mouseOut ? hide : show;            
+      
+      // r - rect
+      const show = r => {
+          if(r !== rect) {
+             r.style.opacity = 0.2;
+          }
+      };
+      const hide = r => {
+          r.style.opacity = 1;
+      };
+      const display = mouseOut ? hide : show;
       rects.forEach(display);
 
-      const onMouseMove = ({ text, innerHTML, styles }) => {
-        for(let prop in styles) {
-          text.style[prop] = styles[prop];
-        }
-        text.innerHTML = innerHTML;
+      const onMouseMove = ({ text, innerHTML, styles }) => {          
+          for(let prop in styles) {
+              text.style[prop] = styles[prop];
+          }
+          text.innerHTML = innerHTML;
       };
       const text = tick.getElementsByTagName("text")[0];
+
       if(mouseOut) {
-        onMouseMove({
-          text,
-          innerHTML: tick.getAttribute("data-index"),
-          styles: {  fontSize: "1em", fill: "#333", fontWeight: "normal" }
-        });
+          onMouseMove({
+              text,
+              innerHTML: tick.getAttribute("data-index"),
+              styles: {
+                  fontSize: "1em",
+                  fill: "#73879C",
+                  fontWeight: "normal" 
+              }
+          });
       } else {
-        onMouseMove({
-          text,
-          innerHTML: `
-            <tspan x="0">${d.name}</tspan>
-            <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
-          `,
-          styles: { fontSize: "1.5em", fill: this.props.color(+d[this.props.comparisionField]) , fontWeight: "bold" }
-        });
+          onMouseMove({
+              text,
+              innerHTML: `
+                  <tspan x="0">${d.name}</tspan>
+                  <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
+              `,
+              styles: { 
+                  fontSize: "1.5em", 
+                  fill: this.props.color(+d[this.props.comparisionField]) , 
+                  fontWeight: "bold" 
+              }
+          });
       }
     }
     handleHoverEvtHandler(opacityVal, color, d) {
