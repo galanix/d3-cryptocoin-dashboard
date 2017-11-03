@@ -46,7 +46,7 @@ class SideNav extends React.Component {
             <div className="col-md-3 left_col menu_fixed">
                 <div className="left_col scroll-view">
                     <div className="navbar nav_title" style={{border: "0"} }>
-                        <Link to="/" className="site_title">
+                        <Link to={mainPagePath} className="site_title">
                             <i className="fa fa-line-chart"></i>
                             <span>D3 Dashboard</span>
                         </Link>
