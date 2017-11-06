@@ -18,16 +18,16 @@ export default class LineCharts extends React.Component {
         const height = this.props.model.width * 0.6 - margin.top - margin.bottom;
 
         this.setState({
-            svg: d3.select(this.container).append("svg")
-                        .attrs({
-                            width: width + margin.left + margin.right,
-                            height: height + margin.top + margin.bottom,
-                            id: "ask-bid-spread"
-                        })
+            svg: d3.select(this.svgDiv).append("svg")
+                  .attrs({
+                    width: width + margin.left + margin.right,
+                    height: height + margin.top + margin.bottom,
+                    id: "ask-bid-spread"
+                  })
         }, () => {
-            this.setState(prevState => ({
-                graphG: prevState.svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`)
-            }));
+          this.setState(prevState => ({
+            graphG: prevState.svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`)
+          }));
         });
         
         this.makeScales(dataset, width, height);
@@ -36,27 +36,27 @@ export default class LineCharts extends React.Component {
         // add axises
         // ONLY ONE PAIR OF AXISES
         const yTicks = formTickValues({
-            finalLevel: 3,
-            level: 1,
-            prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
-            prevSm: d3.min(dataset, d => this.state.graphs.spread.hidden ? (+d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid) :  Math.abs((+d.ticker.ask) - (+d.ticker.bid)))
+          finalLevel: 3,
+          level: 1,
+          prevLg: d3.max(dataset, d => +d.ticker.ask > +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid),
+          prevSm: d3.min(dataset, d => this.state.graphs.spread.hidden ? (+d.ticker.ask < +d.ticker.bid ? +d.ticker.ask : +d.ticker.bid) :  Math.abs((+d.ticker.ask) - (+d.ticker.bid)))
         });
         const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks);
         const xAxisGen = d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%H:%M"));
     
         const yAxis = this.state.graphG
-                        .append("g")
-                        .call(yAxisGen)
-                        .attrs({
-                            "class": "y-axis"
-                        });
+          .append("g")
+          .call(yAxisGen)
+          .attrs({
+            "class": "y-axis"
+          });
         const xAxis = this.state.graphG
-                        .append("g")
-                        .call(xAxisGen)
-                        .attrs({
-                            "transform": `translate(0, ${height})`,
-                            "class": "x-axis"
-                        });
+          .append("g")
+          .call(xAxisGen)
+          .attrs({
+            "transform": `translate(0, ${height})`,
+            "class": "x-axis"
+          });          
     }
     updateLines(dataset) {
         if(!dataset) {
@@ -73,9 +73,10 @@ export default class LineCharts extends React.Component {
         this.makeScales(dataset, width, height);
         // update basic graph
         
-        for(let key in this.state.graphs) {
-            this.state.graphs[key].update(dataset);
-        }
+        const graphs = this.state.graphs;
+        Object.keys(graphs).map(key => {
+          graphs[key].update(dataset);
+        });
 
         // update axises
         const yTicks = formTickValues({
@@ -173,10 +174,11 @@ export default class LineCharts extends React.Component {
         })
     }
     toggleGraphs(id, active) {
-        d3.select("#graph-type--" + id)
-        .transition()
-        .duration(600)
-        .style("opacity", active ? 0 : 1);
+        this.state.svg
+          .select("#graph-type--" + id)
+          .transition()
+          .duration(600)
+          .style("opacity", active ? 0 : 1);
         
         const toggledGraph = this.state.graphs[id];
         toggledGraph.hidden = active;
@@ -190,10 +192,10 @@ export default class LineCharts extends React.Component {
         this.WaitMessage.hide();
     }
     render() {
-        return (
-            <div ref={div => this.container = div} className="graph">
-                <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} msg="Wait, please"/>
-            </div>
-        );
+      return (
+        <div ref={div => this.svgDiv = div} className="graph">
+          <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} msg="Wait, please"/>
+        </div>
+      );
     }
 };
