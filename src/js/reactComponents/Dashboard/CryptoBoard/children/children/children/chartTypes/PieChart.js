@@ -75,13 +75,13 @@ export default class PieChart extends React.Component {
       .data(dataset, d => d.data.id);
     // delete obsolete arcs
     arcs.exit().remove();
-    
+   
     // add missing arcs
     const enterArcs = arcs.enter()
       .append("g")
       .attr("class", "arc")
       .attr("data-currency-id", d => d.data.id);
-    
+  
     // insert nested elements into each new arc
     enterArcs.append("path");
     enterArcs.append("text");
@@ -96,7 +96,6 @@ export default class PieChart extends React.Component {
       .transition()
       .duration(this.state.duration)
       .attrTween("d", (d, _i, el) => this.arcTween(el[0]._current));
-
 
     const newPaths = enterArcs.selectAll("path");
 
@@ -130,16 +129,21 @@ export default class PieChart extends React.Component {
 
     arcs.selectAll("text")
       .each((d, _i, el) => updateChildData(d, el))
-      .attr("transform", setTransform)
+      .attr("transform", setTransform);
+
+    
+    const sign = this.props.determineSign(comparisionField);
 
     arcs.selectAll("tspan:last-child")
-      .text((_d, _i, el) => el[0].parentElement._current.data[comparisionField]);
+      .html((_d, _i, el) => {
+        return sign + el[0].parentElement._current.data[comparisionField]
+      });
     
     
     const text = enterArcs.selectAll("text")
       .each((d, _i, el) => updateChildData(d, el))
       .style("font-size", "16px")
-      .style("opacity", 0);    
+      .style("opacity", 0)
 
     text
       .append("tspan")
@@ -159,7 +163,9 @@ export default class PieChart extends React.Component {
         })
         .style("font-size", ".75em")
       .merge(arcs.selectAll("tspan:last-child"))
-        .text((_d, _i, el) => el[0].parentElement._current.data[comparisionField]);
+        .text((_d, _i, el) => { 
+          return sign + el[0].parentElement._current.data[comparisionField]
+        });
 
     text
       .merge(arcs.selectAll("text"))

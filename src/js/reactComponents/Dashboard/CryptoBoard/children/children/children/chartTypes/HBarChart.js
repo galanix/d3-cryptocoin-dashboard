@@ -112,8 +112,8 @@ export default class HBarChart extends React.Component {
     hiddenAxis.attr("transform", `translate(0, ${fixedHeight})`)
       .call(
         d3.axisBottom(this.xScale)
-            .tickValues(dataset.map(d => +d[comparisionField]))
-            .tickFormat(d3.format(".2f"))
+          .tickValues(dataset.map(d => +d[comparisionField]))
+          .tickFormat(d3.format(".2f"))
        );
 
     hiddenAxis.selectAll(".tick")
@@ -141,26 +141,26 @@ export default class HBarChart extends React.Component {
         .transition()
         .duration(duration)
         .attrs({
-            "fill":  d => this.props.color(+d[comparisionField]),                    
-            "height": () => this.yScale.bandwidth(),
-            "y": d => this.yScale(d.id),
-            "width": d => {                         
-                let res = Math.abs(this.xScale(+d[comparisionField]) - this.xScale(0));
-                if(res > fixedWidth) {
-                    res = fixedWidth;
-                }
-                return res;
-            },
-            "x": d => {
-                let val = 0;
-                if(min > 0) {
-                    val = min;
-                }
-                if(max < 0) {
-                    val = max;
-                }
-                return this.xScale(Math.min(val, +d[comparisionField]))
+          "fill":  d => this.props.color(+d[comparisionField]),                    
+          "height": () => this.yScale.bandwidth(),
+          "y": d => this.yScale(d.id),
+          "width": d => {
+            let res = Math.abs(this.xScale(+d[comparisionField]) - this.xScale(0));
+            if(res > fixedWidth) {
+                res = fixedWidth;
             }
+            return res;
+          },
+          "x": d => {
+            let val = 0;
+            if(min > 0) {
+                val = min;
+            }
+            if(max < 0) {
+                val = max;
+            }
+            return this.xScale(Math.min(val, +d[comparisionField]))
+          }
         });
     
     this.props.drawCurrencySign(comparisionField, g, {axis: "x", x: fixedWidth + 15, y: 15});

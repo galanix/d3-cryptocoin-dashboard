@@ -217,9 +217,11 @@ export default class LineChart extends React.Component {
     }
     hidePreloader() {
       this.WaitMessage.hide();
-    }    
+    } 
     handleHoverEvtHandler(id, mouseOut) {
       const d = this.props.dataset.find(item => item.id === id);
+      const comparisionField = this.props.comparisionField;
+      const sign = this.props.determineSign(comparisionField);
 
       // mw - modal window
       if(mouseOut) {
@@ -228,12 +230,12 @@ export default class LineChart extends React.Component {
         const tooltip = this.state.g.append("g").attr("class", "tooltip--mw");
         
         tooltip.append("text")
-            .datum(d)                
-            .attr("stroke", "#364B5F")
-            .attr("x", d => this.xScale(d.id))
-            .attr("y", d => this.yScale(+d[this.props.comparisionField]) - 15)
-            .attr("text-anchor", "middle")
-            .html(d => this.props.currentSign + d[this.props.comparisionField]);
+          .datum(d)
+          .attr("stroke", "#364B5F")
+          .attr("x", d => this.xScale(d.id))
+          .attr("y", d => this.yScale(+d[comparisionField]) - 15)
+          .attr("text-anchor", "middle")
+            .html(d => sign + d[comparisionField]);
     
         const appendCircle = (fill, radius, stroke = "#364B5F", strokeWidth = 2) => {
           tooltip.append("circle")
@@ -243,14 +245,14 @@ export default class LineChart extends React.Component {
             .attr("stroke", stroke)
             .attr("stroke-width", strokeWidth)
             .attr("cx", d => this.xScale(d.id))
-            .attr("cy", d => this.yScale(+d[this.props.comparisionField]));
+            .attr("cy", d => this.yScale(+d[comparisionField]));
         }
                     
         if(this.props.type === "line-scatter") {
-            appendCircle("#169F85", 8, "#169F85");
+          appendCircle("#169F85", 8, "#169F85");
         } else {
-            appendCircle("#364B5F", 4);
-            appendCircle("none", 8);
+          appendCircle("#364B5F", 4);
+          appendCircle("none", 8);
         }            
       }
     }

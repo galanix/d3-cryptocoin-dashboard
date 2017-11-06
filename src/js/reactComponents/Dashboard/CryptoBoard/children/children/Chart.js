@@ -19,6 +19,7 @@ export default class Chart extends React.Component {
       };
       this.drawCurrencySign = this.drawCurrencySign.bind(this);
       this.didPropsUpdate = this.didPropsUpdate.bind(this);
+      this.determineSign = this.determineSign.bind(this);
   }
   componentDidMount() {
       window.addEventListener("resize", () => {
@@ -39,38 +40,40 @@ export default class Chart extends React.Component {
       const colorValues = keys.map(key => this.props.hashTable[key].color);
       const color = d3.scaleOrdinal(colorValues);
       const props = {
-        color: color.bind(this),
         dataset,
         width,
         height,
         comparisionField,
         type,
-        drawCurrencySign: this.drawCurrencySign,
+        color: color.bind(this),
+        currentSign: this.props.currentSign,
+        determineSign: this.determineSign,
+        drawCurrencySign: this.drawCurrencySign,        
         didPropsUpdate: this.didPropsUpdate
       };
 
       switch(type) {
         case "pie":
         case "pie-donut":
-            ChartJSX = ( <PieChart {...props} /> );
-            break;
+          ChartJSX = ( <PieChart {...props} /> );
+          break;
 
         case "bar":
-            ChartJSX = ( <BarChart {...props} /> );
-            break;
+          ChartJSX = ( <BarChart {...props} /> );
+          break;
 
         case "hbar":
-            ChartJSX = ( <HBarChart {...props} /> );
-            break;
+          ChartJSX = ( <HBarChart {...props} /> );
+          break;
 
         case "line":
         case "line-scatter":
         case "line-area":
-            ChartJSX = ( <LineChart {...props} /> );
-            break;
+          ChartJSX = ( <LineChart {...props} /> );
+          break;
 
         default:
-            console.warn("chart has not been rendered");
+          console.warn("chart has not been rendered");
       }
     
       const callback = () => {
@@ -89,17 +92,19 @@ export default class Chart extends React.Component {
       callback();
     }
   }
-  drawCurrencySign(comparisionField, g, pos = {axis: "y"}) {
-    let sign = this.props.currentSign;
-
+  determineSign(comparisionField) {
     if(
       comparisionField.indexOf("price") === -1
       && comparisionField.indexOf("24h_volume") === -1
       && comparisionField.indexOf("market_cap") === -1
     ) {
-        sign = "%";
+        return "%";
     }
 
+    return this.props.currentSign;
+  }
+  drawCurrencySign(comparisionField, g, pos = {axis: "y"}) {
+    const sign = this.determineSign(comparisionField);
     const yAxis = g.select("g.axis--" + pos.axis);        
     
     if(!yAxis.select("g.currency-sign").node()) {
