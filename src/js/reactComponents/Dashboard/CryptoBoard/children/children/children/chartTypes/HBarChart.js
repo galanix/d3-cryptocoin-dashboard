@@ -2,8 +2,6 @@ import React from "react";
 import * as d3 from "d3";
 import {attrs} from "d3-selection-multi";
 
-import {twoArraysAreEqual} from "../../../../../../../helperFunctions.js";
-
 export default class HBarChart extends React.Component {
     constructor() {
         super();
@@ -16,13 +14,8 @@ export default class HBarChart extends React.Component {
         this.renderSVG();      
     }
     shouldComponentUpdate(nextProps) {
-         return !(
-            twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
-            nextProps.comparisionField === this.props.comparisionField &&
-            nextProps.type === this.props.type &&
-            nextProps.width === this.props.width  // width can not change without changing height
-        );
-    }    
+         return this.props.didPropsUpdate(nextProps, this.props);
+    }
     componentDidUpdate() {
         this.updateSVG();
     }
@@ -35,7 +28,7 @@ export default class HBarChart extends React.Component {
         this.setState({fixedWidth, fixedHeight}); // will need this variable later on
   
         svg.attr("width", this.props.width)
-            .attr("height", this.props.height)
+            .attr("height", this.props.height);
 
         this.yScale = d3.scaleBand()
             .range([fixedHeight, 0])

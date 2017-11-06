@@ -4,23 +4,17 @@ import {attrs} from "d3-selection-multi";
 
 import Legend from "../Legend.js";
 
-import {twoArraysAreEqual} from "../../../../../../../helperFunctions.js";
-
 export default class BarChart extends React.Component {
     constructor() {
       super();
       this.state = {};
+      this.handleHoverEvtHandler = this.handleHoverEvtHandler.bind(this)
     }
     componentDidMount() {
       this.renderSVG();      
     }
     shouldComponentUpdate(nextProps) {
-        return !(
-            twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
-            nextProps.comparisionField === this.props.comparisionField &&
-            nextProps.type === this.props.type &&
-            nextProps.width === this.props.width
-        );
+        return this.props.didPropsUpdate(nextProps, this.props);
     }
     componentDidUpdate() {
       this.updateSVG();
@@ -203,9 +197,9 @@ export default class BarChart extends React.Component {
     render() {
         return (
             <div>              
-              <svg ref={svg => this.svg = svg}></svg>             
+              <svg ref={svg => this.svg = svg}></svg>
               <Legend  ref={legend => this.legend = legend}
-                      onHoverHandler={this.handleHoverEvtHandler.bind(this)}
+                      onHoverHandler={this.handleHoverEvtHandler}
                       color={this.props.color}
                       comparisionField={this.props.comparisionField}
                       dataset={this.props.dataset}

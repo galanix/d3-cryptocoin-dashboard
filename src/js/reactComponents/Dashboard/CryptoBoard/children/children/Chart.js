@@ -2,12 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import * as d3 from "d3";
-import { attrs } from "d3-selection-multi";
+import {attrs} from "d3-selection-multi";
 
 import PieChart from "./children/chartTypes/PieChart.js";
 import BarChart from "./children/chartTypes/BarChart.js";
 import LineChart from "./children/chartTypes/LineChart.js";
 import HBarChart from "./children/chartTypes/HBarChart.js";
+
+import {twoArraysAreEqual} from "../../../../../../../helperFunctions.js";
 
 export default class Chart extends React.Component {
     constructor() {
@@ -15,15 +17,18 @@ export default class Chart extends React.Component {
         this.state = {
             duration: 300
         };
+        this.drawCurrencySign = this.drawCurrencySign.bind(this);
+        this.didPropsUpdate = this.didPropsUpdate.bind(this);
     }
     componentDidMount() {
-      window.addEventListener("resize", () => {          
+      window.addEventListener("resize", () => {
           if(!!this.state.prevType) {
               this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
           }
       });
     }
     renderChart(type, comparisionField, reMountForcefully) {
+        let ChartJSX = null;
         let width = Math.round(this.svgDiv.getBoundingClientRect().width);
         if(width > 600) {
             width = 600;
@@ -32,17 +37,17 @@ export default class Chart extends React.Component {
         const keys = Object.keys(this.props.hashTable);
         const dataset = keys.map(key => this.props.hashTable[key]);
         const colorValues = keys.map(key => this.props.hashTable[key].color);
-        const color = d3.scaleOrdinal(colorValues);            
+        const color = d3.scaleOrdinal(colorValues);
         const props = {
             color: color.bind(this),
             dataset,
             width,
             height,
-            comparisionField,            
+            comparisionField,
             type,
-            drawCurrencySign: this.drawCurrencySign.bind(this)
+            drawCurrencySign: this.drawCurrencySign,
+            didPropsUpdate: this.didPropsUpdate
         };
-        let ChartJSX = null;
 
         switch(type) {
             case "pie":
@@ -85,55 +90,58 @@ export default class Chart extends React.Component {
         }
     }
     drawCurrencySign(comparisionField, g, pos = {axis: "y"}) {
-        const duration = this.state.duration;
-        let sign = this.props.currentSign;        
+        let sign = this.props.currentSign;
 
         if(
-            comparisionField.indexOf("price") === -1 &&
-            comparisionField.indexOf("24h_volume") === -1 &&
-            comparisionField.indexOf("market_cap") === -1
+            comparisionField.indexOf("price") === -1
+            && comparisionField.indexOf("24h_volume") === -1
+            && comparisionField.indexOf("market_cap") === -1
         ) {
             sign = "%";
         }
 
-        const yAxis = g.select("g.axis--" + pos.axis);
+        const yAxis = g.select("g.axis--" + pos.axis);        
         
         if(!yAxis.select("g.currency-sign").node()) {
             yAxis.append("g")
-                .attrs({
-                    "class": "currency-sign",                    
-                })
+                .attr("class", "currency-sign")
                 .append("text")
-                .attrs({
-                    "fill": "#000",
-                    "font-size": "18",
-                    "x": pos.axis === "x" ? pos.x : "4",                    
-                });
+                    .attrs({
+                        "fill": "#000",
+                        "font-size": "18",
+                        "x": pos.axis === "x" ? pos.x : "4",                    
+                    });
         }
-        const text = g.select(".currency-sign text");
 
-        text            
+        const text = g.select(".currency-sign text");
+        const duration = this.state.duration;
+
+        text
             .transition()
             .duration(duration)
-            .attrs({
-                y: pos.axis === "x" ? "100" : "-100"
-            });        
+            .attr("y", pos.axis === "x" ? "100" : "-100");
 
         setTimeout(() => {
-            text         
-                .html(sign)    
+            text
+                .html(sign)
                 .transition()
                 .duration(duration)
-                .attrs({
-                    y: pos.axis === "x" ? pos.y : "-10"
-                });            
+                .attr("y", pos.axis === "x" ? pos.y : "-10");
         }, duration);
     }
+    didPropsUpdate(nextProps, currProps) {
+        return !(
+            twoArraysAreEqual(nextProps.dataset, currProps.dataset)
+            && nextProps.comparisionField === currProps.comparisionField
+            && nextProps.type === currProps.type
+            && nextProps.width === currProps.width  // width can not change without changing height
+        );
+    }
     render() {
-      return (
-        <div ref={div => this.svgDiv = div} className="graph">
-            { this.state.ChildChartJSX }
-        </div>
-      );
+        return (
+            <div ref={div => this.svgDiv = div} className="graph">
+                { this.state.ChildChartJSX }
+            </div>
+        );
     }
 }

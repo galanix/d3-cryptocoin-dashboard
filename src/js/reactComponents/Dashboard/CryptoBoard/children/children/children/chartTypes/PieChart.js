@@ -4,25 +4,19 @@ import * as d3 from "d3";
 import Legend from "../Legend.js";
 import WordLengthTester from "./children/WordLengthTester.js";
 
-import { twoArraysAreEqual } from "../../../../../../../helperFunctions.js";
-
 export default class PieChart extends React.Component {
   constructor() {
       super();
       this.state = { 
           duration: 300 
       };
+      this.handleHoverEvtHandler = this.handleHoverEvtHandler.bind(this);
   }
   componentDidMount() {
       this.renderSVG();
   }
   shouldComponentUpdate(nextProps) {
-      return !(
-          twoArraysAreEqual(nextProps.dataset, this.props.dataset)
-          && nextProps.comparisionField === this.props.comparisionField
-          && nextProps.type === this.props.type
-          && nextProps.width === this.props.width  // width can not change without changing height
-      );
+        return this.props.didPropsUpdate(nextProps, this.props);
   }  
   componentDidUpdate() {
       this.updateSVG();
@@ -68,146 +62,146 @@ export default class PieChart extends React.Component {
       });
   }
   updateSVG() {
-    this.pie.value(d => this.pieValueCallback()(d));
+      this.pie.value(d => this.pieValueCallback()(d));
 
-    const dataset = this.pie(this.props.dataset);
-    const comparisionField = this.props.comparisionField;
+      const dataset = this.pie(this.props.dataset);
+      const comparisionField = this.props.comparisionField;
 
-    const updateChildData = (d, el) => {
-        const new_d = dataset.find(item => item.data.id === d.data.id);
-        el[0]._current = new_d;
-    }
-    const arcs = this.state.g.selectAll(".arc")
-        .data(dataset, d => d.data.id);
-    // delete obsolete arcs
-    arcs.exit().remove();
-    
-    // add missing arcs
-    const enterArcs = arcs.enter()
-        .append("g")
-        .attr("class", "arc")
-        .attr("data-currency-id", d => d.data.id);
-    
-    // insert nested elements into each new arc
-    enterArcs.append("path");
-    enterArcs.append("text");
-    enterArcs.append("polyline");
-    enterArcs.merge(arcs);
-  
-    // update paths
-
-    arcs.selectAll("path")
-        .each((d, _i, el) => updateChildData(d, el))
-        .attr("fill", (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]))
-        .transition()
-        .duration(this.state.duration)
-        .attrTween("d", (d, _i, el) => this.arcTween(el[0]._current));
-
-
-    const newPaths = enterArcs.selectAll("path");
-
-    newPaths
-        .each((d, _i, el) => updateChildData(d, el))
-        .on("mouseover", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 1))
-        .on("mouseout", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 0))
-        .attr("fill", (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]))
-        .attr("stroke", "#fff")
-        .transition()
-        .duration(this.state.duration)
-        .attrTween("d", (_d, _i, el) => this.arcTween(el[0]._current));
-        
-    newPaths.merge(arcs.selectAll("path"));
-    
-    // UPDATE TEXT
-    const setTransform = (_d, _i, el) => {
-        const d = el[0]._current;
-        const pos = this.label.centroid(d);
-        const direction = this.midAngle(d) < Math.PI ? 1 : -1;
-        // determine polyline width and padd it
-        pos[0] = this.state.labelr * direction;
-        // determine the amount of space needed for word and padd it
-        if(direction <  1) {
-            const nameLength = this.WordLengthTester.getLengthOf(d.data.name);
-            const valueLength = this.WordLengthTester.getLengthOf(d.data[comparisionField]);
-            pos[0] -= nameLength < valueLength ? valueLength : nameLength;
-        }
-        return `translate(${pos})`;
-    };
-
-    arcs.selectAll("text")
-        .each((d, _i, el) => updateChildData(d, el))
-        .attr("transform", setTransform)
-
-    arcs.selectAll("tspan:last-child")
-        .text((_d, _i, el) => el[0].parentElement._current.data[comparisionField]);
-    
-    
-    const text = enterArcs.selectAll("text")
-        .each((d, _i, el) => updateChildData(d, el))
-        .style("font-size", "16px")
-        .style("opacity", 0);    
-
-    text
-        .append("tspan")
-            .attrs({
-              x: "0",
-              dy: "-0.35em",
-            })
-            .style("font-style", "italic")
-        .merge(arcs.selectAll("tspan:first-child"))
-            .text(d => d.data.name);
-
-    text
-        .append("tspan")
-            .attrs({
-              x: "0",
-              dy: "1.1em",
-            })
-            .style("font-size", ".75em")
-        .merge(arcs.selectAll("tspan:last-child"))
-            .text((_d, _i, el) => el[0].parentElement._current.data[comparisionField]);
-
-    text
-        .merge(arcs.selectAll("text"))
-        .attrs({
-            "transform": setTransform,
-            "text-anchor": (_d, _i, el) => this.midAngle(el[0]._current) / 2 > Math.PI ? "end" : "start",
-            stroke: (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]),
-        });
-
-    // update polyline
-    const setPoints = (_d, _i, el) => {
-        const d = el[0]._current;          
-        const pos = this.label.centroid(d);
-        const direction = this.midAngle(d) < Math.PI ? 1 : -1;
-        pos[0] = this.state.labelr * direction;
-        return [ this.path.centroid(d), this.label.centroid(d), pos ];
-    };
-
-    arcs.selectAll("polyline")
-        .each((d, _i, el) => updateChildData(d, el))
-        .attr("points", setPoints);
-
-    const enterPolyline = enterArcs.selectAll("polyline");
-
-    enterPolyline
-        .each((d, _i, el) => updateChildData(d, el))
-        .style("pointer-events", "none")
-        .style("opacity", 0)   
-        .merge(arcs.selectAll("polyline"))
-        .attrs({
-            stroke: (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]),
-            "stroke-width": 2,
-            fill: "none",
-            points: setPoints
-        });
-
-    setTimeout(() => {
-        enterPolyline.style("transition", `opacity ${this.state.duration / 1000}s ease-in`)
-        text.style("transition", `opacity ${this.state.duration / 1000}s ease-in`);
-    }, this.state.duration);
+      const updateChildData = (d, el) => {
+          const new_d = dataset.find(item => item.data.id === d.data.id);
+          el[0]._current = new_d;
+      }
+      const arcs = this.state.g.selectAll(".arc")
+          .data(dataset, d => d.data.id);
+      // delete obsolete arcs
+      arcs.exit().remove();
       
-    this.legend.build();
+      // add missing arcs
+      const enterArcs = arcs.enter()
+          .append("g")
+          .attr("class", "arc")
+          .attr("data-currency-id", d => d.data.id);
+      
+      // insert nested elements into each new arc
+      enterArcs.append("path");
+      enterArcs.append("text");
+      enterArcs.append("polyline");
+      enterArcs.merge(arcs);
+    
+      // update paths
+
+      arcs.selectAll("path")
+          .each((d, _i, el) => updateChildData(d, el))
+          .attr("fill", (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]))
+          .transition()
+          .duration(this.state.duration)
+          .attrTween("d", (d, _i, el) => this.arcTween(el[0]._current));
+
+
+      const newPaths = enterArcs.selectAll("path");
+
+      newPaths
+          .each((d, _i, el) => updateChildData(d, el))
+          .on("mouseover", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 1))
+          .on("mouseout", () => this.togglePie(d3.event.target.parentElement.getAttribute("data-currency-id"), 0))
+          .attr("fill", (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]))
+          .attr("stroke", "#fff")
+          .transition()
+          .duration(this.state.duration)
+          .attrTween("d", (_d, _i, el) => this.arcTween(el[0]._current));
+          
+      newPaths.merge(arcs.selectAll("path"));
+      
+      // UPDATE TEXT
+      const setTransform = (_d, _i, el) => {
+          const d = el[0]._current;
+          const pos = this.label.centroid(d);
+          const direction = this.midAngle(d) < Math.PI ? 1 : -1;
+          // determine polyline width and padd it
+          pos[0] = this.state.labelr * direction;
+          // determine the amount of space needed for word and padd it
+          if(direction <  1) {
+              const nameLength = this.WordLengthTester.getLengthOf(d.data.name);
+              const valueLength = this.WordLengthTester.getLengthOf(d.data[comparisionField]);
+              pos[0] -= nameLength < valueLength ? valueLength : nameLength;
+          }
+          return `translate(${pos})`;
+      };
+
+      arcs.selectAll("text")
+          .each((d, _i, el) => updateChildData(d, el))
+          .attr("transform", setTransform)
+
+      arcs.selectAll("tspan:last-child")
+          .text((_d, _i, el) => el[0].parentElement._current.data[comparisionField]);
+      
+      
+      const text = enterArcs.selectAll("text")
+          .each((d, _i, el) => updateChildData(d, el))
+          .style("font-size", "16px")
+          .style("opacity", 0);    
+
+      text
+          .append("tspan")
+              .attrs({
+                x: "0",
+                dy: "-0.35em",
+              })
+              .style("font-style", "italic")
+          .merge(arcs.selectAll("tspan:first-child"))
+              .text(d => d.data.name);
+
+      text
+          .append("tspan")
+              .attrs({
+                x: "0",
+                dy: "1.1em",
+              })
+              .style("font-size", ".75em")
+          .merge(arcs.selectAll("tspan:last-child"))
+              .text((_d, _i, el) => el[0].parentElement._current.data[comparisionField]);
+
+      text
+          .merge(arcs.selectAll("text"))
+          .attrs({
+              "transform": setTransform,
+              "text-anchor": (_d, _i, el) => this.midAngle(el[0]._current) / 2 > Math.PI ? "end" : "start",
+              stroke: (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]),
+          });
+
+      // update polyline
+      const setPoints = (_d, _i, el) => {
+          const d = el[0]._current;          
+          const pos = this.label.centroid(d);
+          const direction = this.midAngle(d) < Math.PI ? 1 : -1;
+          pos[0] = this.state.labelr * direction;
+          return [ this.path.centroid(d), this.label.centroid(d), pos ];
+      };
+
+      arcs.selectAll("polyline")
+          .each((d, _i, el) => updateChildData(d, el))
+          .attr("points", setPoints);
+
+      const enterPolyline = enterArcs.selectAll("polyline");
+
+      enterPolyline
+          .each((d, _i, el) => updateChildData(d, el))
+          .style("pointer-events", "none")
+          .style("opacity", 0)   
+          .merge(arcs.selectAll("polyline"))
+          .attrs({
+              stroke: (_d, _i, el) => this.props.color(el[0]._current.data[comparisionField]),
+              "stroke-width": 2,
+              fill: "none",
+              points: setPoints
+          });
+
+      setTimeout(() => {
+          enterPolyline.style("transition", `opacity ${this.state.duration / 1000}s ease-in`)
+          text.style("transition", `opacity ${this.state.duration / 1000}s ease-in`);
+      }, this.state.duration);
+        
+      this.legend.build();
   }
   midAngle(d) {
       return d.startAngle + (d.endAngle - d.startAngle) / 2;
@@ -253,13 +247,13 @@ export default class PieChart extends React.Component {
       const arc = arcs.find(d => d.getAttribute("data-currency-id") === id);
 
       try {
-        arc.getElementsByTagName("text")[0].style.opacity = opacityVal;
-        arc.getElementsByTagName("polyline")[0].style.opacity = opacityVal;
+            arc.getElementsByTagName("text")[0].style.opacity = opacityVal;
+            arc.getElementsByTagName("polyline")[0].style.opacity = opacityVal;
       } catch(error) {
-        throw {
-          type: "ElementNotFound",
-          msg: "Arc is not defined"
-        };
+            throw {
+            type: "ElementNotFound",
+            msg: "Arc is not defined"
+            };
       }
 
       const show = item => { if(item !== arc) { item.style.opacity = 0.25; } };
@@ -275,7 +269,7 @@ export default class PieChart extends React.Component {
             <WordLengthTester ref={div => this.WordLengthTester = div} />
             <svg ref={svg => this.svg = svg}></svg>
             <Legend  ref={legend => this.legend = legend}
-                      onHoverHandler={this.handleHoverEvtHandler.bind(this)}
+                      onHoverHandler={this.handleHoverEvtHandler}
                       color={this.props.color}
                       comparisionField={this.props.comparisionField}
                       dataset={this.props.dataset}

@@ -7,7 +7,7 @@ import Legend from "../Legend.js";
 
 import Graph from "../../../../../../../components/Graph.js";
 
-import { formTickValues, twoArraysAreEqual } from "../../../../../../../helperFunctions.js";
+import {formTickValues} from "../../../../../../../helperFunctions.js";
 
 export default class LineChart extends React.Component {
     constructor() {
@@ -21,12 +21,7 @@ export default class LineChart extends React.Component {
         this.renderSVG();      
     }    
     shouldComponentUpdate(nextProps) {
-      return !(
-        twoArraysAreEqual(nextProps.dataset, this.props.dataset) &&
-        nextProps.comparisionField === this.props.comparisionField &&
-        nextProps.type === this.props.type &&
-        nextProps.width === this.props.width  // height depends on width
-      );
+        return this.props.didPropsUpdate(nextProps, this.props);
     }   
     componentDidUpdate() {
         this.updateSVG();
@@ -255,8 +250,7 @@ export default class LineChart extends React.Component {
             } else {
                 appendCircle("#364B5F", 4);
                 appendCircle("none", 8);
-            }
-            
+            }            
         }
     }
     render() {
