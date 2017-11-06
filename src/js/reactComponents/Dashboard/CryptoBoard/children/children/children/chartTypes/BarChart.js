@@ -14,7 +14,7 @@ export default class BarChart extends React.Component {
       this.renderSVG();      
     }
     shouldComponentUpdate(nextProps) {
-        return this.props.didPropsUpdate(nextProps, this.props);
+      return this.props.didPropsUpdate(nextProps, this.props);
     }
     componentDidUpdate() {
       this.updateSVG();
@@ -70,61 +70,61 @@ export default class BarChart extends React.Component {
       this.xScale.domain(indices);
      
       g.select("g.axis--x")
-          .call(d3.axisBottom(this.xScale).tickValues(indices))
-          .transition()
-          .duration(300)
-          .style("shape-rendering", "crispEdges");
+        .call(d3.axisBottom(this.xScale).tickValues(indices))
+        .transition()
+        .duration(300)
+        .style("shape-rendering", "crispEdges");
 
       g.select(".bar .axis--x").selectAll(".tick")
-          .data(dataset)
-          .attr("data-currency-id", d => d.id)
-          .attr("data-index", (_d, i) => ++i);
+        .data(dataset)
+        .attr("data-currency-id", d => d.id)
+        .attr("data-index", (_d, i) => ++i);
 
       const zerothAxis = g.select("g.axis--zero");
 
       zerothAxis
-          .attr("transform", `translate(0, ${this.yScale(0)})`)
-          .style("opacity", 0.4)
-          .transition()
-          .duration(300)
-          .call(d3.axisBottom(this.xScale));
+        .attr("transform", `translate(0, ${this.yScale(0)})`)
+        .style("opacity", 0.4)
+        .transition()
+        .duration(300)
+        .call(d3.axisBottom(this.xScale));
 
       zerothAxis.selectAll("text")
           .style("opacity", 0);
 
 
       g.select("g.axis--y")
-          .transition()
-          .duration(300)
-          .call(d3.axisLeft(this.yScale).ticks(10));
+        .transition()
+        .duration(300)
+        .call(d3.axisLeft(this.yScale).ticks(10));
 
       const rects = this.state.g.selectAll("rect")
-          .data(dataset);
+        .data(dataset);
         
       rects
-          .attr("y", this.yScale(min))
-          .attr("height", this.state.fixedHeight - this.yScale(min));
+        .attr("y", this.yScale(min))
+        .attr("height", this.state.fixedHeight - this.yScale(min));
 
       rects
-          .exit()
-          .remove();
+        .exit()
+        .remove();
 
       rects
-          .enter()
-          .append("rect")
-          .merge(rects)          
-            .on("mouseover", d => this.toggleBar(d3.event.target.getAttribute("data-currency-id"), d, false))
-            .on("mouseout", d => this.toggleBar(d3.event.target.getAttribute("data-currency-id"), d, true))
-            .transition()
-            .duration(300)
-            .attrs({
-                "fill":  d => this.props.color(+d[comparisionField]),
-                "data-currency-id": d => d.id,
-                "width": () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
-                "x": (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
-                "y": d => +d[comparisionField] < 0 ? (this.yScale(0)) : this.yScale(+d[comparisionField]),
-                "height": d => Math.abs(this.yScale(+d[comparisionField]) - (this.yScale(0))),
-            });
+        .enter()
+        .append("rect")
+        .merge(rects)          
+        .on("mouseover", d => this.toggleBar(d3.event.target.getAttribute("data-currency-id"), d, false))
+        .on("mouseout", d => this.toggleBar(d3.event.target.getAttribute("data-currency-id"), d, true))
+        .transition()
+        .duration(300)
+        .attrs({
+            "fill":  d => this.props.color(+d[comparisionField]),
+            "data-currency-id": d => d.id,
+            "width": () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
+            "x": (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
+            "y": d => +d[comparisionField] < 0 ? (this.yScale(0)) : this.yScale(+d[comparisionField]),
+            "height": d => Math.abs(this.yScale(+d[comparisionField]) - (this.yScale(0))),
+        });
           
       this.props.drawCurrencySign(comparisionField, g);
       this.legend.build();
@@ -134,7 +134,7 @@ export default class BarChart extends React.Component {
       const rects = Array.from(this.state.g.selectAll(".bar rect").nodes());
       
       const elementInArray = d => {
-          return d.getAttribute("data-currency-id") === id;
+        return d.getAttribute("data-currency-id") === id;
       };
 
       const tick = xTicks.find(elementInArray);
@@ -153,58 +153,58 @@ export default class BarChart extends React.Component {
       rects.forEach(display);
 
       const onMouseMove = ({ text, innerHTML, styles }) => {          
-          for(let prop in styles) {
-              text.style[prop] = styles[prop];
-          }
-          text.innerHTML = innerHTML;
+        for(let prop in styles) {
+        text.style[prop] = styles[prop];
+        }
+        text.innerHTML = innerHTML;
       };
       const text = tick.getElementsByTagName("text")[0];
 
       if(mouseOut) {
-          onMouseMove({
-              text,
-              innerHTML: tick.getAttribute("data-index"),
-              styles: {
-                  fontSize: "1em",
-                  fill: "#73879C",
-                  fontWeight: "normal" 
-              }
-          });
+        onMouseMove({
+          text,
+          innerHTML: tick.getAttribute("data-index"),
+          styles: {
+              fontSize: "1em",
+              fill: "#73879C",
+              fontWeight: "normal" 
+          }
+        });
       } else {
-          onMouseMove({
-              text,
-              innerHTML: `
-                  <tspan x="0">${d.name}</tspan>
-                  <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
-              `,
-              styles: { 
-                  fontSize: "1.5em", 
-                  fill: this.props.color(+d[this.props.comparisionField]) , 
-                  fontWeight: "bold" 
-              }
-          });
+        onMouseMove({
+          text,
+          innerHTML: `
+              <tspan x="0">${d.name}</tspan>
+              <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
+          `,
+          styles: { 
+              fontSize: "1.5em", 
+              fill: this.props.color(+d[this.props.comparisionField]) , 
+              fontWeight: "bold" 
+          }
+        });
       }
     }
     handleHoverEvtHandler(opacityVal, color, d) {
-        let item = d3.event.target;
-        if(item.tagName !== "DIV") item = item.parentElement;    
-    
-        item.getElementsByTagName("span")[1].style.color = color;
-    
-        const id = item.getAttribute("data-currency-id");        
-        this.toggleBar(id, d, opacityVal !== 1);
+      let item = d3.event.target;
+      if(item.tagName !== "DIV") item = item.parentElement;    
+
+      item.getElementsByTagName("span")[1].style.color = color;
+
+      const id = item.getAttribute("data-currency-id");        
+      this.toggleBar(id, d, opacityVal !== 1);
     }
     render() {
-        return (
-            <div>              
-              <svg ref={svg => this.svg = svg}></svg>
-              <Legend  ref={legend => this.legend = legend}
-                      onHoverHandler={this.handleHoverEvtHandler}
-                      color={this.props.color}
-                      comparisionField={this.props.comparisionField}
-                      dataset={this.props.dataset}
-              />            
-            </div>
-        );
+      return (
+        <div>              
+          <svg ref={svg => this.svg = svg}></svg>
+          <Legend ref={legend => this.legend = legend}
+                  onHoverHandler={this.handleHoverEvtHandler}
+                  color={this.props.color}
+                  comparisionField={this.props.comparisionField}
+                  dataset={this.props.dataset}
+          />            
+        </div>
+      );
     }
 }
