@@ -3,10 +3,7 @@ import React from "react";
 import Dropdown from "../../../../General/Dropdown";
 import ButtonGroup from "../../../../General/ButtonGroup";
 
-export default class Filters extends React.Component {
-    constructor() {
-        super();                
-    }
+export default class Filters extends React.Component {    
     render() {
         return (
             <section className="table-filters col-md-12 col-sm-12 col-xs-12">
