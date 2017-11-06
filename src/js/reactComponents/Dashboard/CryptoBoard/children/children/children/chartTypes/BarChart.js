@@ -26,9 +26,8 @@ export default class BarChart extends React.Component {
       this.setState({ fixedHeight, fixedWidth }); // will need this variable later on
       const svg = d3.select(this.svg);
 
-      svg.attr("width", this.props.width);
-      svg.attr("height", this.props.height);
-
+      svg.attr("width", this.props.width)
+        .attr("height", this.props.height);
       
       this.yScale = d3.scaleLinear()
         .range([fixedHeight, 0])
@@ -90,8 +89,10 @@ export default class BarChart extends React.Component {
         .call(d3.axisBottom(this.xScale));
 
       zerothAxis.selectAll("text")
-          .style("opacity", 0);
+        .style("opacity", 0);
 
+      zerothAxis.selectAll("line")
+        .style("opacity", 0);
 
       g.select("g.axis--y")
         .transition()
@@ -128,7 +129,7 @@ export default class BarChart extends React.Component {
           
       this.props.drawCurrencySign(comparisionField, g);
       this.legend.build();
-    }    
+    }
     toggleBar(id, d, mouseOut) {
       const xTicks = Array.from(this.svg.parentElement.parentElement.querySelectorAll(".axis--x .tick"));
       const rects = Array.from(this.state.g.selectAll(".bar rect").nodes());
@@ -152,10 +153,10 @@ export default class BarChart extends React.Component {
       const display = mouseOut ? hide : show;
       rects.forEach(display);
 
-      const onMouseMove = ({ text, innerHTML, styles }) => {          
-        for(let prop in styles) {
-        text.style[prop] = styles[prop];
-        }
+      const onMouseMove = ({ text, innerHTML, styles }) => {
+        Object.keys(styles).map(prop => {
+          text.style[prop] = styles[prop];
+        });      
         text.innerHTML = innerHTML;
       };
       const text = tick.getElementsByTagName("text")[0];
@@ -165,22 +166,22 @@ export default class BarChart extends React.Component {
           text,
           innerHTML: tick.getAttribute("data-index"),
           styles: {
-              fontSize: "1em",
-              fill: "#73879C",
-              fontWeight: "normal" 
+            fontSize: "1em",
+            fill: "#73879C",
+            fontWeight: "normal" 
           }
         });
       } else {
         onMouseMove({
           text,
           innerHTML: `
-              <tspan x="0">${d.name}</tspan>
-              <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
+            <tspan x="0">${d.name}</tspan>
+            <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
           `,
           styles: { 
-              fontSize: "1.5em", 
-              fill: this.props.color(+d[this.props.comparisionField]) , 
-              fontWeight: "bold" 
+            fontSize: "1.5em", 
+            fill: this.props.color(+d[this.props.comparisionField]) , 
+            fontWeight: "bold" 
           }
         });
       }
