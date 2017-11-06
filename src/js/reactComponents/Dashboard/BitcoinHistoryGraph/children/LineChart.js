@@ -8,96 +8,104 @@ import WaitMessage from "../../../General/WaitMessage";
 import Graph from "../../../../components/Graph";
 import { formProperDateFormat, removeDuplicates, formTickValues } from "../../../../helperFunctions";
 
-export default class LineChart extends React.Component {
-    constructor() {
-      super();
-    }
+export default class LineChart extends React.Component {    
     componentDidMount() {
       this.hidePreloader();
     }
     buildLine(dataset) {
+      const svg = d3.select(this.svg);
       const margin = this.props.model.margin;
       const width = this.props.model.width - margin.left - margin.right; // get initial width from model
       const height = this.props.model.width * 0.6 - margin.top - margin.bottom;
+      // construct basic graph
+      const createGraphObj = () => {
+        const lineGraph = new Graph({
+          type: "bitcoin-rate",
+          color: "#c9302c",
+          hidden: false,
+          lineFunction:  d3.line()
+                          .x(d => this.xScale(d.time.getTime()))
+                          .y(d => this.yScale(d.currencyValue)),
+          container: this.state.g,
+        });
+        lineGraph.append(dataset);
+        this.setState({ 
+          lineGraph,
+        });
+      };
+      // add axises
+      const addAxises = () => {
+        const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
+        const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
+        const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
+
+        const yAxis = this.state.g
+                      .append("g")
+                      .call(yAxisGen)
+                      .attrs({
+                        "class": "y-axis"
+                      });
+        const xAxis = this.state.g
+                        .append("g")
+                        .call(xAxisGen)
+                        .attrs({
+                          "transform": `translate(0, ${height})`,
+                          "class": "x-axis"
+                        });
+      };
 
       this.makeScales(dataset, width, height);
-      this.setState({
-        svg: d3.select(this.svgDiv)
-               .append("svg")
-               .attrs({
-                  width: width + margin.left + margin.right,
-                  height: height + margin.top + margin.bottom,
-                  id: "historical-data"
-                })
-        }, () => {
-          this.setState(prevState => ({
-            graphG: prevState.svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`)
-          }));          
-        });
-        // construct basic graph
-      const lineGraph = new Graph({
-        type: "bitcoin-rate",
-        color: "#c9302c",
-        hidden: false,
-        lineFunction:  d3.line()
-                        .x(d => this.xScale(d.time.getTime()))
-                        .y(d => this.yScale(d.currencyValue)),
-        container: this.state.graphG,
+
+      svg.attrs({
+        width: width + margin.left + margin.right,
+        height: height + margin.top + margin.bottom,
+        id: "historical-data"
       });
-      lineGraph.append(dataset);
-      this.setState({ lineGraph });
-      // add axises
-    
-      const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
-      const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
-      const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
-      const yAxis = this.state.graphG
-                    .append("g")
-                    .call(yAxisGen)
-                    .attrs({
-                      "class": "y-axis"
-                    });
-      const xAxis = this.state.graphG
-                      .append("g")
-                      .call(xAxisGen)
-                      .attrs({
-                        "transform": `translate(0, ${height})`,
-                        "class": "x-axis"
-                      });
+      this.setState({
+        g: svg.append("g")
+             .attr("transform", `translate(${margin.left}, ${margin.top})`)
+      }, () => {
+        createGraphObj();
+        addAxises();
 
-      this.drawCurrencySign();
-      this.createHashTable(dataset, this.addMovableParts.bind(this)); // add movable after it        
+        this.drawCurrencySign();
+        this.createHashTable(dataset, this.addMovableParts.bind(this)); // add movable after it 
+      });
     }
     updateLine(dataset) {
       if(!this.state) {
         this.buildLine(dataset);
       }
+
       // dataset has changed, need to update #historical-data graph
       const margin = this.props.model.margin;
-        // get previous svg width / height instead of assigning from model
-      const width = this.state.svg.attr("width") - margin.left - margin.right;
-      const height = this.state.svg.attr("height") - margin.top - margin.bottom;
+      const svg = d3.select(this.svg);
+      const g = this.state.g;
+      
+      // get previous svg width / height instead of assigning from model
+      const width = svg.attr("width") - margin.left - margin.right;
+      const height = svg.attr("height") - margin.top - margin.bottom;
 
       this.state.lineGraph.update(dataset);
+
       this.makeScales(dataset, width, height);
+
       // update axises
       const { yTicks, xTicks, xTickFormat } = this.determineTicks(dataset);
       const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTicks).tickFormat(d3.format(".2f"));
       const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTicks).tickFormat(d3.timeFormat(xTickFormat));
 
-      const yAxis = this.state.graphG
-                      .selectAll("g.y-axis")
-                      .transition()
-                      .duration(1000)
-                      .call(yAxisGen);
+      const yAxis = g.select("g.y-axis")
+        .transition()
+        .duration(1000)
+        .call(yAxisGen);
 
-      const xAxis = this.state.graphG
-                      .selectAll("g.x-axis")
-                      .transition()
-                      .duration(1000)
-                      .attr("transform", `translate(0, ${height})`)
-                      .call(xAxisGen);
+      const xAxis = g.select("g.x-axis")
+        .transition()
+        .duration(1000)
+        .attr("transform", `translate(0, ${height})`)
+        .call(xAxisGen);
 
       this.drawCurrencySign();
       this.createHashTable(dataset);               
@@ -151,7 +159,8 @@ export default class LineChart extends React.Component {
       };
     }
     drawCurrencySign() {
-      const yAxis = d3.select("g.y-axis");
+      const g = this.state.g;
+      const yAxis = g.select("g.y-axis");
     
       if(!yAxis.select("g#currency-sign").node()) {
         yAxis
@@ -167,109 +176,73 @@ export default class LineChart extends React.Component {
             "y": "-10"
         });
       }
-      const text = d3.select("#currency-sign text");
+
+      const text = g.select("#currency-sign text");
       text
         .transition()
         .duration(500)
         .attrs({
-        y: "-100"
+          y: "-100"
         });
       setTimeout(() => {
         text
-        .html(this.props.signs[this.props.model.filters.currency])
-        .transition()
-        .duration(500)
-        .attrs({
-            y: "-10"
-        })
+          .html(this.props.signs[this.props.model.filters.currency])
+          .transition()
+          .duration(500)
+          .attrs({
+              y: "-10"
+          })
       }, 500);
     }
     addMovableParts(dataset) {
-      const showDotsAndTooltip = ({ time, currencyValue }) => {
-        d3.selectAll(".dot")
-        .attrs({
-            cy: this.yScale(currencyValue),
-            cx: this.xScale(time.getTime())
-        })
-        .transition()
-        .duration(100)
-        .style("opacity", 0.9);
-        
-        const tooltip = d3.select("#history .tooltip")
-        .transition()
-        .duration(100)
-        .style("opacity", 0.9);
-                    
-        tooltip.node().innerHTML =
-        `<h4>${formProperDateFormat(time.getFullYear(), time.getMonth() + 1, time.getDate())}</h4>
-            <strong>Price: ${this.props.signs[this.props.model.filters.currency] + currencyValue.toFixed(2)}</strong>`;
-
-        tooltip
-        .style("left", this.xScale(time.getTime()) + parseInt(getComputedStyle(tooltip.node()).width) / 2 + "px")
-        .style("top", this.yScale(currencyValue) + "px");
-      };
-      const hideDotsAndTooltip = () => {
-        d3.select("#movable")
-        .attr("transform", `translate(-999, 0)`);
-    
-        d3.selectAll(".dot")         
-        .transition()
-        .duration(300)
-        .style("opacity", 0);
-    
-        d3.select("#history .tooltip")
-        .transition()
-        .duration(300)
-        .style("opacity", 0);
-      };     
+      const svg = d3.select(this.svg);
+      const g = this.state.g;
+      const margin = this.props.model.margin;      
       const lineFunction = d3.line()
-                            .x(d => 0)
-                            .y(d => this.yScale(d.currencyValue));
-      const margin = this.props.model.margin;
+        .x(d => 0)
+        .y(d => this.yScale(d.currencyValue));
+        
+      const hoverG = g.append("g");        
+      
+      hoverG.append("path")
+        .attrs({
+          "d": lineFunction(dataset),
+          "stroke": "#717A84",
+          "stroke-width": 2,
+          "fill": "none",
+          "id": "movable",
+          "transform": `translate(-100, 0)`,
+        });
+        
+      hoverG.append("circle")
+        .attrs({
+          "r": 5,
+          "class": "dot",
+          "fill": "#26B99A"
+        })
+        .style("opacity", 0);      
 
-      this.setState(prevState => ({
-        hoverG: prevState.svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`)
-      }), () => {
-        this.state.hoverG.append("path")
-            .attrs({
-              "d": lineFunction(dataset),
-              "stroke": "#717A84",
-              "stroke-width": 2,
-              "fill": "none",
-              "id": "movable",
-              "transform": `translate(-100, 0)`,
-            });
-        this.state.hoverG.append("circle")
-            .attrs({
-              "r": 5,
-              "class": "dot",
-              "fill": "#26B99A"
-            })
-            .style("opacity", 0);
-      });
-
-      d3.select("#history .graph").append("div") // adding tooltip
+      d3.select(this.container).append("div") // adding tooltip
         .attr("class", "tooltip")
         .style("opacity", 0);
             
-      this.state.svg.on("mousemove", () => {
+      svg.on("mousemove", () => {
         if(this.state.timeoutId) { 
-            clearTimeout(this.state.timeoutId); 
+          clearTimeout(this.state.timeoutId); 
         } // reset time
 
-        const svgDOMRect = this.state.svg.node().getBoundingClientRect();
+        const svgDOMRect = svg.node().getBoundingClientRect();
         const offsetLeft = svgDOMRect.left;
         const svgWidth = svgDOMRect.width;
 
+        const hashTable = this.state.hashTable;
         let xPos = Math.round(d3.event.clientX - offsetLeft - margin.left);
-        const hashTable = this.state.hashTable;            
-
-        // 10 is for padding
+              
         if(
-            xPos > svgWidth - margin.right - margin.left + 10
+            xPos > svgWidth - margin.right - margin.left + 10 // 10 is for padding
             || xPos < 0
         ) {
-          hideDotsAndTooltip();
+          this.hideDotsAndTooltip();
           return;
         }
 
@@ -278,11 +251,11 @@ export default class LineChart extends React.Component {
         let valueKey;
 
         // looks for closest point relative to the mouse
-        while( !hashTable["" + leftDist] && leftDist < (svgWidth + 10) ) {
-          leftDist++;
+        while( !hashTable[String(leftDist)] && leftDist < (svgWidth + 10) ) {
+          leftDist += 1;
         }
-        while( !hashTable["" + rightDist] && rightDist > -10 ) {
-          rightDist--;
+        while( !hashTable[String(rightDist)] && rightDist > -10 ) {
+          rightDist -= 1;
         }
         if(rightDist < leftDist) {
           valueKey = rightDist;
@@ -291,21 +264,64 @@ export default class LineChart extends React.Component {
           valueKey = leftDist;
         }
         
-        const value = hashTable["" + valueKey];
+        const value = hashTable[String(valueKey)];
         if(!!value) {
-          showDotsAndTooltip(Object.assign({}, value));
+          this.showDotsAndTooltip(Object.assign({}, value));``
         } else {             
-          hideDotsAndTooltip();
+          this.hideDotsAndTooltip();
         }
 
-        d3.select("#movable")
+        g.select("#movable")
            .attrs({
              "transform": `translate(${xPos}, 0)`,
            });
-
-        // tooltip will disappear if cursor gets inactive - instead of using mouseout that works inconsistently in Firefox
-        this.setState({ timeoutId: setTimeout(hideDotsAndTooltip, 3000) });
+        
+        this.setState({ timeoutId: setTimeout(() => this.hideDotsAndTooltip(), 3000) });
       });
+    }
+    showDotsAndTooltip({ time, currencyValue }) {
+      // debugger;
+      const g = this.state.g;
+
+      g.selectAll(".dot")
+        .attrs({
+            cy: this.yScale(currencyValue),
+            cx: this.xScale(time.getTime())
+        })
+        .transition()
+        .duration(100)
+        .style("opacity", 0.9);
+      
+      const tooltip = d3.select(this.container).select(".tooltip");
+
+      tooltip
+        .transition()
+        .duration(100)
+        .style("opacity", 0.9);
+                  
+      tooltip.html(
+        `<h4>${formProperDateFormat(time.getFullYear(), time.getMonth() + 1, time.getDate())}</h4>
+         <strong>Price: ${this.props.signs[this.props.model.filters.currency] + currencyValue.toFixed(2)}</strong>`);
+
+      tooltip
+        .style("left", this.xScale(time.getTime()) + parseInt(getComputedStyle(tooltip.node()).width) / 2 + "px")
+        .style("top", this.yScale(currencyValue) + "px");
+    }
+    hideDotsAndTooltip() {
+      const g = this.state.g;
+
+      g.select("#movable")
+        .attr("transform", `translate(-999, 0)`);
+  
+      g.selectAll(".dot")
+        .transition()
+        .duration(300)
+        .style("opacity", 0);
+  
+      d3.select(this.container).select(".tooltip")
+        .transition()
+        .duration(300)
+        .style("opacity", 0);
     }
     showPreloader() {
       this.WaitMessage.show();
@@ -315,7 +331,8 @@ export default class LineChart extends React.Component {
     }
     render() {
       return (
-        <div className="graph" ref={div => this.svgDiv = div}>
+        <div className="graph" ref={container => this.container = container}>
+          <svg ref={svg => this.svg = svg}></svg>
           <WaitMessage ref={WaitMessage => this.WaitMessage = WaitMessage} msg="Wait, please"/>
         </div>
       );

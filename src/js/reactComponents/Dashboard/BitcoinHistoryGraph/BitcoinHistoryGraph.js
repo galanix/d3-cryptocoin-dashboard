@@ -8,7 +8,7 @@ import ButtonGroup from "../../General/ButtonGroup";
 import LineChart from "./children/LineChart";
 
 // HELPER FUNCTIONS
-import { formProperDateFormat, createDateObj, scaleGraphSize } from "../../../helperFunctions";
+import { formProperDateFormat, scaleGraphSize } from "../../../helperFunctions";
 
 export default class BitcoinHistoryGraph extends React.Component {
   constructor() {
@@ -23,7 +23,8 @@ export default class BitcoinHistoryGraph extends React.Component {
     window.addEventListener("resize", this.scaleGraph.bind(this));
 
     this.props.update(this.createURL(), this.state.componentToUpdate)
-    .then(() => this.renderGraph(false)).catch(err => { console.warn("failed fetch") });
+      .then(() => this.renderGraph(false))
+      .catch(err => { console.warn("failed fetch") });
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this.scaleGraph.bind(this));
@@ -34,20 +35,21 @@ export default class BitcoinHistoryGraph extends React.Component {
     return url + `?start=${start}&end=${end}&currency=${currency}`;
   }
   renderGraph(componentIsUpdated) {
-    if(!this.props.model.data) return;
-       // transforms a string into a Date object
-      // create an array(dataset) from an object(data)
-      const dataset = [];
-      const data = this.props.model.data.bpi;
-      for(let key in data) {
-        dataset.push({
-          time: createDateObj(key),
-          currencyValue: data[key]
-        });
-      }
+    if(!this.props.model.data) return;    
+    // transforms a string into a Date object
+    // create an array(dataset) from an object(data)
 
-      if(componentIsUpdated) this.chart.updateLine(dataset);
-      else this.chart.buildLine(dataset);
+    const dataset = [];
+    const data = this.props.model.data.bpi;
+    Object.keys(data).forEach(key => {
+      dataset.push({
+        time: new Date(key),
+        currencyValue: data[key]
+      });
+    });
+
+    if(componentIsUpdated) this.chart.updateLine(dataset);
+    else this.chart.buildLine(dataset);
   }
   scaleGraph() {
     if(document.body.clientWidth < 500)
