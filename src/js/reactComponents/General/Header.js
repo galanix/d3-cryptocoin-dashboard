@@ -1,10 +1,9 @@
 import React from 'react';
 
-const Header = props => (
+export default function Header(props) {
+  return (
     <header className={props.classesCSS}>
-        <h2>{props.titleText}</h2>
+      <h2>{props.titleText}</h2>
     </header>
-);
-
-export default Header;
-
+  );
+}
