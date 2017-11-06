@@ -9,7 +9,7 @@ import BarChart from "./children/chartTypes/BarChart.js";
 import LineChart from "./children/chartTypes/LineChart.js";
 import HBarChart from "./children/chartTypes/HBarChart.js";
 
-import {twoArraysAreEqual} from "../../../../../../../helperFunctions.js";
+import {twoArraysAreEqual} from "../../../../../helperFunctions.js";
 
 export default class Chart extends React.Component {
     constructor() {
