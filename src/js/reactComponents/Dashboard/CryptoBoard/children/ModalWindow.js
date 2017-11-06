@@ -17,11 +17,14 @@ export default class ModalWindow extends React.Component {
     }
     openModalWindow() {
         if(this.state.buttonIsDisabled) return;
+
         const values = [ "19px", "19px", "2000px", "20px" ];
+
         changeCSSProperties(this.state.propertiesCSS, values, this.modalWindow);
     }
     closeModalWindow() {
         const values = [ "0", "0", "0", "0" ];
+
         changeCSSProperties(this.state.propertiesCSS, values, this.modalWindow);
     }
     enableButton() {
@@ -35,34 +38,34 @@ export default class ModalWindow extends React.Component {
         });
     }
     visualize() {
-        if(this.state.buttonIsDisabled) {
-            return;
-        }
+        if(this.state.buttonIsDisabled) return;
 
-        const { type, comparisionField } = this.props.model.filters;        
+        const {type, comparisionField} = this.props.model.filters;
+
         this.chart.renderChart(type, comparisionField);
     }
-    changeCurrencyFilter(target) {        
-        const filterNames = [ "currency" ];
-        const newFilterValues = [ target.getAttribute("data-value") ];
-        const comparisionField = this.props.model.filters.comparisionField;    
+    changeCurrencyFilter(target) {
+        const filterNames = ["currency"];
+        const newFilterValues = [target.getAttribute("data-value")];
+        const {comparisionField, currency} = this.props.model.filters;
+        const componentToUpdate = this.state.componentToUpdate;
 
-        if(this.props.model.filters.currency !== newFilterValues[0]) {            
-          if(
-            comparisionField.indexOf("price") !== -1 ||
-            comparisionField.indexOf("volume_24h") !== -1 ||
-            comparisionField.indexOf("market_cap") !== -1
-          ) {
-            // we need to change the last three chars as they represent currency
-            filterNames.push("comparisionField");
-            newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());            
-          }
+        if(currency !== newFilterValues[0]) {
+            if(
+                comparisionField.indexOf("price") !== -1
+                || comparisionField.indexOf("volume_24h") !== -1
+                || comparisionField.indexOf("market_cap") !== -1
+            ) {
+                // we need to change the last three chars as they represent currency
+                filterNames.push("comparisionField");
+                newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());            
+            }
           
-          this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), this.state.componentToUpdate)
-            .then(() => {
-                this.props.change(newFilterValues, filterNames, this.state.componentToUpdate);
-                this.props.changeHashTableCurrency();
-            });
+            this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), componentToUpdate)
+                .then(() => {
+                    this.props.change(newFilterValues, filterNames, componentToUpdate);
+                    this.props.changeHashTableCurrency();
+                });
         }
     }
     changeComparisionField(target) {
@@ -72,24 +75,26 @@ export default class ModalWindow extends React.Component {
         let newFilterValue;
         
         switch(btnVal) {
-          case "Price":
-            newFilterValue = "price_" + currency.toLowerCase();
-            break;
-          case "Volume(24h)":
-            newFilterValue = "24h_volume_" + currency.toLowerCase();
-            break;
-          case "Market Cap":
-            newFilterValue = "market_cap_" + currency.toLowerCase();
-            break;
-          case "%1h":
-            newFilterValue = "percent_change_1h";
-            break;
-          case "%24h":
-            newFilterValue = "percent_change_24h";
-            break;
-          case "%7d":
-            newFilterValue = "percent_change_7d";
-            break;
+            case "Price":
+                newFilterValue = "price_" + currency.toLowerCase();
+                break;
+            case "Volume(24h)":
+                newFilterValue = "24h_volume_" + currency.toLowerCase();
+                break;
+            case "Market Cap":
+                newFilterValue = "market_cap_" + currency.toLowerCase();
+                break;
+            case "%1h":
+                newFilterValue = "percent_change_1h";
+                break;
+            case "%24h":
+                newFilterValue = "percent_change_24h";
+                break;
+            case "%7d":
+                newFilterValue = "percent_change_7d";
+                break;
+            default: 
+                console.warn("switch of btnVal defaulted width", btnVal);
         }
 
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
@@ -97,6 +102,7 @@ export default class ModalWindow extends React.Component {
     changeChartType(target) {
         const filterName = "type";
         const newFilterValue = target.getAttribute("data-type");
+
         this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
     }
     render() {
