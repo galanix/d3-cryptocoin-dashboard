@@ -13,20 +13,24 @@ import {twoArraysAreEqual} from "../../../../../helperFunctions.js";
 
 export default class Chart extends React.Component {
   constructor() {
-      super();
-      this.state = {
-        duration: 300
-      };
-      this.drawCurrencySign = this.drawCurrencySign.bind(this);
-      this.didPropsUpdate = this.didPropsUpdate.bind(this);
-      this.determineSign = this.determineSign.bind(this);
+    super();
+    this.state = {
+      duration: 300
+    };
+    this.drawCurrencySign = this.drawCurrencySign.bind(this);
+    this.didPropsUpdate = this.didPropsUpdate.bind(this);
+    this.determineSign = this.determineSign.bind(this);
   }
   componentDidMount() {
-      window.addEventListener("resize", () => {
-        if(!!this.state.prevType) {
-          this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
-        }
-      });
+    if(this.props.immediateRender) {
+      this.renderChart(this.props.type, this.props.comparisionField);
+    }
+
+    window.addEventListener("resize", () => {
+      if(!!this.state.prevType) {
+        this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
+      }
+    });
   }
   renderChart(type, comparisionField, reMountForcefully) {
       let ChartJSX = null;
