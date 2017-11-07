@@ -1,57 +1,76 @@
-import { model } from "./model";
+import { model } from './model';
 
 export default function reducers(state = model, action) {
     const newState = Object.assign({}, state);    
     switch(action.type) {
-       case "UPDATE_DATA":
+       case 'UPDATE_DATA':
           switch(action.forComponent) {
-              case "BitcoinCurrentPrice":
-                newState.currentPrice.data = action.data;
-                break;
-              case "BitcoinHistoryGraph":
-                newState.history.data = action.data;
-                break;
-              case "CurrencyPairGraph":
-                newState.currencyPair.data = action.data;
-                break;
-              case "CryptoBoard_table":
-                newState.cryptoBoard.table.data = action.data;
-                break;
-              case "CryptoBoard_chart":
-                newState.cryptoBoard.chart.data = action.data;
-                break;
+            case 'BitcoinCurrentPrice':
+              newState.currentPrice.data = action.data;
+              break;
+
+            case 'BitcoinHistoryGraph':
+              newState.history.data = action.data;
+              break;
+
+            case 'CurrencyPairGraph':
+              newState.currencyPair.data = action.data;
+              break;
+
+            case 'CryptoBoard_table':
+              newState.cryptoBoard.table.data = action.data;
+              break;
+
+            case 'CryptoBoard_chart':
+              newState.cryptoBoard.chart.data = action.data;
+              break;
+
+            case 'SavedGraphs':
+              const item = action.data;
+
+              if(item.actionType === 'add') {
+                newState.savedGraphs.push(action.data);
+              } else {
+                console.log(newState.savedGraphs.splice(item.index, 1));
+              }
+
+              window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs));
+              break;
+            
+            default:
+              console.warn('action.forComponent(UPDATA_DATA) switch defaulted with:', action.forComponent);
           }
           break;
 
-        case "CHANGE_FILTERS":
+        case 'CHANGE_FILTERS':
           switch(action.forComponent) {
-            case "BitcoinHistoryGraph":
+            case 'BitcoinHistoryGraph':
               assignNewFilterValue(action, newState.history);
               break;
 
-            case "CurrencyPairGraph":
+            case 'CurrencyPairGraph':
               assignNewFilterValue(action, newState.currencyPair);
               break;
 
-            case "CryptoBoard_table":
+            case 'CryptoBoard_table':
               assignNewFilterValue(action, newState.cryptoBoard.table);
               break;
 
-            case "CryptoBoard_chart":
+            case 'CryptoBoard_chart':
               assignNewFilterValue(action, newState.cryptoBoard.chart);
               break;
 
-            case "Settings":
+            case 'Settings':
               newState.settings[action.filterName] = action.newFilterValue;
               break;
 
             default:
-              console.warn("action.forComponent switch defaulted with:", action.forComponent);
+              console.warn('action.forComponent(CHANGE_FILTERS) switch defaulted with:', action.forComponent);
           }
           break;
 
         default:
-          console.warn("action.type switch defaulted with", action.type);
+          console.warn('action.type switch defaulted with', action.type);
     }
     return newState;
 };
