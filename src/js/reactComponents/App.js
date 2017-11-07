@@ -6,6 +6,7 @@ import TopNav from './Navigation/TopNav';
 import SideNav from './Navigation/SideNav';
 import Dashboard from './Dashboard/Dashboard';
 import Settings from './Settings/Settings';
+import SavedGraphs from './SavedGraphs/SavedGraphs.js';
 
 import { dataRequest } from "../reduxComponents/actions/update";
 import { filterChange } from "../reduxComponents/actions/change";
@@ -43,30 +44,45 @@ class App extends React.Component {
     const baseLocation = this.state.baseLocation;
     const mainPagePath = baseLocation;
     const settingsPagePath = baseLocation + "settings";
+    const savedGraphsPagePath = baseLocation + "saved_graphs";
 
     return (
       <div className="main_container">
         <SideNav mainPagePath={mainPagePath}
-                 settingsPagePath={settingsPagePath}            
+                 settingsPagePath={settingsPagePath}
+                 savedGraphsPagePath={savedGraphsPagePath}
         />
         <TopNav />
-        <Switch>
+        <div className="right_col" role="main">
+          <Switch>
             <Route exact path={mainPagePath}
-                   render={() => (
-                     <Dashboard update={this.props.update.bind(this)} 
-                                change={this.props.change.bind(this)}
-                                data={this.props.appData}                                                                                    
-                     />
-                   )}
+                  render={() => (
+                    <Dashboard 
+                      update={this.props.update.bind(this)}
+                      change={this.props.change.bind(this)}
+                      data={this.props.appData}                                                                                    
+                    />
+                  )}
             />
             <Route path={settingsPagePath}
-                   render={() => (
-                     <Settings displayComponent={this.props.appData.settings.displayComponent}
-                               change={this.props.change.bind(this)}
-                     />
-                   )}
+                  render={() => (
+                    <Settings 
+                      displayComponent={this.props.appData.settings.displayComponent}
+                      change={this.props.change.bind(this)}
+                    />
+                  )}
             />
-        </Switch>
+            <Route path={savedGraphsPagePath}
+                  render={() => (
+                    <SavedGraphs 
+                      update={this.props.update.bind(this)}
+                      linkToGraphCreation={mainPagePath}
+                      graphCollection={this.props.appData.savedGraphs}                      
+                    />
+                  )}
+            />
+          </Switch>
+        </div>
       </div>
     );
   }

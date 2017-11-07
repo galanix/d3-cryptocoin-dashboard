@@ -80,10 +80,22 @@ class SideNav extends React.Component {
                                         <i className="fa fa-cogs"></i>
                                         Settings
                                         <span className="fa fa-chevron-down"></span>                                        
-                                    </a>                                    
+                                    </a>
                                     <ul className="nav child_menu">
                                         <li>
                                             <Link to={this.props.settingsPagePath}>Components</Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a>
+                                        <i className="fa fa-pie-chart"></i>
+                                        Saved Graphs
+                                        <span className="fa fa-chevron-down"></span>
+                                    </a>     
+                                    <ul className="nav child_menu">
+                                        <li>
+                                            <Link to={this.props.savedGraphsPagePath}>Gallery</Link>
                                         </li>
                                     </ul>
                                 </li>
