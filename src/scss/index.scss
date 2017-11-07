@@ -377,3 +377,35 @@ svg {
 }
 
 /* </ SETTINGS PAGE >  */
+
+/* < GALLERY > */
+
+#saved-graphs {    
+    min-height: 100vh;
+    p {
+        font-size: 18px;
+    }
+    a {
+        color: $info_darker;
+        margin-left: 50px;      
+    }
+    a:hover {
+        color: $info;
+    }
+    .x_panel {
+        text-align: right;
+    }
+    .x_panel:first-child {
+        margin-top: 25px;
+    }
+    .fa-times {
+        margin: 10px 10px 0 0;
+    }
+    .fa-times:hover {
+        cursor: pointer;
+        color: $danger;
+    }
+}
+
+/* </ GALLERY > */
+
