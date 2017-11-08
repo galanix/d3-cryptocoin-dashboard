@@ -13,7 +13,8 @@ export default class ModalWindow extends React.Component {
             componentsToUpdate: ['CryptoBoard_chart', 'SavedGraphs'],            
             propertiesCSS: [ 'paddingTop', 'PaddingBottom', 'maxHeight', 'minHeight' ],
             buttonIsDisabled: false,
-            chartIsNotBuilt: true,
+            chartIsNotBuilt: true, // make 'save graph' button unclickable when chart is not yet built
+            chartIsSaved: false, // make 'save graph' button unclickable when chart has already been sved once - prevents duplication
         };
         this.handleControllBtnClick = this.handleControllBtnClick.bind(this);
         this.openModalWindow = this.openModalWindow.bind(this);
@@ -51,7 +52,8 @@ export default class ModalWindow extends React.Component {
         this.chart.renderChart(type, comparisionField);
 
         this.setState({
-            chartIsNotBuilt: false
+            chartIsNotBuilt: false,
+            chartIsSaved: false
         });
     }
     handleControllBtnClick(target) {
@@ -75,16 +77,19 @@ export default class ModalWindow extends React.Component {
       }
     }
     saveGraph() {
-      if(this.state.chartIsNotBuilt) return;
+      if(this.state.chartIsNotBuilt || this.state.chartIsSaved) {
+        return;
+      }
 
       const newCollectionItem = {
         hashTable: Object.assign({}, this.props.hashTable),
         filters: Object.assign({}, this.props.model.filters),
         currentSign: this.props.currentSign,
-        actionSubtype: "add",
-        id: Math.random().toString(36).slice(2) // randomly generated string
+        actionSubtype: "add", // for reducer
+        id: Math.random().toString(36).slice(2) // randomly generated string, used as unique identifier
       };
 
+      this.setState({ chartIsSaved: true }); // to prevent duplication
       this.props.update(null, this.state.componentsToUpdate[1], newCollectionItem);
     }
     changeCurrencyFilter(target) {
@@ -151,7 +156,7 @@ export default class ModalWindow extends React.Component {
     render() {
         return (
             <div>
-              <button 
+              <button
                 id="modal-button"
                 className={`btn ${this.state.buttonIsDisabled ? "disabled" : ""}`}
                 onClick={this.openModalWindow}
@@ -160,7 +165,7 @@ export default class ModalWindow extends React.Component {
               </button>
                 <section ref={section => this.modalWindow = section} className="modal-window col-md-12 col-sm-12 col-xs-12">
                   <div className="well">
-                    <Dropdown 
+                    <Dropdown
                       classesCSS={{ dropdown: "dropdown_chart-currency", button: "btn-success" }}
                       defaultDataValue={this.props.model.filters.currency}
                       onClickHandler={this.changeCurrencyFilter}
