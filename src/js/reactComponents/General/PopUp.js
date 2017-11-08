@@ -13,8 +13,8 @@ export default function PopUp(props) {
             <p>{props.bodyText}</p>
           </div>
           <div className="modal-footer" onClick={props.confirmAction}>
-            <button className="btn btn-default" data-dismiss="modal" data-variant="confirm">Yes</button>
-            <button type="button" className="btn btn-default" data-dismiss="modal" data-variant="cancel">No</button>
+            <button className="btn btn-danger" data-dismiss="modal" data-variant="confirm">Delete</button>
+            <button type="button" className="btn btn-primary" data-dismiss="modal" data-variant="cancel">Cancel</button>
           </div>
         </div>
       </div>
