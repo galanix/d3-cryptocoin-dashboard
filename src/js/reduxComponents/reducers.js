@@ -25,17 +25,18 @@ export default function reducers(state = model, action) {
               newState.cryptoBoard.chart.data = action.data;
               break;
 
-            case 'SavedGraphs':
+            case 'SavedGraphs': {
               const item = action.data;
 
               if(item.actionType === 'add') {
                 newState.savedGraphs.push(action.data);
-              } else {
-                console.log(newState.savedGraphs.splice(item.index, 1));
+              } else { // item.actionType === 'delete'
+                newState.savedGraphs.splice(item.index, 1);
               }
 
               window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs));
               break;
+            }
             
             default:
               console.warn('action.forComponent(UPDATA_DATA) switch defaulted with:', action.forComponent);

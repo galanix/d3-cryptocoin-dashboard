@@ -61,13 +61,16 @@ export default class ModalWindow extends React.Component {
         case 'cancel-button':
           this.closeModalWindow();
           break;
+
         case 'build-button':
           this.visualize();
           break;
+          
         case 'save-graph-button':
           this.saveGraph();
           break;
-        default: 
+
+        default:
           console.log('controll btn group defaulted with', id);
       }
     }
@@ -78,7 +81,8 @@ export default class ModalWindow extends React.Component {
         hashTable: Object.assign({}, this.props.hashTable),
         filters: Object.assign({}, this.props.model.filters),
         currentSign: this.props.currentSign,
-        actionType: "add"
+        actionType: "add",
+        id: Math.random().toString(36).slice(2) // randomly generated string
       };
 
       this.props.update(null, this.state.componentsToUpdate[1], newCollectionItem);

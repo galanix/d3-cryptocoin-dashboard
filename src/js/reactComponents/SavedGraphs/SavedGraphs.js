@@ -18,25 +18,32 @@ export default class SavedGraphs extends React.Component {
     const target = e.target;
     if(target.tagName !== 'SPAN') return;
 
-    const index = Number(target.getAttribute('data-index'));
-    const itemToDelete = this.props.graphCollection[index];
+    const id = target.getAttribute('data-id');
+    const index = this.props.graphCollection.reduce((res, item, index) => {
+      if(item.id === id) {
+        res = index;
+      }
+      return res;
+    });
 
-    console.log(index, itemToDelete);
-    
-    itemToDelete.actionType = 'delete';
-    itemToDelete.index = index;
+    // faking an item from graphCollectin to prevent from searching 2 times
+    // reducers.js only needs to know the index of an element for deletion
+
+    const itemToDelete = {
+      index,
+      actionType: 'delete',
+    };
     
     this.props.update(null, this.state.componentToUpdate, itemToDelete);
-
   }
   render() {
     return (
       <section id="saved-graphs" className="row">
         { !!this.props.graphCollection && this.props.graphCollection.length !== 0 ?
           <div className="gallery col-md-8 col-md-offset-2" onClick={e => this.deleteChart(e)}>
-            { this.props.graphCollection.map((item, index) => (
-                <div className="x_panel" key={"graph-" + index}>
-                  <span className="fa fa-times fa-2x" data-index={index}></span>
+            { this.props.graphCollection.map(item => (
+                <div className="x_panel" key={item.id}>
+                  <span className="fa fa-times fa-2x" data-id={item.id}></span>
                   <Chart
                     hashTable={item.hashTable}
                     type={item.filters.type}
