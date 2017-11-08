@@ -1,14 +1,16 @@
-import React from "react";
-import * as d3 from "d3";
-import {attrs} from "d3-selection-multi";
+import React from 'react';
+import * as d3 from 'd3';
+import {attrs} from 'd3-selection-multi';
 
-import Legend from "../Legend.js";
+import Legend from '../Legend.js';
+import WordLengthTester from './children/WordLengthTester.js';
+
 
 export default class BarChart extends React.Component {
     constructor() {
       super();
       this.state = {};
-      this.handleHoverEvtHandler = this.handleHoverEvtHandler.bind(this)
+      this.handleHoverEvtHandler = this.handleHoverEvtHandler.bind(this);
     }
     componentDidMount() {
       this.renderSVG();      
@@ -19,40 +21,62 @@ export default class BarChart extends React.Component {
     componentDidUpdate() {
       this.updateSVG();
     }
+    recalc(newMarginLeft) {
+      //debugger;
+      const margin = this.props.margin;
+      let marginLeft = margin.left;
+      if(newMarginLeft > marginLeft) {
+        marginLeft = newMarginLeft;
+      }
+
+      const recalcXScaleRange = (left, right) => {
+        const actualWidth = this.props.width - (left + right);
+        this.xScale.rangeRound([0, actualWidth], 0.2);
+      };
+
+      const recalcXTranslate = (left, top) => {
+        this.state.g.attr('transform', `translate(${left}, ${top})`);
+      };
+
+      // WHEN DATA CHANGES WE NEED TO MAKE SURE SCALE RANGE IS UPDATED PROPERLY
+      recalcXScaleRange(marginLeft, margin.right);
+      // WHEN DATA CHANGES WE NEED TO MAKE SURE IT IS PROPERLY PADDED FROM THE LEFT
+      recalcXTranslate(marginLeft, margin.top);
+    }
     renderSVG() {
-      const margin = { top: 30, right: 10, bottom: 50, left: 50 };
-      const fixedWidth = this.props.width - (margin.left + margin.right);
-      const fixedHeight = this.props.height - (margin.top + margin.bottom);
-      this.setState({ fixedHeight, fixedWidth }); // will need this variable later on
+      const margin = this.props.margin;
+      const actualWidth = this.props.width - (margin.left + margin.right);
+      const actualHeight = this.props.height - (margin.top + margin.bottom);
+      this.setState({ actualHeight }); // will need this variable later on
       const svg = d3.select(this.svg);
 
-      svg.attr("width", this.props.width)
-        .attr("height", this.props.height);
+      svg.attr('width', this.props.width)
+        .attr('height', this.props.height);
       
       this.yScale = d3.scaleLinear()
-        .range([fixedHeight, 0])
+        .range([actualHeight, 0])
         .nice();
       
       this.xScale = d3.scaleBand()
         .padding(0.2)
-        .rangeRound([0, fixedWidth], 0.2);                  
+        .rangeRound([0, actualWidth], 0.2);
 
       this.setState({
-        g: svg.append("g")
+        g: svg.append('g')
             .attrs({
-              "transform": `translate(${margin.left}, ${margin.top})`,
-              "class": "bar"
+              'transform': `translate(${margin.left}, ${margin.top})`,
+              'class': 'bar'
             })
       }, () => {
-          this.state.g.append("g")
-            .attr("class", "axis axis--x")
-            .attr("transform", "translate(0," + fixedHeight + ")");
+          this.state.g.append('g')
+            .attr('class', 'axis axis--x')
+            .attr('transform', 'translate(0,' + actualHeight + ')');
 
-          this.state.g.append("g")
-            .attr("class", "axis axis--y");
+          this.state.g.append('g')
+            .attr('class', 'axis axis--y');
 
-          this.state.g.append("g")
-            .attr("class", `axis axis--x axis--zero`);
+          this.state.g.append('g')
+            .attr('class', `axis axis--x axis--zero`);
 
           this.updateSVG();
       });
@@ -68,43 +92,59 @@ export default class BarChart extends React.Component {
       this.yScale.domain([min, max]);
       this.xScale.domain(indices);
      
-      g.select("g.axis--x")
+      // Y AXIS
+      const yAxis = g.select('g.axis--y')
+      
+      yAxis
+        .transition()
+        .duration(300)
+        .call(d3.axisLeft(this.yScale).ticks(10));
+      
+      // COUNT
+      let widestVal = 0;
+      yAxis.selectAll('.tick')
+        .each(val => {
+          const pixelVal = this.WordLengthTester.getLengthOf(val);
+          if(widestVal < pixelVal) {
+            widestVal = pixelVal;
+          }
+        });
+      this.recalc(widestVal);
+
+      // X AXIS
+      g.select('g.axis--x')
         .call(d3.axisBottom(this.xScale).tickValues(indices))
         .transition()
         .duration(300)
-        .style("shape-rendering", "crispEdges");
+        .style('shape-rendering', 'crispEdges');
 
-      g.select(".bar .axis--x").selectAll(".tick")
+      g.select('.bar .axis--x').selectAll('.tick')
         .data(dataset)
-        .attr("data-currency-id", d => d.id)
-        .attr("data-index", (_d, i) => ++i);
+        .attr('data-currency-id', d => d.id)
+        .attr('data-index', (_d, i) => ++i);
 
-      const zerothAxis = g.select("g.axis--zero");
+      // ZEROTH X AXIS
+      const zerothAxis = g.select('g.axis--zero');
 
       zerothAxis
-        .attr("transform", `translate(0, ${this.yScale(0)})`)
-        .style("opacity", 0.4)
+        .attr('transform', `translate(0, ${this.yScale(0)})`)
+        .style('opacity', 0.4)
         .transition()
         .duration(300)
         .call(d3.axisBottom(this.xScale));
 
-      zerothAxis.selectAll("text")
-        .style("opacity", 0);
+      zerothAxis.selectAll('text')
+        .style('opacity', 0);
 
-      zerothAxis.selectAll("line")
-        .style("opacity", 0);
-
-      g.select("g.axis--y")
-        .transition()
-        .duration(300)
-        .call(d3.axisLeft(this.yScale).ticks(10));
-
-      const rects = this.state.g.selectAll("rect")
+      zerothAxis.selectAll('line')
+        .style('opacity', 0);      
+      
+      const rects = this.state.g.selectAll('rect')
         .data(dataset);
         
       rects
-        .attr("y", this.yScale(min))
-        .attr("height", this.state.fixedHeight - this.yScale(min));
+        .attr('y', this.yScale(min))
+        .attr('height', this.state.actualHeight - this.yScale(min));
 
       rects
         .exit()
@@ -112,30 +152,30 @@ export default class BarChart extends React.Component {
 
       rects
         .enter()
-        .append("rect")
+        .append('rect')
         .merge(rects)          
-        .on("mouseover", d => this.toggleBar(d3.event.target.getAttribute("data-currency-id"), d, false))
-        .on("mouseout", d => this.toggleBar(d3.event.target.getAttribute("data-currency-id"), d, true))
+        .on('mouseover', d => this.toggleBar(d3.event.target.getAttribute('data-currency-id'), d, false))
+        .on('mouseout', d => this.toggleBar(d3.event.target.getAttribute('data-currency-id'), d, true))
         .transition()
         .duration(300)
         .attrs({
-            "fill":  d => this.props.color(+d[comparisionField]),
-            "data-currency-id": d => d.id,
-            "width": () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
-            "x": (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
-            "y": d => +d[comparisionField] < 0 ? (this.yScale(0)) : this.yScale(+d[comparisionField]),
-            "height": d => Math.abs(this.yScale(+d[comparisionField]) - (this.yScale(0))),
+            'fill':  d => this.props.color(+d[comparisionField]),
+            'data-currency-id': d => d.id,
+            'width': () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
+            'x': (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
+            'y': d => +d[comparisionField] < 0 ? (this.yScale(0)) : this.yScale(+d[comparisionField]),
+            'height': d => Math.abs(this.yScale(+d[comparisionField]) - (this.yScale(0))),
         });
           
       this.props.drawCurrencySign(comparisionField, g);
       this.legend.build();
     }
     toggleBar(id, d, mouseOut) {
-      const xTicks = Array.from(this.svg.parentElement.parentElement.querySelectorAll(".axis--x .tick"));
-      const rects = Array.from(this.state.g.selectAll(".bar rect").nodes());
+      const xTicks = Array.from(this.svg.parentElement.parentElement.querySelectorAll('.axis--x .tick'));
+      const rects = Array.from(this.state.g.selectAll('.bar rect').nodes());
       
       const elementInArray = d => {
-        return d.getAttribute("data-currency-id") === id;
+        return d.getAttribute('data-currency-id') === id;
       };
 
       const tick = xTicks.find(elementInArray);
@@ -159,16 +199,16 @@ export default class BarChart extends React.Component {
         });      
         text.innerHTML = innerHTML;
       };
-      const text = tick.getElementsByTagName("text")[0];
+      const text = tick.getElementsByTagName('text')[0];
 
       if(mouseOut) {
         onMouseMove({
           text,
-          innerHTML: tick.getAttribute("data-index"),
+          innerHTML: tick.getAttribute('data-index'),
           styles: {
-            fontSize: "1em",
-            fill: "#73879C",
-            fontWeight: "normal" 
+            fontSize: '1em',
+            fill: '#73879C',
+            fontWeight: 'normal' 
           }
         });
       } else {
@@ -179,25 +219,26 @@ export default class BarChart extends React.Component {
             <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
           `,
           styles: { 
-            fontSize: "1.5em", 
+            fontSize: '1.5em', 
             fill: this.props.color(+d[this.props.comparisionField]) , 
-            fontWeight: "bold" 
+            fontWeight: 'bold' 
           }
         });
       }
     }
     handleHoverEvtHandler(opacityVal, color, d) {
       let item = d3.event.target;
-      if(item.tagName !== "DIV") item = item.parentElement;    
+      if(item.tagName !== 'DIV') item = item.parentElement;    
 
-      item.getElementsByTagName("span")[1].style.color = color;
+      item.getElementsByTagName('span')[1].style.color = color;
 
-      const id = item.getAttribute("data-currency-id");        
+      const id = item.getAttribute('data-currency-id');        
       this.toggleBar(id, d, opacityVal !== 1);
     }
     render() {
       return (
-        <div>              
+        <div>
+          <WordLengthTester ref={div => this.WordLengthTester = div} />
           <svg ref={svg => this.svg = svg}></svg>
           <Legend ref={legend => this.legend = legend}
                   onHoverHandler={this.handleHoverEvtHandler}
