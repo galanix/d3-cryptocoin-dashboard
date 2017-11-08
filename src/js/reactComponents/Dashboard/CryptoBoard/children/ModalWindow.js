@@ -81,7 +81,7 @@ export default class ModalWindow extends React.Component {
         hashTable: Object.assign({}, this.props.hashTable),
         filters: Object.assign({}, this.props.model.filters),
         currentSign: this.props.currentSign,
-        actionType: "add",
+        actionSubtype: "add",
         id: Math.random().toString(36).slice(2) // randomly generated string
       };
 

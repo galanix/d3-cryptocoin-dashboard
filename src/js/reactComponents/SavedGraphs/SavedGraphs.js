@@ -26,12 +26,12 @@ export default class SavedGraphs extends React.Component {
       return res;
     });
 
-    // faking an item from graphCollectin to prevent from searching 2 times
+    // faking an item from graphCollection to prevent from searching 2 times
     // reducers.js only needs to know the index of an element for deletion
 
     const itemToDelete = {
       index,
-      actionType: 'delete',
+      actionSubtype: 'delete',
     };
     
     this.props.update(null, this.state.componentToUpdate, itemToDelete);
