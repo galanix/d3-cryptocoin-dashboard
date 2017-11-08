@@ -29,7 +29,7 @@ export default function reducers(state = model, action) {
               const item = action.data;
 
               if(item.actionSubtype === 'add') {
-                newState.savedGraphs.push(item);
+                newState.savedGraphs.unshift(item);
               } else { // item.actionSubtype === 'delete'
                 newState.savedGraphs.splice(item.index, 1);
               }
