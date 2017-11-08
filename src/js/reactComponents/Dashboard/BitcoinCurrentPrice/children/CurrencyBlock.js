@@ -5,18 +5,13 @@ export default class CurrencyBlock extends React.Component {
     super();
     this.state = {
       blink: false,
-      transition: "all .5s ease-in",
-      highlightColor: "#26B99A",
-      blackColor: "#73879C"
-    }
-  }    
+    };
+  }
   componentWillReceiveProps() {
     this.setState({
       blink: true
     }, () => {
-      setTimeout(() => this.setState({
-        blink: false
-      }), 3000);
+      setTimeout(() => this.setState({ blink: false }), 3000);
     });
   }
   render() {
@@ -25,7 +20,7 @@ export default class CurrencyBlock extends React.Component {
         <span className="count_top">{this.props.text}</span>
         <div className={`count ${this.state.blink ? 'blinking' : ''}`}  dangerouslySetInnerHTML={{__html: this.props.sign + this.props.currencyValue}}></div>
         <span className="count_bottom">
-          {this.props.renderDifference()}
+          {this.props.renderChange()}
         </span>
       </div>
     );
