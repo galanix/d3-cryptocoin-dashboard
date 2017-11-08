@@ -225,6 +225,7 @@ export default class ModalWindow extends React.Component {
                   ref={chart => this.chart = chart}
                   hashTable={this.props.hashTable}
                   currentSign={this.props.currentSign}
+                  margin={this.props.model.margin}
                 />
               </section>
             </div>

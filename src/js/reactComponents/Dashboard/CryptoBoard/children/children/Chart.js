@@ -4,29 +4,29 @@ import ReactDOM from "react-dom";
 import * as d3 from "d3";
 import {attrs} from "d3-selection-multi";
 
-import PieChart from "./children/chartTypes/PieChart.js";
-import BarChart from "./children/chartTypes/BarChart.js";
-import LineChart from "./children/chartTypes/LineChart.js";
-import HBarChart from "./children/chartTypes/HBarChart.js";
+import PieChart from './children/chartTypes/PieChart.js';
+import BarChart from './children/chartTypes/BarChart.js';
+import LineChart from './children/chartTypes/LineChart.js';
+import HBarChart from './children/chartTypes/HBarChart.js';
 
-import {twoArraysAreEqual} from "../../../../../helperFunctions.js";
+import {twoArraysAreEqual} from '../../../../../helperFunctions.js';
 
 export default class Chart extends React.Component {
   constructor() {
     super();
     this.state = {
-      duration: 300
+      duration: 300,      
     };
     this.drawCurrencySign = this.drawCurrencySign.bind(this);
     this.didPropsUpdate = this.didPropsUpdate.bind(this);
-    this.determineSign = this.determineSign.bind(this);
+    this.determineSign = this.determineSign.bind(this);    
   }
   componentDidMount() {
     if(this.props.immediateRender) {
       this.renderChart(this.props.type, this.props.comparisionField);
     }
 
-    window.addEventListener("resize", () => {
+    window.addEventListener('resize', () => {
       if(!!this.state.prevType) {
         this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
       }
@@ -38,6 +38,7 @@ export default class Chart extends React.Component {
       if(width > 600) {
         width = 600;
       }
+
       const height = Math.round(width / 2);
       const keys = Object.keys(this.props.hashTable);
       const dataset = keys.map(key => this.props.hashTable[key]);
@@ -50,6 +51,7 @@ export default class Chart extends React.Component {
         comparisionField,
         type,
         color: color.bind(this),
+        margin: this.props.margin,        
         currentSign: this.props.currentSign,
         determineSign: this.determineSign,
         drawCurrencySign: this.drawCurrencySign,        
@@ -57,27 +59,27 @@ export default class Chart extends React.Component {
       };
 
       switch(type) {
-        case "pie":
-        case "pie-donut":
+        case 'pie':
+        case 'pie-donut':
           ChartJSX = ( <PieChart {...props} /> );
           break;
 
-        case "bar":
+        case 'bar':
           ChartJSX = ( <BarChart {...props} /> );
           break;
 
-        case "hbar":
+        case 'hbar':
           ChartJSX = ( <HBarChart {...props} /> );
           break;
 
-        case "line":
-        case "line-scatter":
-        case "line-area":
+        case 'line':
+        case 'line-scatter':
+        case 'line-area':
           ChartJSX = ( <LineChart {...props} /> );
           break;
 
         default:
-          console.warn("chart has not been rendered");
+          console.warn('chart has not been rendered');
       }
     
       const callback = () => {
@@ -98,44 +100,44 @@ export default class Chart extends React.Component {
   }
   determineSign(comparisionField) {
     if(
-      comparisionField.indexOf("price") === -1
-      && comparisionField.indexOf("24h_volume") === -1
-      && comparisionField.indexOf("market_cap") === -1
+      comparisionField.indexOf('price') === -1
+      && comparisionField.indexOf('24h_volume') === -1
+      && comparisionField.indexOf('market_cap') === -1
     ) {
-        return "%";
+        return '%';
     }
 
     return this.props.currentSign;
   }
-  drawCurrencySign(comparisionField, g, pos = {axis: "y"}) {
+  drawCurrencySign(comparisionField, g, pos = {axis: 'y'}) {
     const sign = this.determineSign(comparisionField);
-    const yAxis = g.select("g.axis--" + pos.axis);        
+    const yAxis = g.select('g.axis--' + pos.axis);        
     
-    if(!yAxis.select("g.currency-sign").node()) {
-        yAxis.append("g")
-            .attr("class", "currency-sign")
-            .append("text")
-              .attrs({
-                "fill": "#000",
-                "font-size": "18",
-                "x": pos.axis === "x" ? pos.x : "4",                    
-              });
+    if(!yAxis.select('g.currency-sign').node()) {
+        yAxis.append('g')
+          .attr('class', 'currency-sign')
+          .append('text')
+            .attrs({
+              'fill': '#000',
+              'font-size': '18',
+              'x': pos.axis === 'x' ? pos.x : 4,                    
+            });
     }
 
-    const text = g.select(".currency-sign text");
+    const text = g.select('.currency-sign text');
     const duration = this.state.duration;
 
     text
       .transition()
       .duration(duration)
-      .attr("y", pos.axis === "x" ? "100" : "-100");
+      .attr('y', pos.axis === 'x' ? 100 : -100);
 
     setTimeout(() => {
       text
         .html(sign)
         .transition()
         .duration(duration)
-        .attr("y", pos.axis === "x" ? pos.y : "-10");
+        .attr('y', pos.axis === 'x' ? pos.y : -10);
     }, duration);
   }
   didPropsUpdate(nextProps, currProps) {

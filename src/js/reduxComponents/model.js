@@ -110,9 +110,8 @@ export const model = {
       }
     },
     chart: {
-      data: {},
-      width: 500,
-      height: 250,         
+      data: {},            
+      margin: { left: 40, top: 30, right: 80, bottom: 50 }, // margin left is redetermined dynamically
       filters: {
         currency: 'USD',
         type: 'bar',

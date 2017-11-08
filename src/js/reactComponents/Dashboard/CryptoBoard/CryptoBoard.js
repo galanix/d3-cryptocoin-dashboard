@@ -72,25 +72,28 @@ export default class CryptoBoard extends React.Component {
         return  (
             <div className="col-md-12 col-sm-12 col-xs-12">
                 <section id="board-of-crypto-currencies" className="row x_panel">
-                    <Header classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
-                            titleText="Table of Currencies"
+                    <Header 
+                      classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
+                      titleText="Table of Currencies"
                     />
-                    <ModalWindow ref={mw => this.ModalWindow = mw}                                 
-                                 currentSign={this.props.signs[this.props.model.chart.filters.currency]}
-                                 model={this.props.model.chart}
-                                 limit={this.props.model.table.limit}
-                                 update={this.props.update}
-                                 change={this.props.change}                                 
-                                 hashTable={this.state.hashTable}
-                                 createURL={this.createURL.bind(this)}
-                                 changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}
+                    <ModalWindow 
+                      ref={mw => this.ModalWindow = mw}
+                      currentSign={this.props.signs[this.props.model.chart.filters.currency]}
+                      model={this.props.model.chart}
+                      limit={this.props.model.table.limit}
+                      update={this.props.update}
+                      change={this.props.change}
+                      hashTable={this.state.hashTable}
+                      createURL={this.createURL.bind(this)}
+                      changeHashTableCurrency={this.changeHashTableCurrency.bind(this)}
                     />
-                    <Board model={this.props.model.table}                        
-                           update={this.props.update}
-                           change={this.props.change}                           
-                           hashTable={this.state.hashTable}
-                           createURL={this.createURL.bind(this)}
-                           toggleCheckbox={this.toggleCheckbox.bind(this)}
+                    <Board 
+                      model={this.props.model.table}
+                      update={this.props.update}
+                      change={this.props.change}
+                      hashTable={this.state.hashTable}
+                      createURL={this.createURL.bind(this)}
+                      toggleCheckbox={this.toggleCheckbox.bind(this)}
                     />
                 </section>
             </div>
