@@ -24,7 +24,7 @@ export default class HBarChart extends React.Component {
     const actualHeight = this.props.height - (margin.top + margin.bottom);
     const svg = d3.select(this.svg);
 
-    this.setState({actualWidth, actualHeight}); // will need this variable later on
+    this.setState({ actualHeight }); // will need this variable later on
 
     svg.attr("width", this.props.width)
     .attr("height", this.props.height);
@@ -58,44 +58,43 @@ export default class HBarChart extends React.Component {
   updateSVG() {
     const { dataset, comparisionField, type } = this.props;
     const g = this.state.g;
-    const { actualWidth, actualHeight, duration } = this.state;    
+    const { actualHeight, duration } = this.state;
 
     let [min, max] = d3.extent(dataset, d => +d[comparisionField]);
 
     this.yScale.domain(dataset.map(d => d.id));
     this.xScale.domain([min, max]);
     
-    // ADD Y AXIS
-    const inRange = val => {
-        if(val < 0) {
-            return 0;
-        }
-        if(val > actualWidth) {
-            return actualWidth;
-        }
-        return val;
-    }
+    // ADD Y AXIS    
+    const yAxis = g.select(".axis--y");
 
-    const yAxis = g.select(".axis--y");    
+    const inRange = val => {
+      if(val < 0) {
+          return 0;
+      }
+      if(val > actualWidth) {
+          return actualWidth;
+      }
+      return val;
+    }
     yAxis.transition()
       .duration(duration)
       .attr("transform", `translate(${inRange(this.xScale(0))}, 0)`)
-      .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));        
-    
+      .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));
+
     const recalcXScaleRange = margin => {      
-      const actualWidth = this.props.width - (margin.left + margin.right);
+      const actualWidth = this.props.width - (margin.left + margin.right);     
       this.xScale.range([0, actualWidth], 0.2);
     };
     const recalcXTranslate = margin => {      
       this.state.g.attr('transform', `translate(${margin.left}, ${margin.top})`);
     };
-
+    
     // OH NO - FUNCTION WITH SIDE EFFECTS
     const widestVal = this.props.recalc(yAxis, this.props.margin, [
       recalcXScaleRange,
       recalcXTranslate
     ]);
-    
 
     yAxis.selectAll("text")
       .data(dataset)
@@ -140,6 +139,8 @@ export default class HBarChart extends React.Component {
         .attr("y", 20)
                 
     // APPEND RECTANGLES
+    const actualWidth = this.props.width - widestVal - this.props.margin.right;
+    
     const rects = g.selectAll("rect")
       .data(dataset);
     
