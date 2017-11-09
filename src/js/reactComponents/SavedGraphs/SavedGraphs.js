@@ -62,22 +62,24 @@ export default class SavedGraphs extends React.Component {
     this.props.update(null, this.state.componentToUpdate, itemToDelete);
   }  
   render() {
+    const popUpId = "pop-up";
     return (
       <section id="saved-graphs" className="row">
         <PopUp
+          id={popUpId}
           headerText="Confirm Deletion"
           bodyText="Are you sure want to delete this chart item?"
           confirmAction={this.confirmDeletion}
         />
         { !!this.props.graphCollection && this.props.graphCollection.length !== 0 ?
-          <div className="gallery col-md-8 col-md-offset-2" onClick={this.selectChartForDeletion}>
+          <div className="gallery col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" onClick={this.selectChartForDeletion}>
             { this.props.graphCollection.map(item => (
                 <div className="x_panel" key={item.id}>
                   <span
                     className="fa fa-times fa-2x"
                     data-id={item.id}
                     data-toggle="modal"
-                    data-target="#pop-up"
+                    data-target={"#" + popUpId}
                   >
                   </span>
                   <Chart
@@ -85,6 +87,7 @@ export default class SavedGraphs extends React.Component {
                     type={item.filters.type}
                     comparisionField={item.filters.comparisionField}
                     currentSign={item.currentSign}
+                    margin={this.props.margin}
                     immediateRender
                   />
                 </div>
