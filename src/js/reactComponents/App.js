@@ -57,7 +57,7 @@ class App extends React.Component {
           <Switch>
             <Route exact path={mainPagePath}
                   render={() => (
-                    <Dashboard 
+                    <Dashboard
                       update={this.props.update.bind(this)}
                       change={this.props.change.bind(this)}
                       data={this.props.appData}                                                                                    
@@ -77,7 +77,8 @@ class App extends React.Component {
                     <SavedGraphs 
                       update={this.props.update.bind(this)}
                       linkToGraphCreation={mainPagePath}
-                      graphCollection={this.props.appData.savedGraphs}                      
+                      graphCollection={this.props.appData.savedGraphs}
+                      margin={this.props.appData.cryptoBoard.chart.margin}                      
                     />
                   )}
             />
