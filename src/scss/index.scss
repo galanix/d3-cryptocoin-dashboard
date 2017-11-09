@@ -182,11 +182,11 @@ svg {
         .btn span.glyphicon {
             color: white;
         }
-        .btn span.glyphicon {    			
-            opacity: 0;				
+        .btn span.glyphicon {            
+            display: none;
         }
-        .btn.active span.glyphicon {				
-            opacity: 1;				
+        .btn.active span.glyphicon {
+            display: inline;
         }
     }
     .dropdown_container {
@@ -399,6 +399,7 @@ svg {
         margin-top: 25px;
     }
     .fa-times {
+        display: inline;
         margin: 10px 10px 0 0;
     }
     .fa-times:hover {
@@ -406,6 +407,10 @@ svg {
         color: $danger;
     }
 }
+
+// POP UP
+
+
 
 /* </ GALLERY > */
 
