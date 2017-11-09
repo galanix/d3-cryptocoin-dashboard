@@ -8,6 +8,7 @@ import PieChart from './children/chartTypes/PieChart.js';
 import BarChart from './children/chartTypes/BarChart.js';
 import LineChart from './children/chartTypes/LineChart.js';
 import HBarChart from './children/chartTypes/HBarChart.js';
+import WordLengthTester from './children/chartTypes/children/WordLengthTester.js';
 
 import {twoArraysAreEqual} from '../../../../../helperFunctions.js';
 
@@ -15,11 +16,12 @@ export default class Chart extends React.Component {
   constructor() {
     super();
     this.state = {
-      duration: 300,      
+      duration: 300,
     };
     this.drawCurrencySign = this.drawCurrencySign.bind(this);
     this.didPropsUpdate = this.didPropsUpdate.bind(this);
-    this.determineSign = this.determineSign.bind(this);    
+    this.determineSign = this.determineSign.bind(this);
+    this.recalc = this.recalc.bind(this);
   }
   componentDidMount() {
     if(this.props.immediateRender) {
@@ -55,7 +57,8 @@ export default class Chart extends React.Component {
         currentSign: this.props.currentSign,
         determineSign: this.determineSign,
         drawCurrencySign: this.drawCurrencySign,        
-        didPropsUpdate: this.didPropsUpdate
+        didPropsUpdate: this.didPropsUpdate,
+        recalc: this.recalc,
       };
 
       switch(type) {
@@ -148,9 +151,39 @@ export default class Chart extends React.Component {
       && nextProps.width === currProps.width  // width can not change without changing height
     );
   }
+  recalc(axis, defaultMargin, callbacks) {
+    // longest value - pixelwise
+    let widestVal = 0;
+    axis.selectAll('.tick')
+      .each(val => {
+        const number = Number(val).toFixed(3);
+        const pixelVal = this.WordLengthTester.getLengthOf(typeof number === 'number' ? number : val) + 10; // 10 is for padding
+        if(widestVal < pixelVal) {
+          widestVal = pixelVal;
+        }
+      });
+
+    // assign margin.left to longest value to make proper padding
+    const margin = defaultMargin;
+
+    if(widestVal > margin.left) {
+      margin.left = widestVal;
+    }
+    
+    // call functions that will update properties that are dependant on the margin.left value
+    callbacks.forEach(callback => {
+      callback(margin);
+    });
+
+    return widestVal;
+  }
   render() {
     return (
       <div ref={div => this.svgDiv = div} className="graph">
+        <WordLengthTester 
+          ref={div => this.WordLengthTester = div}          
+          fontSize="13px"
+        />
         { this.state.ChildChartJSX }
       </div>
     );

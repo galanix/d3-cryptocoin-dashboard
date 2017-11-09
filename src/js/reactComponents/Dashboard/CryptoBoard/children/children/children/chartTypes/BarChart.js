@@ -3,8 +3,6 @@ import * as d3 from 'd3';
 import {attrs} from 'd3-selection-multi';
 
 import Legend from '../Legend.js';
-import WordLengthTester from './children/WordLengthTester.js';
-
 
 export default class BarChart extends React.Component {
     constructor() {
@@ -20,29 +18,7 @@ export default class BarChart extends React.Component {
     }
     componentDidUpdate() {
       this.updateSVG();
-    }
-    recalc(newMarginLeft) {
-      //debugger;
-      const margin = this.props.margin;
-      let marginLeft = margin.left;
-      if(newMarginLeft > marginLeft) {
-        marginLeft = newMarginLeft;
-      }
-
-      const recalcXScaleRange = (left, right) => {
-        const actualWidth = this.props.width - (left + right);
-        this.xScale.rangeRound([0, actualWidth], 0.2);
-      };
-
-      const recalcXTranslate = (left, top) => {
-        this.state.g.attr('transform', `translate(${left}, ${top})`);
-      };
-
-      // WHEN DATA CHANGES WE NEED TO MAKE SURE SCALE RANGE IS UPDATED PROPERLY
-      recalcXScaleRange(marginLeft, margin.right);
-      // WHEN DATA CHANGES WE NEED TO MAKE SURE IT IS PROPERLY PADDED FROM THE LEFT
-      recalcXTranslate(marginLeft, margin.top);
-    }
+    }    
     renderSVG() {
       const margin = this.props.margin;
       const actualWidth = this.props.width - (margin.left + margin.right);
@@ -101,15 +77,18 @@ export default class BarChart extends React.Component {
         .call(d3.axisLeft(this.yScale).ticks(10));
       
       // COUNT
-      let widestVal = 0;
-      yAxis.selectAll('.tick')
-        .each(val => {
-          const pixelVal = this.WordLengthTester.getLengthOf(val);
-          if(widestVal < pixelVal) {
-            widestVal = pixelVal;
-          }
-        });
-      this.recalc(widestVal);
+      const recalcXScaleRange = margin => {
+        const actualWidth = this.props.width - (margin.left + margin.right);
+        this.xScale.rangeRound([0, actualWidth], 0.2);
+      };
+      const recalcXTranslate = margin => {
+        this.state.g.attr('transform', `translate(${margin.left}, ${margin.top})`);
+      };
+
+      this.props.recalc(yAxis, this.props.margin, [
+        recalcXScaleRange,
+        recalcXTranslate
+      ]);
 
       // X AXIS
       g.select('g.axis--x')
@@ -237,15 +216,14 @@ export default class BarChart extends React.Component {
     }
     render() {
       return (
-        <div>
-          <WordLengthTester ref={div => this.WordLengthTester = div} />
+        <div>          
           <svg ref={svg => this.svg = svg}></svg>
           <Legend ref={legend => this.legend = legend}
                   onHoverHandler={this.handleHoverEvtHandler}
                   color={this.props.color}
                   comparisionField={this.props.comparisionField}
                   dataset={this.props.dataset}
-          />            
+          />          
         </div>
       );
     }

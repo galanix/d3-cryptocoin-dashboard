@@ -25,24 +25,24 @@ export default class LineChart extends React.Component {
     }   
     componentDidUpdate() {
       this.updateSVG();
-    }
+    }      
     renderSVG() {
-      const margin = { top: 30, right: 10, bottom: 50, left: 80 };
-      const fixedWidth = this.props.width - (margin.left + margin.right);
-      const fixedHeight = this.props.height - (margin.top + margin.bottom);      
+      const margin = this.props.margin;
+      const actualWidth = this.props.width - (margin.left + margin.right);
+      const actualHeight = this.props.height - (margin.top + margin.bottom);      
       const svg = d3.select(this.svg);
 
-      this.setState({ fixedHeight });
+      this.setState({ actualHeight });
 
       svg.attr("width", this.props.width)
         .attr("height", this.props.height);
 
       this.xScale = d3.scalePoint()
-        .range([0, fixedWidth])
+        .range([0, actualWidth])
         .padding(0.2)
 
       this.yScale = d3.scaleLinear()
-        .range([fixedHeight, 0]);            
+        .range([actualHeight, 0]);
 
       this.setState({
         g: svg.append("g")
@@ -56,7 +56,7 @@ export default class LineChart extends React.Component {
 
         this.state.g.append("g")
             .attrs({
-              "transform": `translate(0, ${fixedHeight})`,
+              "transform": `translate(0, ${actualHeight})`,
               "class": "axis--x"
             });
 
@@ -80,6 +80,28 @@ export default class LineChart extends React.Component {
       this.yScale.domain([min, max]);
       this.xScale.domain(ids);
 
+      // Y AXIS
+      const yAxis = g.select("g.axis--y");
+      
+      yAxis
+        .transition()
+        .duration(300)
+        .call(d3.axisLeft(this.yScale).tickValues(yTicks));
+      
+      const recalcXScaleRange = margin => {
+        const actualWidth = this.props.width - (margin.left + margin.right);
+        this.xScale.range([0, actualWidth]);
+      };
+      const recalcXTranslate = margin => {
+        this.state.g.attr('transform', `translate(${margin.left}, ${margin.top})`);
+      };
+
+      this.props.recalc(yAxis, this.props.margin, [
+        recalcXScaleRange,
+        recalcXTranslate
+      ]);
+            
+      // X AXIS
       g.select("g.axis--x")
         .transition()
         .duration(300)
@@ -100,12 +122,7 @@ export default class LineChart extends React.Component {
         .style("cursor", "pointer")           
         .on("mouseover", d => this.handleHoverEvtHandler(d, false))
         .on("mouseout", d => this.handleHoverEvtHandler(d, true));
-
-      g.select("g.axis--y")
-        .transition()
-        .duration(300)
-        .call(d3.axisLeft(this.yScale).tickValues(yTicks));
-
+      
       // ACTUAL CHART BUILDING
       if(type === "line") {
         this.buildLine();
@@ -204,7 +221,7 @@ export default class LineChart extends React.Component {
         hidden: false,
         lineFunction: d3.area()
                         .x(d => this.xScale(d.id))
-                        .y0(this.state.fixedHeight)
+                        .y0(this.state.actualHeight)
                         .y1(d => this.yScale(d[this.props.comparisionField])),
         container: this.state.g
       };
@@ -258,11 +275,11 @@ export default class LineChart extends React.Component {
     }
     render() {
       return (
-        <div>
+        <div>          
           <svg ref={svg => this.svg = svg}></svg>                
           <WaitMessage ref={waitMessage => this.WaitMessage = waitMessage} 
                        msg="Wait, please"
-          />
+          />          
         </div>
       );
     }
