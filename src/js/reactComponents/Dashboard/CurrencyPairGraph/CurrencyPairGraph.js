@@ -19,7 +19,8 @@ export default class CurrencyPairGraph extends React.Component {
     window.addEventListener("resize", this.scaleGraphs.bind(this));
 
     this.props.update(this.createURL(), this.state.componentToUpdate)
-    .then(() => this.renderGraphs(false));
+    .then(() => this.renderGraphs(false))
+    .catch(err => console.warn(err));
   }
   createURL() {
     const { pairName, dataPoints, hours } = this.props.model.filters;
@@ -29,7 +30,7 @@ export default class CurrencyPairGraph extends React.Component {
     // substitute dataset and update current graphs
     if(isModuleBeingUpdated) this.charts.updateLines(this.props.model.data);
     // build new graphs from scratch and add event listeners for filters
-    else this.charts.buildLines(this.props.model.data);   
+    else this.charts.buildLines(this.props.model.data);
   }
   scaleGraphs() {
     if(document.body.clientWidth < 500) {
@@ -166,7 +167,7 @@ export default class CurrencyPairGraph extends React.Component {
                     textValue: ["Spread ", <span key="2" className="glyphicon glyphicon-ok"></span>]
                   }
                 ]}
-              />              
+              />
             </div>
           </div>
           <LineCharts 
