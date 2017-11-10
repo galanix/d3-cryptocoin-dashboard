@@ -44,16 +44,16 @@ export function changeCSSProperties (properties, values, element) {
     });
 }
 
-export function removeDuplicates(array) {
-    const a = array.concat();
-    for(let i=0; i<a.length; i+=1) {
-        for(let j=i+1; j<a.length; j+=1) {
-            if(a[i] === a[j])
-                a.splice(j=-1, 1);
-        }
-    }
-    return a;
-}
+//  function removeDuplicates(array) {
+//     const a = array.concat();
+//     for(let i=0; i<a.length; ++i) {
+//         for(let j=i+1; j<a.length; ++j) {
+//             if(a[i] === a[j])
+//                 a.splice(j=-1, 1);
+//         }
+//     }
+//     return a;
+// }
 
 export function twoArraysAreEqual(array, array2) {
     // if the other array is a falsy value, return
@@ -64,7 +64,7 @@ export function twoArraysAreEqual(array, array2) {
     if (array.length != array2.length)
         return false;
 
-    for (let i = 0, l=array.length; i < l; i+=1) {
+    for (let i = 0, l = array.length; i < l; i+=1) {
         // Check if we have nested arrays
         if (array[i] instanceof Array && array2[i] instanceof Array) {
             // recurse into the nested arrays
@@ -81,33 +81,36 @@ export function twoArraysAreEqual(array, array2) {
 
 // recursivly finds averages
 export function formTickValues({ finalLevel, level, prevSm, prevLg }) {
-    let outputArray = [ prevSm, prevLg ];
-
-    if(level >= finalLevel) {
-    return;
+    if(level === finalLevel) {
+      return;
     }
+
+    let outputArray = [prevSm, prevLg];
     const currTick = (prevLg + prevSm) / 2;
+
     outputArray.push(currTick);
 
-    level += 1;
-    const  valuesDown = formTickValues({
+    const valuesDown = formTickValues({
       finalLevel,
-      level,
+      level: level + 1,
       prevSm: currTick,
       prevLg
     });
+
     if(!!valuesDown) {
-    outputArray = removeDuplicates(outputArray.concat(valuesDown));          
+        outputArray = outputArray.concat(valuesDown);
     }
-    
+
     const valuesUp = formTickValues({
         finalLevel,
-        level,
+        level: level + 1,
         prevSm,
         prevLg: currTick
-    })
+    });
+                
     if(!!valuesUp) {
-         outputArray = removeDuplicates(outputArray.concat(valuesUp));
-    }
-    return outputArray;
+        outputArray = outputArray.concat(valuesUp);
+    }    
+
+    return [ ...new Set(outputArray) ];
 }   
