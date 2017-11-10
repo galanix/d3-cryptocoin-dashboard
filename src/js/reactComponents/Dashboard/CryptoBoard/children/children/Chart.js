@@ -10,7 +10,7 @@ import LineChart from './children/chartTypes/LineChart.js';
 import HBarChart from './children/chartTypes/HBarChart.js';
 import WordLengthTester from './children/chartTypes/children/WordLengthTester.js';
 
-import {twoArraysAreEqual} from '../../../../../helperFunctions.js';
+import { twoArraysAreEqual } from '../../../../../helperFunctions.js';
 
 export default class Chart extends React.Component {
   constructor() {
@@ -112,19 +112,20 @@ export default class Chart extends React.Component {
 
     return this.props.currentSign;
   }
-  drawCurrencySign(comparisionField, g, pos = {axis: 'y'}) {
+  drawCurrencySign(comparisionField, g, pos = { axis: 'y' }) {
+    // pos object is used when currency sign should be positioned somewhere not in the left top corner
     const sign = this.determineSign(comparisionField);
-    const yAxis = g.select('g.axis--' + pos.axis);        
+    const yAxis = g.select('g.axis--' + pos.axis);
     
     if(!yAxis.select('g.currency-sign').node()) {
-        yAxis.append('g')
-          .attr('class', 'currency-sign')
-          .append('text')
-            .attrs({
-              'fill': '#000',
-              'font-size': '18',
-              'x': pos.axis === 'x' ? pos.x : 4,                    
-            });
+      yAxis.append('g')
+        .attr('class', 'currency-sign')
+        .append('text')
+          .attrs({
+            'fill': '#000',
+            'font-size': '18',
+            'x': pos.axis === 'x' ? pos.x : 4,
+          });
     }
 
     const text = g.select('.currency-sign text');
@@ -151,31 +152,30 @@ export default class Chart extends React.Component {
       && nextProps.width === currProps.width  // width can not change without changing height
     );
   }
-  recalc(axis, defaultMargin, callbacks) {
+  recalc(axis, defaultMargin, callbacks, dir = 'left') {
     // longest value - pixelwise
-    let left = defaultMargin.left;
+    let dirVal = defaultMargin[dir];
+    
     axis.selectAll('.tick')
       .each(val => {
         let finalVal = val;
+        // if convertable to number -> cut digits after coma
         if (/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(val)) {
           finalVal = Number(val).toFixed(3);
         }
-        // if convertable to number -> cut digits after coma
         // if not convertable -> it's a name - leave it as it is
-        const pixelVal = this.WordLengthTester.getLengthOf(finalVal) + 10; // 10 is for padding      
-        if(left < pixelVal) {
-          left = pixelVal;
+        const pixelVal = this.WordLengthTester.getLengthOf(finalVal) + 10; // 10 is for padding
+        if(dirVal < pixelVal) {
+          dirVal = pixelVal;
         }
-      });
-
+    });
+    
     // in order not to mutate defaultMargin
-    const margin = Object.assign({}, defaultMargin, { left });    
-    // call functions that will update properties that are dependant on the margin.left value
+    const margin = Object.assign({}, defaultMargin, { [dir]: dirVal });
+    // call functions that will update properties dependant on the margin.left value
     callbacks.forEach(callback => {
       callback(margin);
     });
-
-    return left; // BAD, but what can I do?
   }
   render() {
     return (
