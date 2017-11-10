@@ -240,17 +240,33 @@ export default class LineChart extends React.Component {
       const d = this.props.dataset.find(item => item.id === id);      
       const { comparisionField, type } = this.props;
       const sign = this.props.determineSign(comparisionField);            
+      let rad;
+      let tooltip;
+      // mw - modal window
+      if(mouseOut) {
+        rad = 6;
+        this.state.g.selectAll('.tooltip--mw').transition().duration(100).style('opacity', 0).remove();       
+      } else {
+        rad = 8;
+        tooltip = this.state.g.append('g').attr('class', 'tooltip--mw');        
+        
+        tooltip.append('text')
+          .datum(d)
+          .attr('stroke', '#364B5F')
+          .attr('x', d => this.xScale(d.id))
+          .attr('y', d => this.yScale(+d[comparisionField]) - 15)
+          .attr('text-anchor', 'middle')
+            .html(d => sign + d[comparisionField]);
+      }
 
       if(type === 'line-scatter') {
-        const circle = this.state.g.select(`circle[data-id=${id}`);
-        let r = 8;
-        
-        if(mouseOut) {
-          r = 6;
-        }
-        
-        circle.attr('r', r);
+        const circle = this.state.g.select(`circle[data-id=${id}`);                
+        circle.attr('r', rad);
       } else {
+        if(!tooltip) {
+          return;
+        }
+
         const appendCircle = (fill, radius, stroke = '#364B5F', strokeWidth = 2) => {
           tooltip.append('circle')
             .datum(d)
@@ -261,24 +277,9 @@ export default class LineChart extends React.Component {
             .attr('cx', d => this.xScale(d.id))
             .attr('cy', d => this.yScale(+d[comparisionField]));
         }
-                          
+
         appendCircle('#364B5F', 4);
         appendCircle('none', 8);
-      }
-
-      // mw - modal window
-      if(mouseOut) {
-        this.state.g.selectAll('.tooltip--mw').transition().duration(100).style('opacity', 0).remove();        
-      } else {
-        const tooltip = this.state.g.append('g').attr('class', 'tooltip--mw');
-        
-        tooltip.append('text')
-          .datum(d)
-          .attr('stroke', '#364B5F')
-          .attr('x', d => this.xScale(d.id))
-          .attr('y', d => this.yScale(+d[comparisionField]) - 15)
-          .attr('text-anchor', 'middle')
-            .html(d => sign + d[comparisionField]);
       }
     }
     render() {
