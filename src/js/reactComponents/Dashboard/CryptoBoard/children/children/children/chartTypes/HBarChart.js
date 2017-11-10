@@ -1,6 +1,6 @@
-import React from "react";
-import * as d3 from "d3";
-import {attrs} from "d3-selection-multi";
+import React from 'react';
+import * as d3 from 'd3';
+import {attrs} from 'd3-selection-multi';
 
 export default class HBarChart extends React.Component {
   constructor() {
@@ -26,8 +26,8 @@ export default class HBarChart extends React.Component {
 
     this.setState({ actualHeight }); // will need this variable later on
 
-    svg.attr("width", this.props.width)
-    .attr("height", this.props.height);
+    svg.attr('width', this.props.width)
+    .attr('height', this.props.height);
 
     this.yScale = d3.scaleBand()
       .range([actualHeight, 0])
@@ -37,20 +37,20 @@ export default class HBarChart extends React.Component {
       .range([0, actualWidth]);
 
     this.setState({
-    g: svg.append("g")
+    g: svg.append('g')
         .attrs({
-            "transform": `translate(${margin.left}, ${margin.top})`,
-            "class": "hbar"
+            'transform': `translate(${margin.left}, ${margin.top})`,
+            'class': 'hbar'
         })
     }, () => {
-        this.state.g.append("g")
-            .attr("class", "axis axis--y");
+        this.state.g.append('g')
+            .attr('class', 'axis axis--y');
         
-        this.state.g.append("g")
-            .attr("class", "axis axis--x");
+        this.state.g.append('g')
+            .attr('class', 'axis axis--x');
 
-        this.state.g.append("g")
-            .attr("class", "axis axis--hidden");
+        this.state.g.append('g')
+            .attr('class', 'axis axis--hidden');
 
         this.updateSVG();
     });
@@ -66,29 +66,30 @@ export default class HBarChart extends React.Component {
     this.xScale.domain([min, max]);
     
     // ADD Y AXIS    
-    const yAxis = g.select(".axis--y");
+    const yAxis = g.select('.axis--y');
 
     const inRange = val => {
       if(val < 0) {
         return 0;
       }
+
+      const actualWidth = this.xScale(max);
       if(val > actualWidth) {
         return actualWidth;
       }
+
       return val;
     }
     
-    yAxis
-      // .transition()
-      // .duration(duration)
-      .attr("transform", `translate(${inRange(this.xScale(0))}, 0)`)
+    yAxis      
+      .attr('transform', `translate(${inRange(this.xScale(0))}, 0)`)
       .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));
 
     const recalcXScaleRange = margin => {      
       const actualWidth = this.props.width - (margin.left + margin.right);     
       this.xScale.range([0, actualWidth], 0.2);
     };
-    const recalcXTranslate = margin => {      
+    const recalcXTranslate = margin => {
       this.state.g
         .transition()
         .duration(duration)
@@ -96,97 +97,102 @@ export default class HBarChart extends React.Component {
     };
     
     // OH NO - FUNCTION WITH SIDE EFFECTS
-    const widestVal = this.props.recalc(yAxis, this.props.margin, [
+    this.props.recalc(yAxis, this.props.margin, [
       recalcXScaleRange,
       recalcXTranslate
     ]);
 
-    yAxis.selectAll("text")
+    yAxis.selectAll('text')
       .data(dataset)
-      .on("mouseover", d => this.toggleBar(d.id, false))
-      .on("mouseout", d => this.toggleBar(d.id, true))
+      .on('mouseover', d => this.toggleBar(d.id, false))
+      .on('mouseout', d => this.toggleBar(d.id, true))
       .transition()
       .duration(duration)
-      .attr("x", d => Number(d[comparisionField]) < 0 ? 10 : -10)      
-      .style("text-anchor", d => Number(d[comparisionField]) < 0 ? "start" : "end")
-      .style("cursor", "pointer")
-      .style("font-size", "14px");
+      .attr('x', d => Number(d[comparisionField]) < 0 ? 10 : -10)      
+      .style('text-anchor', d => Number(d[comparisionField]) < 0 ? 'start' : 'end')
+      .style('cursor', 'pointer')
+      .style('font-size', '14px');
 
-    yAxis.selectAll("line")
-      .style("display", "none");
+    yAxis.selectAll('line')
+      .style('display', 'none');
     
     // ADD X AXIS
     
-    g.select(".axis--x")
-      .attr("transform", `translate(0, ${actualHeight})`)
+    g.select('.axis--x')
+      .attr('transform', `translate(0, ${actualHeight})`)
       .transition()
       .duration(duration)
       .call(d3.axisBottom(this.xScale).ticks(5));
     
     // ADD HIDDEN ADITIONAL X AXIS        
-    const hiddenAxis = g.select(".axis--hidden");
+    const hiddenAxis = g.select('.axis--hidden');
 
-    hiddenAxis.attr("transform", `translate(0, ${actualHeight})`)
+    hiddenAxis.attr('transform', `translate(0, ${actualHeight})`)
       .call(
         d3.axisBottom(this.xScale)
           .tickValues(dataset.map(d => Number(d[comparisionField])))
-          .tickFormat(d3.format(".2f"))
+          .tickFormat(d3.format('.2f'))
        );
 
-    hiddenAxis.selectAll(".tick")
+    hiddenAxis.selectAll('.tick')
       .data(dataset)
-      .attr("data-currency-id", d => d.id)
-      .attr("stroke", d => d.color)            
-      .style("font-size", "14px")
-      .style("opacity", 0)
-      .select("text")
-        .attr("y", 20)
+      .attr('data-currency-id', d => d.id)
+      .attr('stroke', d => d.color)            
+      .style('font-size', '14px')
+      .style('opacity', 0)
+      .select('text')
+        .attr('y', 20)
                 
-    // APPEND RECTANGLES
-    const actualWidth = this.props.width - widestVal - this.props.margin.right;
+    // APPEND RECTANGLES    
     
-    const rects = g.selectAll("rect")
+    const rects = g.selectAll('rect')
       .data(dataset);
-    
+
+    const getRectWidth = d => {
+      const actualWidth = this.xScale(max);
+      const res = Math.abs(this.xScale(Number(d[comparisionField])) - this.xScale(0));
+      
+      if(res > actualWidth) {
+          return actualWidth;
+      }
+
+      return res;
+    };
+
     rects.exit()
       .remove();
 
     rects.enter()
-      .append("rect")
+      .append('rect')
       .merge(rects)
-        .on("mouseover", d => this.toggleBar(d.id, false))
-        .on("mouseout", d => this.toggleBar(d.id, true))
-        .style("cursor", "pointer")
+        .on('mouseover', d => this.toggleBar(d.id, false))
+        .on('mouseout', d => this.toggleBar(d.id, true))
+        .style('cursor', 'pointer')
         .transition()
         .duration(duration)
         .attrs({
-          "fill":  d => this.props.color(Number(d[comparisionField])),                    
-          "height": () => this.yScale.bandwidth(),
-          "y": d => this.yScale(d.id),
-          "width": d => {
-            let res = Math.abs(this.xScale(Number(d[comparisionField])) - this.xScale(0));
-            if(res > actualWidth) {
-                res = actualWidth;
-            }
-            return res;
-          },
-          "x": d => {
-            let val = 0;
+          'fill':  d => this.props.color(Number(d[comparisionField])),                    
+          'height': () => this.yScale.bandwidth(),
+          'y': d => this.yScale(d.id),
+          'width': getRectWidth,
+          'x': d => {
             if(min > 0) {
-              val = min;
+              return 0;
             }
-            if(max < 0) {              
-              val = max - Number(d[comparisionField]);
+
+            if(max < 0) {
+              return this.xScale(max) - getRectWidth(d);              
             }
-            return this.xScale(Math.min(val, Number(d[comparisionField])))
+
+            return this.xScale(Math.min(0, Number(d[comparisionField])));
           }
         });
     
-    this.props.drawCurrencySign(comparisionField, g, {axis: "x", x: actualWidth + 15, y: 15});
+    this.props.drawCurrencySign(comparisionField, g, {axis: 'x', x: this.xScale(max) + 15, y: 15});
   }
   toggleBar(id, mouseOut) {
-    const hiddenTicks = Array.from(this.state.g.selectAll(".axis--hidden .tick").nodes());
-    const tick = hiddenTicks.find(tick => tick.getAttribute("data-currency-id") === id);
+    const hiddenTicks = Array.from(this.state.g.selectAll('.axis--hidden .tick').nodes());
+    const tick = hiddenTicks.find(tick => tick.getAttribute('data-currency-id') === id);
     let opacityVal;
 
     if(mouseOut) {
@@ -198,7 +204,7 @@ export default class HBarChart extends React.Component {
     d3.select(tick)
       .transition()
       .duration(this.state.duration)
-      .style("opacity", opacityVal);        
+      .style('opacity', opacityVal);
   }
   render() {
     return (
