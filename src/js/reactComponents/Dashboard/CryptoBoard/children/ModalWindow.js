@@ -157,20 +157,20 @@ render() {
     return (
       <div>
         <button
-        id="modal-button"
-        className={`btn ${this.state.buttonIsDisabled ? "disabled" : ""}`}
-        onClick={this.openModalWindow}
+          id="modal-button"
+          className={`btn ${this.state.buttonIsDisabled ? "disabled" : ""}`}
+          onClick={this.openModalWindow}
         >
-        Visualize
+          Visualize
         </button>
         <section ref={section => this.modalWindow = section} className="modal-window col-md-12 col-sm-12 col-xs-12">
           <div className="well">
             <Dropdown
-                classesCSS={{ dropdown: "dropdown_chart-currency", button: "btn-success" }}
-                defaultDataValue={this.props.model.filters.currency}
-                onClickHandler={this.changeCurrencyFilter}
-                titleText="Currency"
-                options={[
+              classesCSS={{ dropdown: "dropdown_chart-currency", button: "btn-success" }}
+              defaultDataValue={this.props.model.filters.currency}
+              onClickHandler={this.changeCurrencyFilter}
+              titleText="Currency"
+              options={[
                 { dataValue: "USD" },
                 { dataValue: "EUR" },
                 { dataValue: "UAH" },
@@ -178,38 +178,38 @@ render() {
                 { dataValue: "BTC" },
                 { dataValue: "LTC" },
                 { dataValue: "ETH" }
-                ]}
+              ]}
             />
             <div className="btn-group_container">
-                <h4>Categories</h4>
-                <ButtonGroup 
+              <h4>Categories</h4>
+              <ButtonGroup 
                 classesCSS="btn-group category"
                 onClickHandler={this.changeComparisionField}
                 buttons={[
-                    { classesCSS:"active", textValue: "Price" },
-                    { textValue: "Volume(24h)" },
-                    { textValue: "Market Cap" },
-                    { textValue: "%1h" },
-                    { textValue: "%24h" },
-                    { textValue: "%7d" }
+                  { classesCSS:"active", textValue: "Price" },
+                  { textValue: "Volume(24h)" },
+                  { textValue: "Market Cap" },
+                  { textValue: "%1h" },
+                  { textValue: "%24h" },
+                  { textValue: "%7d" }
                 ]}
-                />
+              />
             </div>
             <div className="btn-group_container">
-                <h4>Graph Types</h4>
-                <ButtonGroup
+              <h4>Graph Types</h4>
+              <ButtonGroup
                 classesCSS="btn-group type"
                 onClickHandler={this.changeChartType}
                 buttons={[
-                    { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
-                    { attrs: { "data-type": "hbar"}, textValue: "Horizontal Bar" },
-                    { attrs: { "data-type": "pie"}, textValue: "Pie" },
-                    { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },
-                    { attrs: { "data-type": "line"}, textValue: "Line"},                                            
-                    { attrs: { "data-type": "line-scatter"}, textValue: "Scatter Plot"},
-                    { attrs: { "data-type": "line-area"}, textValue: "Area Plot"},
+                  { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
+                  { attrs: { "data-type": "hbar"}, textValue: "Horizontal Bar" },
+                  { attrs: { "data-type": "pie"}, textValue: "Pie" },
+                  { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },
+                  { attrs: { "data-type": "line"}, textValue: "Line"},                                            
+                  { attrs: { "data-type": "line-scatter"}, textValue: "Scatter Plot"},
+                  { attrs: { "data-type": "line-area"}, textValue: "Area Plot"},
                 ]}
-                />
+              />
             </div>
         </div>
         <ButtonGroup 
