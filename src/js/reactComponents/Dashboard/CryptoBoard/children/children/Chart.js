@@ -35,63 +35,63 @@ export default class Chart extends React.Component {
     });
   }
   renderChart(type, comparisionField, reMountForcefully) {
-      let ChartJSX = null;
-      let width = Math.round(this.svgDiv.getBoundingClientRect().width);
-      if(width > 600) {
-        width = 600;
-      }
+    let ChartJSX = null;
+    let width = Math.round(this.svgDiv.getBoundingClientRect().width);
+    if(width > 600) {
+      width = 600;
+    }
 
-      const height = Math.round(width / 2);
-      const keys = Object.keys(this.props.hashTable);
-      const dataset = keys.map(key => this.props.hashTable[key]);
-      const colorValues = keys.map(key => this.props.hashTable[key].color);
-      const color = d3.scaleOrdinal(colorValues);
-      const props = {
-        dataset,
-        width,
-        height,
-        comparisionField,
-        type,
-        color: color.bind(this),
-        margin: this.props.margin,        
-        currentSign: this.props.currentSign,
-        determineSign: this.determineSign,
-        drawCurrencySign: this.drawCurrencySign,        
-        didPropsUpdate: this.didPropsUpdate,
-        recalc: this.recalc,
-      };
+    const height = Math.round(width / 2);
+    const keys = Object.keys(this.props.hashTable);
+    const dataset = keys.map(key => this.props.hashTable[key]);
+    const colorValues = keys.map(key => this.props.hashTable[key].color);
+    const color = d3.scaleOrdinal(colorValues);
+    const props = {
+      dataset,
+      width,
+      height,
+      comparisionField,
+      type,
+      color: color.bind(this),
+      margin: this.props.margin,        
+      currentSign: this.props.currentSign,
+      determineSign: this.determineSign,
+      drawCurrencySign: this.drawCurrencySign,        
+      didPropsUpdate: this.didPropsUpdate,
+      recalc: this.recalc,
+    };
 
-      switch(type) {
-        case 'pie':
-        case 'pie-donut':
-          ChartJSX = ( <PieChart {...props} /> );
-          break;
+    switch(type) {
+      case 'pie':
+      case 'pie-donut':
+        ChartJSX = ( <PieChart {...props} /> );
+        break;
 
-        case 'bar':
-          ChartJSX = ( <BarChart {...props} /> );
-          break;
+      case 'bar':
+        ChartJSX = ( <BarChart {...props} /> );
+        break;
 
-        case 'hbar':
-          ChartJSX = ( <HBarChart {...props} /> );
-          break;
+      case 'hbar':
+        ChartJSX = ( <HBarChart {...props} /> );
+        break;
 
-        case 'line':
-        case 'line-scatter':
-        case 'line-area':
-          ChartJSX = ( <LineChart {...props} /> );
-          break;
+      case 'line':
+      case 'line-scatter':
+      case 'line-area':
+        ChartJSX = ( <LineChart {...props} /> );
+        break;
 
-        default:
-          console.warn('chart has not been rendered');
-      }
-    
-      const callback = () => {
-        this.setState({
-          ChildChartJSX: ChartJSX,
-          prevType: type,
-          prevComparisonField: comparisionField // for resize function
-        });
-      };
+      default:
+        console.warn('chart has not been rendered');
+    }
+  
+    const callback = () => {
+      this.setState({
+        ChildChartJSX: ChartJSX,
+        prevType: type,
+        prevComparisonField: comparisionField // for resize function
+      });
+    };
 
     if(this.state.prevType !== type || reMountForcefully) {
       this.setState({

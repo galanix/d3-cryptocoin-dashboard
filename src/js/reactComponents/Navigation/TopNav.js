@@ -6,7 +6,7 @@ export default function TopNav() {
       <div className="nav_menu">
         <nav>
           <div className="nav toggle">
-              <a id="menu_toggle"><i className="fa fa-bars"></i></a>
+            <a id="menu_toggle"><i className="fa fa-bars"></i></a>
           </div>
         </nav>
       </div>

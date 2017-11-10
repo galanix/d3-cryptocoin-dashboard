@@ -47,26 +47,28 @@ export default class Settings extends React.Component {
   }
   render() {
     return (
-      <div className="right_col" role="main">
-        <section id="component-display" className="row" ref={section => this.checkboxSection = section}>
-          <Checkbox componentName="BitcoinCurrentPrice"
-                    title="Current Bitcoin Price"
-                    onClickHandler={this.onClickHandler}
-          />
-          <Checkbox componentName="BitcoinHistoryGraph" 
-                    title="Bitcoin Price History" 
-                    onClickHandler={this.onClickHandler}
-          />
-          <Checkbox componentName="CurrencyPairGraph"
-                    title="Currency Comparison"
-                    onClickHandler={this.onClickHandler}
-          />
-          <Checkbox componentName="CryptoBoard"
-                    title="Table of Currencies"
-                    onClickHandler={this.onClickHandler}
-          />
-        </section>
-      </div>
+      <section id="component-display" className="row" ref={section => this.checkboxSection = section}>
+        <Checkbox
+          componentName="BitcoinCurrentPrice"
+          title="Current Bitcoin Price"
+          onClickHandler={this.onClickHandler}
+        />
+        <Checkbox 
+          componentName="BitcoinHistoryGraph" 
+          title="Bitcoin Price History" 
+          onClickHandler={this.onClickHandler}
+        />
+        <Checkbox 
+          componentName="CurrencyPairGraph"
+          title="Currency Comparison"
+          onClickHandler={this.onClickHandler}
+        />
+        <Checkbox 
+          componentName="CryptoBoard"
+          title="Table of Currencies"
+          onClickHandler={this.onClickHandler}
+        />
+      </section>      
     );      
   }
 };
