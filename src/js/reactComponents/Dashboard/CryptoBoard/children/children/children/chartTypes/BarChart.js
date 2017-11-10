@@ -63,7 +63,7 @@ export default class BarChart extends React.Component {
       const { dataset, comparisionField, type } = this.props;
       const { g, duration } = this.state;
       const indices = dataset.map((_d, i) => ++i);
-      let [min, max] = d3.extent(dataset, d => +d[comparisionField]);
+      let [min, max] = d3.extent(dataset, d => Number(d[comparisionField]));
       min = Math.min(min, 0);
       max = Math.max(max, 0);
       
@@ -143,12 +143,12 @@ export default class BarChart extends React.Component {
         .transition()
         .duration(duration)
         .attrs({
-            'fill':  d => this.props.color(+d[comparisionField]),
+            'fill':  d => this.props.color(Number(d[comparisionField])),
             'data-currency-id': d => d.id,
             'width': () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
             'x': (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
-            'y': d => +d[comparisionField] < 0 ? (this.yScale(0)) : this.yScale(+d[comparisionField]),
-            'height': d => Math.abs(this.yScale(+d[comparisionField]) - (this.yScale(0))),
+            'y': d => Number(d[comparisionField]) < 0 ? (this.yScale(0)) : this.yScale(Number(d[comparisionField])),
+            'height': d => Math.abs(this.yScale(Number(d[comparisionField])) - (this.yScale(0))),
         });
           
       this.props.drawCurrencySign(comparisionField, g);

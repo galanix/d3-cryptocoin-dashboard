@@ -222,20 +222,20 @@ export default class PieChart extends React.Component {
     const comparisionField = this.props.comparisionField;
     const dataset = this.props.dataset;
 
-    const [ min, max ] = d3.extent(dataset, d => +d[comparisionField]);      
+    const [ min, max ] = d3.extent(dataset, d => Number(d[comparisionField]));      
 
     if(max < 0) { 
         // only negatives
-        return d => (1 / Math.abs(+d[comparisionField]));
+        return d => (1 / Math.abs(Number(d[comparisionField])));
     } 
     
     if(min > 0) { 
         // only positives
-        return d => +d[comparisionField];
+        return d => Number(d[comparisionField]);
     } 
     
     // positives and negatives
-    return d => +d[comparisionField] < 0 ? 0 : +d[comparisionField];         
+    return d => Number(d[comparisionField]) < 0 ? 0 : Number(d[comparisionField]);         
   }
   handleHoverEvtHandler(opacityVal, color) {
     let item = d3.event.target;      

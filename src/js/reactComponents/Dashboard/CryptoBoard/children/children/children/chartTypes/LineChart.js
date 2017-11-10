@@ -67,7 +67,7 @@ export default class LineChart extends React.Component {
       const { g, duration } = this.state;
       const { comparisionField, dataset, type } = this.props;      
       const ids = dataset.map(d => d.id);
-      const [min, max] = d3.extent(dataset, d => +d[comparisionField]);      
+      const [min, max] = d3.extent(dataset, d => Number(d[comparisionField]));      
       const yTicks = formTickValues({
         finalLevel: 3,
         level: 1,
@@ -257,7 +257,7 @@ export default class LineChart extends React.Component {
           .datum(d)
           .attr('stroke', '#364B5F')
           .attr('x', d => this.xScale(d.id))
-          .attr('y', d => this.yScale(+d[comparisionField]) - 15)
+          .attr('y', d => this.yScale(Number(d[comparisionField])) - 15)
           .attr('text-anchor', 'middle')
             .html(d => sign + formater(d[comparisionField]));
       }
@@ -278,7 +278,7 @@ export default class LineChart extends React.Component {
             .attr('stroke', stroke)
             .attr('stroke-width', strokeWidth)
             .attr('cx', d => this.xScale(d.id))
-            .attr('cy', d => this.yScale(+d[comparisionField]));
+            .attr('cy', d => this.yScale(Number(d[comparisionField])));
         }
 
         appendCircle('#364B5F', 4);

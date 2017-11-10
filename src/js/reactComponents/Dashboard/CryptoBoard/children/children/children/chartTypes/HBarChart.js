@@ -60,7 +60,7 @@ export default class HBarChart extends React.Component {
     const g = this.state.g;
     const { actualHeight, duration } = this.state;
 
-    let [min, max] = d3.extent(dataset, d => +d[comparisionField]);
+    let [min, max] = d3.extent(dataset, d => Number(d[comparisionField]));
 
     this.yScale.domain(dataset.map(d => d.id));
     this.xScale.domain([min, max]);
@@ -70,10 +70,10 @@ export default class HBarChart extends React.Component {
 
     const inRange = val => {
       if(val < 0) {
-          return 0;
+        return 0;
       }
       if(val > actualWidth) {
-          return actualWidth;
+        return actualWidth;
       }
       return val;
     }
@@ -107,9 +107,8 @@ export default class HBarChart extends React.Component {
       .on("mouseout", d => this.toggleBar(d.id, true))
       .transition()
       .duration(duration)
-     .attr("x", d => +d[comparisionField] < 0 ? 10 : -10)            
-      .style("width", widestVal)
-      .style("text-anchor", d => +d[comparisionField] < 0 ? "start" : "end")
+      .attr("x", d => Number(d[comparisionField]) < 0 ? 10 : -10)      
+      .style("text-anchor", d => Number(d[comparisionField]) < 0 ? "start" : "end")
       .style("cursor", "pointer")
       .style("font-size", "14px");
 
@@ -130,7 +129,7 @@ export default class HBarChart extends React.Component {
     hiddenAxis.attr("transform", `translate(0, ${actualHeight})`)
       .call(
         d3.axisBottom(this.xScale)
-          .tickValues(dataset.map(d => +d[comparisionField]))
+          .tickValues(dataset.map(d => Number(d[comparisionField])))
           .tickFormat(d3.format(".2f"))
        );
 
@@ -161,11 +160,11 @@ export default class HBarChart extends React.Component {
         .transition()
         .duration(duration)
         .attrs({
-          "fill":  d => this.props.color(+d[comparisionField]),                    
+          "fill":  d => this.props.color(Number(d[comparisionField])),                    
           "height": () => this.yScale.bandwidth(),
           "y": d => this.yScale(d.id),
           "width": d => {
-            let res = Math.abs(this.xScale(+d[comparisionField]) - this.xScale(0));
+            let res = Math.abs(this.xScale(Number(d[comparisionField])) - this.xScale(0));
             if(res > actualWidth) {
                 res = actualWidth;
             }
@@ -174,12 +173,12 @@ export default class HBarChart extends React.Component {
           "x": d => {
             let val = 0;
             if(min > 0) {
-                val = min;
+              val = min;
             }
-            if(max < 0) {
-                val = max;
+            if(max < 0) {              
+              val = max - Number(d[comparisionField]);
             }
-            return this.xScale(Math.min(val, +d[comparisionField]))
+            return this.xScale(Math.min(val, Number(d[comparisionField])))
           }
         });
     
