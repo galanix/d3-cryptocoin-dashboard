@@ -251,14 +251,15 @@ export default class LineChart extends React.Component {
       } else {
         rad = 8;
         tooltip = this.state.g.append('g').attr('class', 'tooltip--mw');        
-        
+        const formater = d3.format(',.2f');
+
         tooltip.append('text')
           .datum(d)
           .attr('stroke', '#364B5F')
           .attr('x', d => this.xScale(d.id))
           .attr('y', d => this.yScale(+d[comparisionField]) - 15)
           .attr('text-anchor', 'middle')
-            .html(d => sign + d[comparisionField]);
+            .html(d => sign + formater(d[comparisionField]));
       }
 
       if(type === 'line-scatter') {

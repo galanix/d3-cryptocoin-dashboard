@@ -133,10 +133,11 @@ export default class PieChart extends React.Component {
 
     
     const sign = this.props.determineSign(comparisionField);
+    const formater = d3.format(',.2f');
 
     arcs.selectAll("tspan:last-child")
       .html((_d, _i, el) => {
-        return sign + el[0].parentElement._current.data[comparisionField]
+        return sign + formater(el[0].parentElement._current.data[comparisionField]);
       });
     
     
@@ -164,7 +165,7 @@ export default class PieChart extends React.Component {
         .style("font-size", ".75em")
       .merge(arcs.selectAll("tspan:last-child"))
         .html((_d, _i, el) => {
-          return sign + el[0].parentElement._current.data[comparisionField]
+          return sign + formater(el[0].parentElement._current.data[comparisionField]);
         });
 
     text

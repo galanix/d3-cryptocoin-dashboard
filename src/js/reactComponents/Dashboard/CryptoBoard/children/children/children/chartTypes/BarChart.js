@@ -196,11 +196,12 @@ export default class BarChart extends React.Component {
           }
         });
       } else {
+        const formater = d3.format(',.2f');
         onMouseMove({
           text,
           innerHTML: `
             <tspan x="0">${d.name}</tspan>
-            <tspan x="0" dy="1.2em">${d[this.props.comparisionField]}</tspan>
+            <tspan x="0" dy="1.2em">${formater(d[this.props.comparisionField])}</tspan>
           `,
           styles: { 
             fontSize: '1.5em', 
