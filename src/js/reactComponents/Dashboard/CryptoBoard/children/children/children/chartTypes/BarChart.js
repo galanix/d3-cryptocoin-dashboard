@@ -7,7 +7,9 @@ import Legend from '../Legend.js';
 export default class BarChart extends React.Component {
     constructor() {
       super();
-      this.state = {};
+      this.state = {
+        duration: 300,
+      };
       this.handleHoverEvtHandler = this.handleHoverEvtHandler.bind(this);
     }
     componentDidMount() {
@@ -58,8 +60,8 @@ export default class BarChart extends React.Component {
       });
     }
     updateSVG() {
-      const {dataset, comparisionField, type} = this.props;
-      const g = this.state.g;
+      const { dataset, comparisionField, type } = this.props;
+      const { g, duration } = this.state;
       const indices = dataset.map((_d, i) => ++i);
       let [min, max] = d3.extent(dataset, d => +d[comparisionField]);
       min = Math.min(min, 0);
@@ -72,8 +74,8 @@ export default class BarChart extends React.Component {
       const yAxis = g.select('g.axis--y')
       
       yAxis
-        .transition()
-        .duration(300)
+        // .transition()
+        // .duration(duration)
         .call(d3.axisLeft(this.yScale).ticks(10));
       
       // COUNT
@@ -82,7 +84,10 @@ export default class BarChart extends React.Component {
         this.xScale.rangeRound([0, actualWidth], 0.2);
       };
       const recalcXTranslate = margin => {
-        this.state.g.attr('transform', `translate(${margin.left}, ${margin.top})`);
+        this.state.g
+          .transition()
+          .duration(duration)
+          .attr('transform', `translate(${margin.left}, ${margin.top})`);
       };
 
       this.props.recalc(yAxis, this.props.margin, [
@@ -94,7 +99,7 @@ export default class BarChart extends React.Component {
       g.select('g.axis--x')
         .call(d3.axisBottom(this.xScale).tickValues(indices))
         .transition()
-        .duration(300)
+        .duration(duration)
         .style('shape-rendering', 'crispEdges');
 
       g.select('.bar .axis--x').selectAll('.tick')
@@ -109,7 +114,7 @@ export default class BarChart extends React.Component {
         .attr('transform', `translate(0, ${this.yScale(0)})`)
         .style('opacity', 0.4)
         .transition()
-        .duration(300)
+        .duration(duration)
         .call(d3.axisBottom(this.xScale));
 
       zerothAxis.selectAll('text')
@@ -136,7 +141,7 @@ export default class BarChart extends React.Component {
         .on('mouseover', d => this.toggleBar(d3.event.target.getAttribute('data-currency-id'), d, false))
         .on('mouseout', d => this.toggleBar(d3.event.target.getAttribute('data-currency-id'), d, true))
         .transition()
-        .duration(300)
+        .duration(duration)
         .attrs({
             'fill':  d => this.props.color(+d[comparisionField]),
             'data-currency-id': d => d.id,

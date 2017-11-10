@@ -77,8 +77,10 @@ export default class HBarChart extends React.Component {
       }
       return val;
     }
-    yAxis.transition()
-      .duration(duration)
+    
+    yAxis
+      // .transition()
+      // .duration(duration)
       .attr("transform", `translate(${inRange(this.xScale(0))}, 0)`)
       .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));
 
@@ -87,7 +89,10 @@ export default class HBarChart extends React.Component {
       this.xScale.range([0, actualWidth], 0.2);
     };
     const recalcXTranslate = margin => {      
-      this.state.g.attr('transform', `translate(${margin.left}, ${margin.top})`);
+      this.state.g
+        .transition()
+        .duration(duration)
+        .attr('transform', `translate(${margin.left}, ${margin.top})`);
     };
     
     // OH NO - FUNCTION WITH SIDE EFFECTS

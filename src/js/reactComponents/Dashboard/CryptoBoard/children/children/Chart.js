@@ -153,29 +153,29 @@ export default class Chart extends React.Component {
   }
   recalc(axis, defaultMargin, callbacks) {
     // longest value - pixelwise
-    let widestVal = 0;
+    let left = defaultMargin.left;
     axis.selectAll('.tick')
       .each(val => {
-        const number = Number(val).toFixed(3);
-        const pixelVal = this.WordLengthTester.getLengthOf(typeof number === 'number' ? number : val) + 10; // 10 is for padding
-        if(widestVal < pixelVal) {
-          widestVal = pixelVal;
+        let finalVal = val;
+        if (/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(val)) {
+          finalVal = Number(val).toFixed(3);
+        }
+        // if convertable to number -> cut digits after coma
+        // if not convertable -> it's a name - leave it as it is
+        const pixelVal = this.WordLengthTester.getLengthOf(finalVal) + 10; // 10 is for padding      
+        if(left < pixelVal) {
+          left = pixelVal;
         }
       });
 
-    // assign margin.left to longest value to make proper padding
-    const margin = defaultMargin;
-
-    if(widestVal > margin.left) {
-      margin.left = widestVal;
-    }
-    
+    // in order not to mutate defaultMargin
+    const margin = Object.assign({}, defaultMargin, { left });    
     // call functions that will update properties that are dependant on the margin.left value
     callbacks.forEach(callback => {
       callback(margin);
     });
 
-    return widestVal;
+    return left; // BAD, but what can I do?
   }
   render() {
     return (

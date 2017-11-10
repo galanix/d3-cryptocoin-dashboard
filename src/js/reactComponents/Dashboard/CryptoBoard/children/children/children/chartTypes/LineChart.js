@@ -64,12 +64,10 @@ export default class LineChart extends React.Component {
       });       
     }
     updateSVG() {
-      const g = this.state.g;
-      const comparisionField = this.props.comparisionField;
-      const dataset = this.props.dataset;
+      const { g, duration } = this.state;
+      const { comparisionField, dataset, type } = this.props;      
       const ids = dataset.map(d => d.id);
-      const [min, max] = d3.extent(dataset, d => +d[comparisionField]); 
-      const type = this.props.type;
+      const [min, max] = d3.extent(dataset, d => +d[comparisionField]);      
       const yTicks = formTickValues({
         finalLevel: 3,
         level: 1,
@@ -82,20 +80,24 @@ export default class LineChart extends React.Component {
 
       // Y AXIS
       const yAxis = g.select('g.axis--y');
-      
+
       yAxis
-        .transition()
-        .duration(300)
+        // .transition()
+        // .duration(duration)
         .call(d3.axisLeft(this.yScale).tickValues(yTicks));
       
       const recalcXScaleRange = margin => {
         const actualWidth = this.props.width - (margin.left + margin.right);
         this.xScale.range([0, actualWidth]);
       };
-      const recalcXTranslate = margin => {
-        this.state.g.attr('transform', `translate(${margin.left}, ${margin.top})`);
-      };
 
+      const recalcXTranslate = margin => {
+        this.state.g
+          .transition()
+          .duration(duration) 
+          .attr('transform', `translate(${margin.left}, ${margin.top})`);          
+      };
+      
       this.props.recalc(yAxis, this.props.margin, [
         recalcXScaleRange,
         recalcXTranslate
@@ -104,7 +106,7 @@ export default class LineChart extends React.Component {
       // X AXIS
       g.select('g.axis--x')
         .transition()
-        .duration(300)
+        .duration(duration)
         .call(d3.axisBottom(this.xScale).tickValues(ids));
 
       g.selectAll('.axis--x text')
