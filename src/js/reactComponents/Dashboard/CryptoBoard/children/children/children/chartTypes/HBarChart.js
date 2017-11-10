@@ -63,8 +63,7 @@ export default class HBarChart extends React.Component {
     let [min, max] = d3.extent(dataset, d => Number(d[comparisionField]));
 
     this.yScale.domain(dataset.map(d => d.id));
-    this.xScale.domain([min, max]);
-    
+    this.xScale.domain([min, max]);    
     // ADD Y AXIS    
     const yAxis = g.select('.axis--y');
 
@@ -82,12 +81,11 @@ export default class HBarChart extends React.Component {
     }
     
     yAxis      
-      .attr('transform', `translate(${inRange(this.xScale(0))}, 0)`)
       .call(d3.axisLeft(this.yScale).tickValues(dataset.map(d => d.id)));
-
+    
     const recalcXScaleRange = margin => {      
-      const actualWidth = this.props.width - (margin.left + margin.right);     
-      this.xScale.range([0, actualWidth], 0.2);
+      const actualWidth = this.props.width - (margin.left + margin.right);      
+      this.xScale.range([0, actualWidth], 0.2);    
     };
     const recalcXTranslate = margin => {
       this.state.g
@@ -95,12 +93,14 @@ export default class HBarChart extends React.Component {
         .duration(duration)
         .attr('transform', `translate(${margin.left}, ${margin.top})`);
     };
-    
-    // OH NO - FUNCTION WITH SIDE EFFECTS
+
+    const dir = (min + (max - min) / 2) < 0 ? 'right' : 'left';    
     this.props.recalc(yAxis, this.props.margin, [
       recalcXScaleRange,
-      recalcXTranslate
-    ]);
+      recalcXTranslate,
+    ], dir);
+
+    yAxis.attr('transform', `translate(${inRange(this.xScale(0))}, 0)`);
 
     yAxis.selectAll('text')
       .data(dataset)
@@ -108,7 +108,7 @@ export default class HBarChart extends React.Component {
       .on('mouseout', d => this.toggleBar(d.id, true))
       .transition()
       .duration(duration)
-      .attr('x', d => Number(d[comparisionField]) < 0 ? 10 : -10)      
+      .attr('x', d => Number(d[comparisionField]) < 0 ? 10 : -10)
       .style('text-anchor', d => Number(d[comparisionField]) < 0 ? 'start' : 'end')
       .style('cursor', 'pointer')
       .style('font-size', '14px');
@@ -117,34 +117,32 @@ export default class HBarChart extends React.Component {
       .style('display', 'none');
     
     // ADD X AXIS
-    
     g.select('.axis--x')
       .attr('transform', `translate(0, ${actualHeight})`)
       .transition()
       .duration(duration)
       .call(d3.axisBottom(this.xScale).ticks(5));
     
-    // ADD HIDDEN ADITIONAL X AXIS        
+    // ADD HIDDEN ADITIONAL X AXIS
     const hiddenAxis = g.select('.axis--hidden');
 
     hiddenAxis.attr('transform', `translate(0, ${actualHeight})`)
       .call(
         d3.axisBottom(this.xScale)
           .tickValues(dataset.map(d => Number(d[comparisionField])))
-          .tickFormat(d3.format('.2f'))
+          .tickFormat(d3.format(',.2f'))
        );
 
     hiddenAxis.selectAll('.tick')
       .data(dataset)
       .attr('data-currency-id', d => d.id)
-      .attr('stroke', d => d.color)            
+      .attr('stroke', d => d.color)
       .style('font-size', '14px')
       .style('opacity', 0)
       .select('text')
-        .attr('y', 20)
+        .attr('y', 20);
                 
     // APPEND RECTANGLES    
-    
     const rects = g.selectAll('rect')
       .data(dataset);
 
@@ -153,7 +151,7 @@ export default class HBarChart extends React.Component {
       const res = Math.abs(this.xScale(Number(d[comparisionField])) - this.xScale(0));
       
       if(res > actualWidth) {
-          return actualWidth;
+        return actualWidth;
       }
 
       return res;
@@ -188,7 +186,12 @@ export default class HBarChart extends React.Component {
           }
         });
     
-    this.props.drawCurrencySign(comparisionField, g, {axis: 'x', x: this.xScale(max) + 15, y: 15});
+    
+    this.props.drawCurrencySign(comparisionField, g, { 
+      axis: 'x',
+      x: this.xScale(max) + 15,
+      y: 15
+    });
   }
   toggleBar(id, mouseOut) {
     const hiddenTicks = Array.from(this.state.g.selectAll('.axis--hidden .tick').nodes());
