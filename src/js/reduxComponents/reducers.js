@@ -38,8 +38,7 @@ export default function reducers(state = model, action) {
                 }
               }
           
-              window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs));
-              console.log(JSON.parse(window.localStorage.getItem('savedGraphs')));
+              window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs));              
               break;
             }
             
