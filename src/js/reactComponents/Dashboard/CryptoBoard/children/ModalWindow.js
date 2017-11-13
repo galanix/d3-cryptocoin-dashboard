@@ -82,15 +82,16 @@ export default class ModalWindow extends React.Component {
     }
 
     const newCollectionItem = {
-      hashTable: Object.assign({}, this.props.hashTable),
+      hashTable: JSON.parse(JSON.stringify(this.props.hashTable)),
       filters: Object.assign({}, this.props.model.filters),
-      currentSign: this.props.currentSign,        
+      currentSign: this.props.currentSign,
       actionSubtype: "add", // for reducer
+      url: this.props.createURL(this.props.limit, this.props.model.filters.currency), // for updating data
       id: Math.random().toString(36).slice(2) // randomly generated string, used as unique identifier
     };
 
     this.setState({ chartIsSaved: true }); // to prevent duplication
-    this.props.update(null, this.state.componentsToUpdate[1], newCollectionItem);
+    this.props.update(null, this.state.componentsToUpdate[1], newCollectionItem);    
   }
   changeCurrencyFilter(target) {
     const filterNames = ['currency'];
@@ -153,7 +154,7 @@ export default class ModalWindow extends React.Component {
 
     this.props.change(newFilterValue, filterName, this.state.componentsToUpdate[0]);
   }
-render() {
+  render() {
     return (
       <div>
         <button
@@ -211,24 +212,24 @@ render() {
                 ]}
               />
             </div>
-        </div>
-        <ButtonGroup 
-          classesCSS="controll-group"
-          onClickHandler = {this.handleControllBtnClick}
-          buttons={[
-            { classesCSS: "btn-danger", id:"cancel-button", textValue: "Hide" },
-            { classesCSS: `btn-success  ${this.state.buttonIsDisabled ? "disabled" : ""}`, id: "build-button", textValue: "Build Chart" },
-            { classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? "disabled" : ""}`, id:"save-graph-button", textValue: "Save graph" },
-          ]}                    
-        />
-        <Chart
-          ref={chart => this.chart = chart}
-          hashTable={this.props.hashTable}
-          currentSign={this.props.currentSign}
-          margin={this.props.model.margin}
-        />
-      </section>
-    </div>
+          </div>
+          <ButtonGroup 
+            classesCSS="controll-group"
+            onClickHandler = {this.handleControllBtnClick}
+            buttons={[
+              { classesCSS: "btn-danger", id:"cancel-button", textValue: "Hide" },
+              { classesCSS: `btn-success  ${this.state.buttonIsDisabled ? "disabled" : ""}`, id: "build-button", textValue: "Build Chart" },
+              { classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? "disabled" : ""}`, id:"save-graph-button", textValue: "Save graph" },
+            ]}                    
+          />
+          <Chart
+            ref={chart => this.chart = chart}
+            hashTable={this.props.hashTable}
+            currentSign={this.props.currentSign}
+            margin={this.props.model.margin}
+          />
+        </section>
+      </div>
     );
   }
 };
