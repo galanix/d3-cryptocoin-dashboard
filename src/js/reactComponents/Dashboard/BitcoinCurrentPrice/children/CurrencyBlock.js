@@ -9,9 +9,15 @@ export default class CurrencyBlock extends React.Component {
   }
   componentWillReceiveProps() {
     this.setState({
-      blink: true
+      blink: true,
+      timeoutId: setTimeout(() => this.setState({ blink: false }), 3000),
+    });
+  }
+  componentWillUnmount() {
+    this.setState({
+      blink: false,
     }, () => {
-      setTimeout(() => this.setState({ blink: false }), 3000);
+      clearTimeout(this.state.timeoutId);
     });
   }
   render() {
