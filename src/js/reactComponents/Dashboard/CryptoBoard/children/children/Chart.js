@@ -39,13 +39,14 @@ export default class Chart extends React.Component {
     let width = Math.round(this.svgDiv.getBoundingClientRect().width);
     if(width > 600) {
       width = 600;
-    }
-
+    }    
     const height = Math.round(width / 2);
-    const keys = Object.keys(this.props.hashTable);
-    const dataset = keys.map(key => this.props.hashTable[key]);
-    const colorValues = keys.map(key => this.props.hashTable[key].color);
-    const color = d3.scaleOrdinal(colorValues);
+    
+    const hashTable = this.props.hashTable;        
+    const keys = Object.keys(hashTable);
+    const dataset = keys.map(key => hashTable[key]);
+    const colorValues = keys.map(key => hashTable[key].color);
+    const color = d3.scaleOrdinal(colorValues);    
     const props = {
       dataset,
       width,
