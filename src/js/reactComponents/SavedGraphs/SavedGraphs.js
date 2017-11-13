@@ -8,10 +8,14 @@ export default class SavedGraphs extends React.Component {
   constructor() {
     super();
     this.state = {
-        componentToUpdate: 'SavedGraphs'
+        componentToUpdate: 'SavedGraphs',        
+        popUpId: "pop-up",        
     }
     this.confirmDeletion = this.confirmDeletion.bind(this);    
     this.selectChartForDeletion = this.selectChartForDeletion.bind(this);
+  }
+  componentDidMount() {
+    this.updateGraphCollectionData();
   }
   confirmDeletion(e) {
     const target = e.target;
@@ -32,6 +36,52 @@ export default class SavedGraphs extends React.Component {
         console.warn('outcome switch defaulted with', outcome);
     }
   }
+  updateGraphCollectionData() {    
+    const graphCollection = this.props.graphCollection;      
+
+    if(graphCollection.length === 0) {
+      return;  
+    }
+      
+
+    // this is done to only make one request per different url
+    /*
+     {
+       [url]: [ ...itemsThatHaveThisURL ]
+     },
+    */
+    const updateDataset = {};
+    graphCollection.forEach(item => {
+      if(!updateDataset[item.url]) {
+        updateDataset[item.url] = [];
+      }
+      updateDataset[item.url].push(item);
+    });
+    
+    const urls = Object.keys(updateDataset);
+
+    const fetchedData = urls.map(url => {
+      return fetch(url)
+        .then(res => res.json());
+    });
+        
+    Promise.all(fetchedData)
+      .then(results => {
+        const newGraphCollection = [];
+        urls.forEach((url, index) => {
+          updateDataset[url].forEach(item => {            
+            const ids = Object.keys(item.hashTable);
+            const newGraphItem = JSON.parse(JSON.stringify(item));            
+            ids.forEach(id => {
+              newGraphItem.hashTable[id] = results[index].find(d => d.id === id);
+              newGraphItem.hashTable[id].color = item.hashTable[id].color;
+            });
+            newGraphCollection.push(newGraphItem);
+          });
+        });
+        this.props.update(null, this.state.componentToUpdate, newGraphCollection);        
+      });
+  }  
   selectChartForDeletion(e) {
     const target = e.target;
     if(target.tagName !== 'SPAN') return;
@@ -59,10 +109,10 @@ export default class SavedGraphs extends React.Component {
       actionSubtype: 'delete',
     };
     
-    this.props.update(null, this.state.componentToUpdate, itemToDelete);
-  }  
+    this.props.update(null, this.state.componentToUpdate, itemToDelete);    
+  }
   render() {
-    const popUpId = "pop-up";
+    const popUpId = this.state.popUpId;
     return (
       <section id="saved-graphs" className="row">
         <PopUp
@@ -91,7 +141,7 @@ export default class SavedGraphs extends React.Component {
                     immediateRender
                   />
                 </div>
-              ))
+              ))  
             }
           </div>
           :
