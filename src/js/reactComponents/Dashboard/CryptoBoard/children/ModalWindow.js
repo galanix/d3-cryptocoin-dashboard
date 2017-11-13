@@ -81,8 +81,10 @@ export default class ModalWindow extends React.Component {
       return;
     }
 
+    const hashTable = this.props.hashTable;
+    const ids = Object.keys(hashTable);
     const newCollectionItem = {
-      hashTable: JSON.parse(JSON.stringify(this.props.hashTable)),
+      hashTable: JSON.parse(JSON.stringify(this.props.hashTable)), // do I need this?      
       filters: Object.assign({}, this.props.model.filters),
       currentSign: this.props.currentSign,
       actionSubtype: "add", // for reducer
