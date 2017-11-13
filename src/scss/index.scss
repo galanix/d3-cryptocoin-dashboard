@@ -17,8 +17,13 @@
     transition: margin-left .5s ease-out;
 }
 
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
 body {
-    overflow-x: hidden;
+    overflow-x: hidden; 
 }
 
 a.active,
@@ -41,6 +46,7 @@ a.active:hover {
 
 .graph {
     position: relative;
+    zoom: 100% !important;    
 }
 
 svg {
@@ -119,7 +125,7 @@ svg {
     < HISTORY GRAPH >
 */
 
-#history {
+#history {    
     .graph {
         display: inline-block !important;
     }
@@ -160,7 +166,7 @@ svg {
           margin-top: 2px;
           margin-bottom: 2px;
         }        
-    }
+    }    
 }
 /* < CURRENCY PAIR > */
 
@@ -168,7 +174,7 @@ svg {
 //     transition: opacity .6s ease-in;
 // }
 
-#currency-pair {
+#currency-pair {   
     .graph {
         display: inline-block !important;
     }
@@ -195,6 +201,11 @@ svg {
     input[name="hours"] {
         max-width: 200px;
     }    
+    // @media screen and (max-width: 500px) {
+    //     .graph {            
+    //         overflow: scroll;                            
+    //     }
+    // }
 }
 
 /* </ CURRENCY PAIR > */
@@ -258,7 +269,8 @@ svg {
             }
         }
     }       
-    .modal-window {        
+    .modal-window {
+
         .btn-group_container {
             margin-top: 25px;
             h4 {
@@ -271,13 +283,13 @@ svg {
                     margin-top: 5px;
                 }
             }
-        }          
+        }        
         .controll-group {         
             position: relative;
             right: 10px;
             margin-bottom: 10px;
-        }
-    }    
+        }        
+    }
     button.active {
         color: white;
         background: $success;
@@ -304,12 +316,19 @@ svg {
 }
 
 
-.modal-window {    
-    overflow-y: hidden;
+.modal-window {
+    overflow: hidden;
     transition: all .5s ease;
     max-height: 0;
-    min-height: 0;
+    min-height: 0;    
+    @media screen and (max-width: 400px) {
+        .graph {
+            width: 100%;      
+            overflow: scroll;
+        }
+    }
 }
+
 
 #word-length-tester {
     padding: 0;
@@ -380,7 +399,7 @@ svg {
 
 /* < GALLERY > */
 
-#saved-graphs {    
+#saved-graphs {        
     min-height: 100vh;
     p {
         font-size: 18px;
@@ -393,7 +412,7 @@ svg {
         color: $info;
     }
     .x_panel {
-        text-align: right;
+        text-align: right;        
     }
     .x_panel:first-child {
         margin-top: 25px;
@@ -405,6 +424,12 @@ svg {
     .fa-times:hover {
         cursor: pointer;
         color: $danger;
+    }
+    @media screen and (max-width: 500px) {
+        .x_panel {            
+            overflow: scroll;
+            text-align: left;
+        }
     }
 }
 
