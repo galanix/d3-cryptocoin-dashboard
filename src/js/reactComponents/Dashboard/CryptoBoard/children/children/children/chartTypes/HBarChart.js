@@ -63,7 +63,8 @@ export default class HBarChart extends React.Component {
     let [min, max] = d3.extent(dataset, d => Number(d[comparisionField]));
 
     this.yScale.domain(dataset.map(d => d.id));
-    this.xScale.domain([min, max]);    
+    this.xScale.domain([min, max]);
+
     // ADD Y AXIS    
     const yAxis = g.select('.axis--y');
 
@@ -94,7 +95,7 @@ export default class HBarChart extends React.Component {
         .attr('transform', `translate(${margin.left}, ${margin.top})`);
     };
 
-    const dir = (min + (max - min) / 2) < 0 ? 'right' : 'left';    
+    const dir = (min + (max - min) / 2) < 0 ? 'right' : 'left';
     this.props.recalc(yAxis, this.props.margin, [
       recalcXScaleRange,
       recalcXTranslate,
@@ -142,7 +143,7 @@ export default class HBarChart extends React.Component {
       .select('text')
         .attr('y', 20);
                 
-    // APPEND RECTANGLES    
+    // APPEND RECTANGLES
     const rects = g.selectAll('rect')
       .data(dataset);
 
@@ -185,12 +186,12 @@ export default class HBarChart extends React.Component {
             return this.xScale(Math.min(0, Number(d[comparisionField])));
           }
         });
+        
     
-    
-    this.props.drawCurrencySign(comparisionField, g, { 
+    this.props.drawCurrencySign(comparisionField, g, {
       axis: 'x',
-      x: this.xScale(max) + 15,
-      y: 15
+      x: -15, //this.xScale(max) + 25,
+      y: 10
     });
   }
   toggleBar(id, mouseOut) {
@@ -211,8 +212,8 @@ export default class HBarChart extends React.Component {
   }
   render() {
     return (
-      <div>        
-        <svg ref={svg => this.svg = svg}></svg>        
+      <div>
+        <svg ref={svg => this.svg = svg}></svg>
       </div>
     );
   }
