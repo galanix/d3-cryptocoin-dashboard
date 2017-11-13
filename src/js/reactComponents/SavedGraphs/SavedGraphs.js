@@ -44,7 +44,7 @@ export default class SavedGraphs extends React.Component {
     }
       
 
-    // this is done to only make one request per different url
+    // this is done to only make one request per same url
     /*
      {
        [url]: [ ...itemsThatHaveThisURL ]
@@ -64,8 +64,8 @@ export default class SavedGraphs extends React.Component {
       return fetch(url)
         .then(res => res.json());
     });
-        
-    Promise.all(fetchedData)
+    
+    Promise.all(fetchedData) // to update once all of the data is received
       .then(results => {
         const newGraphCollection = [];
         urls.forEach((url, index) => {
@@ -74,6 +74,7 @@ export default class SavedGraphs extends React.Component {
             const newGraphItem = JSON.parse(JSON.stringify(item));            
             ids.forEach(id => {
               newGraphItem.hashTable[id] = results[index].find(d => d.id === id);
+              // results do not have color props, we need to take them from old data
               newGraphItem.hashTable[id].color = item.hashTable[id].color;
             });
             newGraphCollection.push(newGraphItem);
@@ -122,7 +123,7 @@ export default class SavedGraphs extends React.Component {
           confirmAction={this.confirmDeletion}
         />
         { !!this.props.graphCollection && this.props.graphCollection.length !== 0 ?
-          <div className="gallery col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" onClick={this.selectChartForDeletion}>
+          <div className="gallery col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" onClick={this.selectChartForDeletion}>
             { this.props.graphCollection.map(item => (
                 <div className="x_panel" key={item.id}>
                   <span
