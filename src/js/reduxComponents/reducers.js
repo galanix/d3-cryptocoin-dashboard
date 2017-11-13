@@ -25,16 +25,21 @@ export default function reducers(state = model, action) {
               newState.cryptoBoard.chart.data = action.data;
               break;
 
-            case 'SavedGraphs': {
-              const item = action.data;
-
-              if(item.actionSubtype === 'add') {
-                newState.savedGraphs.unshift(item);
-              } else { // item.actionSubtype === 'delete'
-                newState.savedGraphs.splice(item.index, 1);
+            case 'SavedGraphs': {              
+              const data = action.data;
+              
+              if(data instanceof Array) {
+                newState.savedGraphs = data;
+              } else {
+                if(data.actionSubtype === 'add') {
+                  newState.savedGraphs.unshift(data);
+                } else { // item.actionSubtype === 'delete'
+                  newState.savedGraphs.splice(data.index, 1);
+                }
               }
-
+          
               window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs));
+              console.log(JSON.parse(window.localStorage.getItem('savedGraphs')));
               break;
             }
             
@@ -42,7 +47,7 @@ export default function reducers(state = model, action) {
               console.warn('action.forComponent(UPDATA_DATA) switch defaulted with:', action.forComponent);
           }
           break;
-
+        
         case 'CHANGE_FILTERS':
           switch(action.forComponent) {
             case 'BitcoinHistoryGraph':
