@@ -17,6 +17,8 @@ export default class Chart extends React.Component {
     super();
     this.state = {
       duration: 300,
+      prevType: 'bar',
+      chartIsRendered: false,      
     };
     this.drawCurrencySign = this.drawCurrencySign.bind(this);
     this.didPropsUpdate = this.didPropsUpdate.bind(this);
@@ -29,17 +31,31 @@ export default class Chart extends React.Component {
     }
 
     window.addEventListener('resize', () => {
-      if(!!this.state.prevType) {
+      if(this.state.chartIsRendered) {
         this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
-      }
+      }        
     });
   }
   renderChart(type, comparisionField, reMountForcefully) {
-    let ChartJSX = null;
-    let width = Math.round(this.svgDiv.getBoundingClientRect().width);
+    // if(!this.svgDiv) {
+    //   return;
+    // }
+
+    if(!this.state.chartIsRendered) { // for resize event handler
+      this.setState({ chartIsRendered: true });
+    }    
+
+    let ChartJSX = null;    
+    let width = Math.round(this.svgDiv.getBoundingClientRect().width);    
+    console.log(width);
     if(width > 600) {
       width = 600;
-    }    
+    }
+    if(width < 400) {
+      width = 400;
+    }
+    console.log(width);
+
     const height = Math.round(width / 2);
     
     const hashTable = this.props.hashTable;        
@@ -103,6 +119,10 @@ export default class Chart extends React.Component {
     }
   }
   determineSign(comparisionField) {
+    if(!comparisionField) {
+      return '';
+    }
+
     if(
       comparisionField.indexOf('price') === -1
       && comparisionField.indexOf('24h_volume') === -1
@@ -144,6 +164,7 @@ export default class Chart extends React.Component {
         .duration(duration)
         .attr('y', pos.axis === 'x' ? pos.y : -10);
     }, duration);
+
   }
   didPropsUpdate(nextProps, currProps) {
     return !(
