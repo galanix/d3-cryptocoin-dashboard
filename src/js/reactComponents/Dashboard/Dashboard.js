@@ -10,26 +10,30 @@ export default function Dashboard(props) {
   return (    
     <div className="row">
       { displayComponent.BitcoinCurrentPrice ? 
-        <BitcoinCurrentPrice update={props.update}
-                              model={props.data.currentPrice}                                         
-                              signs={props.data.general.currencySigns} /> : null
+        <BitcoinCurrentPrice 
+          update={props.update}
+          model={props.data.currentPrice}                                         
+          signs={props.data.general.currencySigns} /> : null
       }
       { displayComponent.BitcoinHistoryGraph ?
-        <BitcoinHistoryGraph update={props.update}
-                              change={props.change}
-                              model={props.data.history}                                         
-                              signs={props.data.general.currencySigns} /> : null
+        <BitcoinHistoryGraph 
+          update={props.update}
+          change={props.change}
+          model={props.data.history}                                         
+          signs={props.data.general.currencySigns} /> : null
       }
       { displayComponent.CurrencyPairGraph ?
-          <CurrencyPairGraph update={props.update}
-                              change={props.change}
-                              model={props.data.currencyPair} /> : null
+          <CurrencyPairGraph 
+            update={props.update}
+            change={props.change}
+            model={props.data.currencyPair} /> : null
       }
       { displayComponent.CryptoBoard ?
-          <CryptoBoard update={props.update}
-                        change={props.change}
-                        model={props.data.cryptoBoard}
-                        signs={props.data.general.currencySigns} /> : null
+          <CryptoBoard 
+            update={props.update}
+            change={props.change}
+            model={props.data.cryptoBoard}
+            signs={props.data.general.currencySigns} /> : null
       }             
     </div>
   );
