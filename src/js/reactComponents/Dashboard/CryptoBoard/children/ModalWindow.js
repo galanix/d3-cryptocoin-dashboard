@@ -22,6 +22,10 @@ export default class ModalWindow extends React.Component {
     this.changeComparisionField = this.changeComparisionField.bind(this);
     this.changeChartType = this.changeChartType.bind(this);
   }
+  componentWillUnmount() {
+    console.log('called');
+    this.changeChartType();
+  }
   openModalWindow() {
     if(this.state.buttonIsDisabled) return;
 
@@ -152,7 +156,7 @@ export default class ModalWindow extends React.Component {
   }
   changeChartType(target) {
     const filterName = 'type';
-    const newFilterValue = target.getAttribute('data-type');
+    const newFilterValue = !!target ? target.getAttribute('data-type') : 'bar'; // default - bar
 
     this.props.change(newFilterValue, filterName, this.state.componentsToUpdate[0]);
   }
