@@ -175,15 +175,20 @@ export default class HBarChart extends React.Component {
           'y': d => this.yScale(d.id),
           'width': getRectWidth,
           'x': d => {
+            let padding = 1;
             if(min > 0) {
-              return 0;
+              return padding; // padding in order for rect to not overlap with axis
             }
 
             if(max < 0) {
-              return this.xScale(max) - getRectWidth(d);              
+              return this.xScale(max) - getRectWidth(d);
             }
 
-            return this.xScale(Math.min(0, Number(d[comparisionField])));
+            const mainOffset = this.xScale(Math.min(0, Number(d[comparisionField])));
+            if(mainOffset <= 0) {
+              padding = 0;
+            }            
+            return mainOffset + padding;
           }
         });
         
