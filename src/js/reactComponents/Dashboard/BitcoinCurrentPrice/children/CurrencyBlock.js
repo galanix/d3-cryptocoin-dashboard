@@ -16,10 +16,7 @@ export default class CurrencyBlock extends React.Component {
         }
       }, 3000)
     });
-  }
-  componentWillUnmount() {    
-    clearTimeout(this.state.timeoutId);
-  }
+  } 
   render() {
     return  (
       <div ref={div => this.div = div} className={`${this.props.classesCSS} col-md-3 col-sm-6 col-xs-6 tile_stats_count`}>
