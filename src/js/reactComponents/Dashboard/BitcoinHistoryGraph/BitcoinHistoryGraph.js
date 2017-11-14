@@ -18,10 +18,6 @@ export default class BitcoinHistoryGraph extends React.Component {
     };
   }
   componentDidMount() {
-    this.scaleGraph();
-
-    window.addEventListener("resize", this.scaleGraph.bind(this));
-
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => this.renderGraph(false))
       .catch(err => { console.warn("failed fetch") });
@@ -50,13 +46,7 @@ export default class BitcoinHistoryGraph extends React.Component {
 
     if(componentIsUpdated) this.chart.updateLine(dataset);
     else this.chart.buildLine(dataset);
-  }
-  scaleGraph() {
-    if(document.body.clientWidth < 500)
-      scaleGraphSize("#historical-data", this.props.model.minWidth, "down", this.renderGraph.bind(this, true));
-    else
-      scaleGraphSize("#historical-data", this.props.model.width, "up", this.renderGraph.bind(this, true));
-  }
+  }  
   saveChangesAndRerender(newFilterValue, filterName) {
     this.chart.showPreloader();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
