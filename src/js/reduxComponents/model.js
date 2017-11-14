@@ -16,35 +16,22 @@ export const model = {
     updateFrequency: 60000,    
     data: {},   
   },
-   history: {
-     url: 'https://api.coindesk.com/v1/bpi/historical/close.json',
-     data: {},
-     minWidth: 300,
-     width: 500,
-     margin: { top: 60, right: 60, bottom: 60, left: 60 },
-     filters: {
-        currency: 'USD',
-        end: formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-        start: formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()), 
-        currentTimeline: 'less-than-3-month',
-     },      
-     ticksInfo: {
-      'from-all-time-to-year': {
-        xTicks: 4,
-        xTickFormat: '%Y',
-        yTicks: 3
-      },
-      'from-year-to-3-month': {
-        xTicks: 3,
-        xTickFormat: '%b\'%y',
-        yTicks: 3
-      },
-      'less-than-3-month': {
-        xTicks: 3,
-        xTickFormat: '%e\'%b',
-        yTicks: 3
-      }
-    }        
+  history: {
+    url: 'https://api.coindesk.com/v1/bpi/historical/close.json',    
+    margin: { top: 60, right: 60, bottom: 60, left: 60 },
+    filters: {
+      currency: 'USD',
+      end: formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+      start: formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()), 
+      currentTimeline: 'less-than-3-month',
+    },
+    ticksLevel: 3, // used by recursive function to calc ticks
+    ticksFormat: {
+      'from-all-time-to-year': '%Y',
+      'from-year-to-3-month': '%b\'%y',
+      'less-than-3-month': '%e\'%b',        
+    },
+    data: {},
   },
   currencyPair: {
     data: {},
