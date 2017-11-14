@@ -110,10 +110,15 @@ svg {
         font-style: italic;
         font-weight: bold;
     }
-    @media screen and (max-width: 430px) {
-      .tile_stats_count {
-          width: 100%;
-      }
+    @media screen and (max-width: 500px) {
+        text-align: center;
+        header {
+            border-bottom: 1px solid #E6E9ED;
+        }
+        .tile_stats_count {                           
+            margin-top: 25px;
+            width: 100%;
+        }        
     }
 }
 
@@ -125,7 +130,7 @@ svg {
     < HISTORY GRAPH >
 */
 
-#history {    
+#history {
     .graph {
         display: inline-block !important;
     }
@@ -140,11 +145,23 @@ svg {
             padding-right: 8px;
         }
     }    
-    @media screen and (max-width: 510px) {
+    @media screen and (max-width: 500px) {
+        text-align: center;
+        h2 {
+            width: 100%;
+            font-size: 24px;
+        }
         .btn-group {
             .btn {
-                margin-top: 5px;
+                margin-top: 1px;
+                margin-left: 16.5%; // 66.6 / 4 
+                width: 66.6%;                
             }
+        }
+        .graph {
+            width: 100% !important;
+            overflow-x: scroll;
+            overflow-y: hidden;
         }
     }
 
@@ -174,7 +191,7 @@ svg {
 //     transition: opacity .6s ease-in;
 // }
 
-#currency-pair {   
+#currency-pair {
     .graph {
         display: inline-block !important;
     }
@@ -188,7 +205,7 @@ svg {
         .btn span.glyphicon {
             color: white;
         }
-        .btn span.glyphicon {            
+        .btn span.glyphicon {
             display: none;
         }
         .btn.active span.glyphicon {
@@ -201,11 +218,18 @@ svg {
     input[name="hours"] {
         max-width: 200px;
     }    
-    // @media screen and (max-width: 500px) {
-    //     .graph {            
-    //         overflow: scroll;                            
-    //     }
-    // }
+    @media screen and (max-width: 500px) {
+        text-align: center;
+        h2 {
+            width: 100%;
+            font-size: 24px;
+        }
+        .graph {            
+            overflow-x: scroll;
+            overflow-y: hidden;
+            width: 100%;
+        }
+    }
 }
 
 /* </ CURRENCY PAIR > */
@@ -235,16 +259,7 @@ svg {
             }
             #reset_dropdown-group {
                 margin-left: 50px;
-            }
-            @media screen and (max-width: 720px) {                
-                text-align: center;
-                .dropdown_container {
-                    margin-left: 0;
-                }
-                #reset_dropdown-group {
-                    margin-left: 0;
-                }
-            }
+            }            
         }
         .dropdown_container {
             display: inline-block;            
@@ -257,33 +272,19 @@ svg {
             .btn-group {
                 margin-bottom: 5px;
             }     
-        }
-        @media screen and (max-width: 570px) {
-            .table-length, .dropdown_container {
-                text-align: center;
-                display: block;
-                margin-left: 0;                        
-            }
-            #reset_dropdown-group {                    
-                margin-top: 15px;
-            }
-        }
+        }        
     }       
     .modal-window {
-
+        overflow: hidden;
+        transition: all .5s ease;
+        max-height: 0;
+        min-height: 0;     
         .btn-group_container {
             margin-top: 25px;
             h4 {
                 margin-bottom: 5px;
             }
-        }
-        @media screen and (max-width: 560px) {
-            .btn-group_container {
-                .btn {
-                    margin-top: 5px;
-                }
-            }
-        }        
+        }             
         .controll-group {         
             position: relative;
             right: 10px;
@@ -312,23 +313,86 @@ svg {
                 opacity: 0;
             }
         }
-    }
-}
-
-
-.modal-window {
-    overflow: hidden;
-    transition: all .5s ease;
-    max-height: 0;
-    min-height: 0;    
-    @media screen and (max-width: 400px) {
-        .graph {
-            width: 100%;      
-            overflow: scroll;
+    }    
+    @media screen and (max-width: 720px) {
+        text-align: center;
+        .table-filters {
+            .dropdown-group {
+                #reset_dropdown-group {
+                    margin-top: 15px;
+                    margin-left: 0 !important;
+                }
+                .dropdown_container {
+                    display: block;
+                    margin-left: 0 !important;
+                }
+            }
         }
     }
+    @media screen and (max-width: 660px) {
+        .modal-window {
+            .btn-group_container {
+                max-width: 395px;
+                margin: 20px auto 0;
+                padding: 10px 0;
+                .btn {
+                    border-radius: 0;
+                    width: 33.3333%;
+                }
+            }
+        }
+    }
+    @media screen and (max-width: 570px) {
+        .table-filters {
+            .table-length {
+                text-align: center;
+                display: block;
+                margin-left: 0 !important;
+            }
+            h4 {
+                display: block;
+            }
+        }
+    }
+    @media screen and (max-width: 500px) {
+        text-align: center;
+        h2 {
+            width: 100%;
+            font-size: 20px;
+        }
+        #modal-button {
+            padding: 8px 14px;
+            font-size: 16px;            
+        }
+        .modal-window {            
+            .graph {
+                width: 100%;
+                overflow-x: scroll;
+                overflow-y: hidden;
+            }
+            .btn-group_container,
+            .controll-group {
+                .btn {
+                    margin-top: 1px;                    
+                    width: 66.6%;
+                }
+            }
+            .btn-group_container {
+                .btn {
+                    margin-left: 16.5%; // 66.6 / 4 
+                }
+            }
+            .controll-group {
+                right: 0;
+                margin: 0 auto 15px;
+                .btn {
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+            }
+        } 
+    }       
 }
-
 
 #word-length-tester {
     padding: 0;
@@ -343,11 +407,29 @@ svg {
     max-width: 720px;
     //margin: 0 auto;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     padding-bottom: 32px;
     font-size: 16px;
+    @media screen and (max-width: 500px) {        
+        display: block;
+        text-align: left;
+    }
+}
+
+.legend_item {
+    min-width: 10%;    
+}
+
+.legend_item:hover {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.legend_item span:last-child {
+    margin-left: 10px;
+    margin-right: 5px;
 }
 
 .arc, 
@@ -360,25 +442,10 @@ svg {
     cursor: pointer;
 }
 
-.legend_item {
-    min-width: 10%;
-}
-
-.legend_item:hover {
-    cursor: pointer;
-    font-weight: bold;
-}
-
 .square {
     display: inline-block;
     width: 15px;
     height: 15px;
-}
-
-
-.legend_item span:last-child {
-    margin-left: 10px;
-    margin-right: 5px;
 }
 
 /* </ CRYPTOBOARD > */
