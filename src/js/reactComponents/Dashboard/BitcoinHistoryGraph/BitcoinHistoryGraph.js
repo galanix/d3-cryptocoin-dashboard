@@ -1,29 +1,29 @@
-import React from "react";
+import React from 'react';
 
 // COMPONENTS
-import Header from "../../General/Header";
-import Dropdown from "../../General/Dropdown";
-import CalendarForm from "../../General/CalendarForm";
-import ButtonGroup from "../../General/ButtonGroup";
-import LineChart from "./children/LineChart";
+import Header from '../../General/Header';
+import Dropdown from '../../General/Dropdown';
+import CalendarForm from '../../General/CalendarForm';
+import ButtonGroup from '../../General/ButtonGroup';
+import LineChart from './children/LineChart';
 
 // HELPER FUNCTIONS
-import { formProperDateFormat, scaleGraphSize } from "../../../helperFunctions";
+import { formProperDateFormat, scaleGraphSize } from '../../../helperFunctions';
 
 export default class BitcoinHistoryGraph extends React.Component {
   constructor() {
     super();
     this.state = {
-      componentToUpdate: "BitcoinHistoryGraph"
+      componentToUpdate: 'BitcoinHistoryGraph'
     };
   }
   componentDidMount() {
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => this.renderGraph(false))
-      .catch(err => { console.warn("failed fetch") });
+      .catch(err => { console.warn('failed fetch') });
   }
   componentWillUnmount() {
-    window.removeEventListener("resize", this.scaleGraph.bind(this));
+    window.removeEventListener('resize', this.scaleGraph.bind(this));
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -31,7 +31,7 @@ export default class BitcoinHistoryGraph extends React.Component {
     return url + `?start=${start}&end=${end}&currency=${currency}`;
   }
   renderGraph(componentIsUpdated) {
-    if(!this.props.model.data) return;    
+    if(!this.props.model.data) return;
     // transforms a string into a Date object
     // create an array(dataset) from an object(data)
 
@@ -51,51 +51,51 @@ export default class BitcoinHistoryGraph extends React.Component {
     this.chart.showPreloader();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
     this.props.update(this.createURL(), this.state.componentToUpdate)
-        .then(() => {
-            this.renderGraph(true);
-            this.chart.hidePreloader();
-        });
+      .then(() => {
+        this.renderGraph(true);
+        this.chart.hidePreloader();
+      });
   }
   timelineFilterChange(target) {
-    if(target.tagName !== "BUTTON") return;
+    if(target.tagName !== 'BUTTON') return;
     
-    const btnValue = target.getAttribute("data-timeline"); // button value
+    const btnValue = target.getAttribute('data-timeline'); // button value
     const today = new Date(); // endDate
     const startDate = new Date();
     let timeline; // each of 6 buttons fall under 3 periods   
   
     switch(btnValue) {
-      case "all-time":
+      case 'all-time':
         startDate.setFullYear(2010);
         startDate.setMonth(7);
         startDate.setDate(17);
-        timeline = "from-all-time-to-year";
+        timeline = 'from-all-time-to-year';
         break;
-      case "1-year":
+      case '1-year':
         startDate.setFullYear(startDate.getFullYear() - 1)
-        timeline = "from-year-to-3-month";
+        timeline = 'from-year-to-3-month';
         break;
-      case "6-month":
+      case '6-month':
         startDate.setMonth(startDate.getMonth() - 6)
-        timeline = "from-year-to-3-month";
+        timeline = 'from-year-to-3-month';
         break;
-      case "3-month":
+      case '3-month':
         startDate.setMonth(startDate.getMonth() - 3)
-        timeline = "less-than-3-month";
+        timeline = 'less-than-3-month';
         break;
-      case "1-month":      
+      case '1-month':      
         startDate.setMonth(startDate.getMonth() - 1)
-        timeline ="less-than-3-month";
+        timeline ='less-than-3-month';
         break;
-      case "1-week":
+      case '1-week':
         startDate.setDate(startDate.getDate() - 7);
-        timeline ="less-than-3-month";
+        timeline ='less-than-3-month';
         break;
       default:
-        console.warn("unknown timeline: ", btnValue);
+        console.warn('unknown timeline: ', btnValue);
     }
 
-    const filterNames = [ "currentTimeline", "end", "start" ];
+    const filterNames = [ 'currentTimeline', 'end', 'start' ];
     const newFilterValues = [
       timeline,
       formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
@@ -105,8 +105,8 @@ export default class BitcoinHistoryGraph extends React.Component {
     this.saveChangesAndRerender(newFilterValues, filterNames);
   }
   currencyFilterChange(target) {
-    const newFilterValue = target.getAttribute("data-value");
-    const filterName = "currency";
+    const newFilterValue = target.getAttribute('data-value');
+    const filterName = 'currency';
 
     this.saveChangesAndRerender(newFilterValue, filterName)
   }
