@@ -190,8 +190,7 @@ export default class HBarChart extends React.Component {
             }            
             return mainOffset + padding;
           }
-        });
-        
+        });        
     
     this.props.drawCurrencySign(comparisionField, g, {
       axis: 'x',
@@ -216,10 +215,6 @@ export default class HBarChart extends React.Component {
       .style('opacity', opacityVal);
   }
   render() {
-    return (
-      <div>
-        <svg ref={svg => this.svg = svg}></svg>
-      </div>
-    );
+    return (<svg ref={svg => this.svg = svg}></svg>);
   }
 }
