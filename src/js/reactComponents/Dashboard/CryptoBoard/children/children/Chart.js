@@ -37,9 +37,9 @@ export default class Chart extends React.Component {
     });
   }
   renderChart(type, comparisionField, reMountForcefully) {
-    // if(!this.svgDiv) {
-    //   return;
-    // }
+    if(!this.svgDiv) {
+      return;
+    }
 
     if(!this.state.chartIsRendered) { // for resize event handler
       this.setState({ chartIsRendered: true });
