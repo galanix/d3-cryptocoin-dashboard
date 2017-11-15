@@ -23,18 +23,16 @@ export default class LineChart extends React.Component {
     const margin = this.props.model.margin;
     const height = width * 0.6;
     const actualWidth = width - margin.left - margin.right; // get initial width from model
-    const actualHeight = height - margin.top - margin.bottom;
-
-    this.setState({ width, height });
-              
-    this.makeScales(dataset, actualWidth, actualHeight);
-
+    const actualHeight = height - margin.top - margin.bottom;                      
+    
     const svg = d3.select(this.svg);
     svg.attrs({
       width,
       height,
       id: 'historical-data'
     });
+
+    this.makeScales(dataset, actualWidth, actualHeight);
 
     // instantiate basic graph
     // wrap it in a function to make look cleaner
@@ -53,6 +51,8 @@ export default class LineChart extends React.Component {
     };
 
     this.setState({
+      width, 
+      height,
       g: svg.append('g')
            .attr('transform', `translate(${margin.left}, ${margin.top})`)
     }, () => {
@@ -60,7 +60,7 @@ export default class LineChart extends React.Component {
 
       this.appendAxises(dataset, actualHeight);
       this.drawCurrencySign();
-      this.createHashTable(dataset, this.addMovableParts.bind(this)); // add movable after it 
+      this.createHashTable(dataset, this.addMovableParts.bind(this));
     });
   }
   updateLine(dataset) {
@@ -69,7 +69,7 @@ export default class LineChart extends React.Component {
     }
 
     const margin = this.props.model.margin;      
-    const { width, height, lineGraph, g } = this.state;
+    const { width, height, lineGraph } = this.state;
     const actualWidth = width - margin.left - margin.right;
     const actualHeight = height - margin.top - margin.bottom;
 
@@ -83,17 +83,46 @@ export default class LineChart extends React.Component {
     this.drawCurrencySign();
     this.createHashTable(dataset);               
   }
-  makeScales(dataset, width, height) {
-    // dates are in chronological order
-    const firstDate = dataset[0].time.getTime();
-    const lastDate = dataset[dataset.length - 1].time.getTime();
-    this.xScale = d3.scaleLinear().domain([ firstDate, lastDate ]).range([ 0, width ]);
-    this.yScale = d3.scaleLinear().domain(d3.extent(dataset, d => d.currencyValue)).range([ height, 0 ]);
+  showPreloader() {
+    this.WaitMessage.show();
+  }
+  hidePreloader() {
+    this.WaitMessage.hide();
+  }
+  determineTicks(dataset) {
+    const xTicksFormat = this.props.model.xTicksFormat[this.props.model.filters.currentTimeline];
+    const ticksLevel = this.props.model.ticksLevel;      
+    
+    const yTickValues = formTickValues({ // outputs an array of evenly distributed values between prevSm and prevLg
+      finalLevel: ticksLevel,
+      level: 1,
+      prevSm: d3.max(dataset, d => d.currencyValue),
+      prevLg: d3.min(dataset, d => d.currencyValue),
+    });
+
+    const xTickValues = formTickValues({
+      finalLevel: ticksLevel,
+      level: 1,
+      prevSm: dataset[0].time.getTime(),
+      prevLg: dataset[dataset.length - 1].time.getTime(),
+    });
+
+    return {
+      yTickValues,
+      xTickValues,
+      xTicksFormat,
+    };
   }
   appendAxises(dataset, actualHeight) {
-    const { yTickValues, xTickValues, ticksFormat } = this.determineTicks(dataset);
-    const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTickValues).tickFormat(d3.format('.2f'));
-    const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTickValues).tickFormat(d3.timeFormat(ticksFormat));
+    const {
+      yTickValues,
+      xTickValues,
+      xTicksFormat,
+    } = this.determineTicks(dataset);
+
+    const yAxisGen = d3.axisLeft(this.yScale).tickValues(yTickValues);
+    const xAxisGen = d3.axisBottom(this.xScale).tickValues(xTickValues).tickFormat(d3.timeFormat(xTicksFormat));
+
     const g = this.state.g;
     const duration = 1000;
 
@@ -120,8 +149,14 @@ export default class LineChart extends React.Component {
       .transition()
       .duration(duration)
       .call(xAxisGen)
-      
   }
+  makeScales(dataset, width, height) {
+    // dates are in chronological order
+    const firstDate = dataset[0].time.getTime();
+    const lastDate = dataset[dataset.length - 1].time.getTime();
+    this.xScale = d3.scaleLinear().domain([ firstDate, lastDate ]).range([ 0, width ]);
+    this.yScale = d3.scaleLinear().domain(d3.extent(dataset, d => d.currencyValue)).range([ height, 0 ]);
+  }  
   createHashTable(dataset, callback) {
     const hashTable = {};
     dataset.forEach(item => {
@@ -133,31 +168,7 @@ export default class LineChart extends React.Component {
     this.setState({
       hashTable
     }, () => { if(callback) callback(dataset); });
-  }
-  determineTicks(dataset) {
-    const ticksFormat = this.props.model.ticksFormat[this.props.model.filters.currentTimeline];
-    const ticksLevel = this.props.model.ticksLevel;      
-    
-    const yTickValues = formTickValues({ // outputs an array of evenly distributed values between prevSm and prevLg
-      finalLevel: ticksLevel,
-      level: 1,
-      prevSm: d3.max(dataset, d => d.currencyValue),
-      prevLg: d3.min(dataset, d => d.currencyValue),
-    });
-
-    const xTickValues = formTickValues({
-      finalLevel: ticksLevel,
-      level: 1,
-      prevSm: dataset[0].time.getTime(),
-      prevLg: dataset[dataset.length - 1].time.getTime(),
-    });
-
-    return {
-      yTickValues,
-      xTickValues,
-      ticksFormat,
-    };
-  }
+  }  
   drawCurrencySign() {
     const g = this.state.g;
     const yAxis = g.select('g.y-axis');
@@ -267,7 +278,7 @@ export default class LineChart extends React.Component {
       const value = hashTable[String(valueKey)];
       if(!!value) {
         this.showDotsAndTooltip(Object.assign({}, value));``
-      } else {             
+      } else {
         this.hideDotsAndTooltip();
       }
 
@@ -322,13 +333,7 @@ export default class LineChart extends React.Component {
       .transition()
       .duration(300)
       .style('opacity', 0);
-  }
-  showPreloader() {
-    this.WaitMessage.show();
-  }
-  hidePreloader() {
-    this.WaitMessage.hide();
-  }
+  }  
   render() {
     return (
       <div className="graph" ref={container => this.container = container}>
