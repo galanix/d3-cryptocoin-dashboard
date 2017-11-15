@@ -22,9 +22,6 @@ export default class BitcoinHistoryGraph extends React.Component {
       .then(() => this.renderGraph(false))
       .catch(err => { console.warn('failed fetch') });
   }
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.scaleGraph.bind(this));
-  }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
     const url = this.props.model.url;
@@ -46,7 +43,7 @@ export default class BitcoinHistoryGraph extends React.Component {
 
     if(componentIsUpdated) this.chart.updateLine(dataset);
     else this.chart.buildLine(dataset);
-  }  
+  }
   saveChangesAndRerender(newFilterValue, filterName) {
     this.chart.showPreloader();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
