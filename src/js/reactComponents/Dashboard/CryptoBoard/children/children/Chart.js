@@ -46,15 +46,13 @@ export default class Chart extends React.Component {
     }    
 
     let ChartJSX = null;    
-    let width = Math.round(this.svgDiv.getBoundingClientRect().width);    
-    console.log(width);
+    let width = Math.round(this.svgDiv.getBoundingClientRect().width);        
     if(width > 600) {
       width = 600;
     }
-    if(width < 400) {
-      width = 400;
-    }
-    console.log(width);
+    if(width < 500) {
+      width = 500;
+    }    
 
     const height = Math.round(width / 2);
     
