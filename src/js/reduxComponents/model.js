@@ -26,7 +26,7 @@ export const model = {
       currentTimeline: 'less-than-3-month',
     },
     ticksLevel: 3, // used by recursive function to calc ticks
-    ticksFormat: {
+    xTicksFormat: {
       'from-all-time-to-year': '%Y',
       'from-year-to-3-month': '%b\'%y',
       'less-than-3-month': '%e\'%b',        
@@ -34,9 +34,6 @@ export const model = {
     data: {},
   },
   currencyPair: {
-    data: {},
-    minWidth: 300,
-    width: 500,
     margin: { top: 60, right: 60, bottom: 60, left: 60 }, 
     filters: {
       pairName: 'BTCLTC',
@@ -55,7 +52,8 @@ export const model = {
       '6 hours': 6,
       '12 hours': 12,
       '24 hours': 24
-    }
+    },
+    data: {},
   },
   cryptoBoard: {
     url: 'https://api.coinmarketcap.com/v1/ticker/',
