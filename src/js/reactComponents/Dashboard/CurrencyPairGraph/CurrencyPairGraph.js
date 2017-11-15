@@ -4,7 +4,7 @@ import Header from "../../General/Header";
 import Dropdown from "../../General/Dropdown";
 import InputForm from "../../General/InputForm";
 import ButtonGroup from "../../General/ButtonGroup";
-import LineCharts from "./children/LineCharts";
+import LineChartGroup from "./children/LineChartGroup";
 
 import { scaleGraphSize } from "../../../helperFunctions";
 
@@ -14,10 +14,11 @@ export default class CurrencyPairGraph extends React.Component {
     this.state = {
       componentToUpdate: "CurrencyPairGraph"
     };
+    this.currencyFilterChange = this.currencyFilterChange.bind(this);
+    this.hoursFilterChange = this.hoursFilterChange.bind(this);
+    this.toggleGraphs = this.toggleGraphs.bind(this);
   }
   componentDidMount() {
-    window.addEventListener("resize", this.scaleGraphs.bind(this));
-
     this.props.update(this.createURL(), this.state.componentToUpdate)
     .then(() => this.renderGraphs(false))
     .catch(err => console.warn(err));
@@ -31,15 +32,7 @@ export default class CurrencyPairGraph extends React.Component {
     if(isModuleBeingUpdated) this.charts.updateLines(this.props.model.data);
     // build new graphs from scratch and add event listeners for filters
     else this.charts.buildLines(this.props.model.data);
-  }
-  scaleGraphs() {
-    if(document.body.clientWidth < 500) {
-      scaleGraphSize("#ask-bid-spread", this.props.model.minWidth, "down", this.renderGraphs.bind(this, true));
-    }
-    else {
-      scaleGraphSize("#ask-bid-spread", this.props.model.width, "up", this.renderGraphs.bind(this, true));
-    }
-  }
+  }  
   saveChangesAndRerender(newFilterValue, filterName) {
     this.charts.showPreloader();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
@@ -103,7 +96,7 @@ export default class CurrencyPairGraph extends React.Component {
     return (
       <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
         <section id="currency-pair" className="row x_panel">
-          <Header 
+          <Header
             classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
             titleText="Currency Pair"
           />
@@ -112,7 +105,7 @@ export default class CurrencyPairGraph extends React.Component {
               <Dropdown 
                 classesCSS={{ button: "btn-success", dropdown: "dropdown_currency" }}
                 titleText="Currency"
-                onClickHandler={this.currencyFilterChange.bind(this)}
+                onClickHandler={this.currencyFilterChange}
                 defaultDataValue={this.props.model.filters.pairName}
                 options={[
                   { dataValue:"BTCLTC", textValue: "BTC - LTC" },
@@ -145,14 +138,14 @@ export default class CurrencyPairGraph extends React.Component {
               inputName="hours"
               placeholder="Hours"
               inputIcon="fa fa-clock-o"
-              onSubmitHandler={this.hoursFilterChange.bind(this)}
+              onSubmitHandler={this.hoursFilterChange}
             />
             <div className="well toggle-graphs">
               <ButtonGroup 
                 containerAttrs={{ "data-toggle": "buttons"}}
                 classesCSS="btn-group"
                 noSingleButtonSelection={true}
-                onClickHandler={this.toggleGraphs.bind(this)}
+                onClickHandler={this.toggleGraphs}
                 buttons={[
                   { classesCSS: "btn-info active",
                     id: "ask",
@@ -170,7 +163,7 @@ export default class CurrencyPairGraph extends React.Component {
               />
             </div>
           </div>
-          <LineCharts 
+          <LineChartGroup
             ref={lineCharts => this.charts = lineCharts}
             model={this.props.model}                                
           />
