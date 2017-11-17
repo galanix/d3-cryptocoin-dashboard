@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function PopUp(props) {
   return (
-    <div id={props.id} className="modal fade col-xs-12 col-sm-12" role="dialog">
+    <div id={props.id} className="modal fade" role="dialog">
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
