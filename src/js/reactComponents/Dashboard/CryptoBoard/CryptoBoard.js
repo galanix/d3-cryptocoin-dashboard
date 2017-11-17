@@ -8,11 +8,11 @@ import { getRandomColor } from "../../../helperFunctions";
 
 export default class CryptoBoard extends React.Component {
     constructor() {
-        super();
-        this.state = {};
-        this.changeHashTableCurrency = this.changeHashTableCurrency.bind(this);
-        this.toggleCheckbox = this.toggleCheckbox.bind(this);
-        this.createURL = this.createURL.bind(this);
+      super();
+      this.state = {};
+      this.changeHashTableCurrency = this.changeHashTableCurrency.bind(this);
+      this.toggleCheckbox = this.toggleCheckbox.bind(this);
+      this.createURL = this.createURL.bind(this);
     }
     componentDidMount() {
         this.setState({
@@ -21,7 +21,7 @@ export default class CryptoBoard extends React.Component {
             if(Object.keys(this.state.hashTable).length <= 1) this.ModalWindow.disableButton();
         });
     }
-    toggleCheckbox(evt) {
+    toggleCheckbox(evt) { // add/removes data about the currency that user had selected in the table
         let target = evt.target;
         if(target.tagName !== "BUTTON") {
             if(target.tagName === "SPAN") target = target.parentElement;
@@ -53,53 +53,58 @@ export default class CryptoBoard extends React.Component {
         }        
     }
     changeHashTableCurrency() {
-        if(this.props.model.chart.filters.currency === this.props.model.table.filters.currency) { 
-            return; // no need for changing data
-        }
-        
-          // rewrite hashtable with the data that user has set and not the one that was in the table
-        const newHashTable = {};
-        for(let key in this.state.hashTable) {            
-            const color = this.state.hashTable[key].color;
-            newHashTable[key] = this.props.model.chart.data.find((item, id = key) => item.id === key);
-            newHashTable[key].color = color;            
-        }
-        this.setState({
-            hashTable: newHashTable
-        });
-    }
+      if(this.props.model.chart.filters.currency === this.props.model.table.filters.currency) { 
+          return; // no need for changing data
+      }
+      
+      // rewrite hashtable with the data that user has set and not the one that was in the table
+      const newHashTable = {};
+      for(let key in this.state.hashTable) {            
+          const color = this.state.hashTable[key].color;
+          newHashTable[key] = this.props.model.chart.data.find((item, id = key) => item.id === key);
+          newHashTable[key].color = color;            
+      }
+      this.setState({
+          hashTable: newHashTable
+      });
+    }    
     createURL(limit, currency) {
-        return this.props.model.url + `?convert=${currency}&limit=${limit}`;
-    }
+      let url = this.props.model.url + '?convert=' + currency;
+      if(limit != '') {
+        url += '&limit=' + limit;
+      }      
+
+      return url;      
+    }    
     render() {        
-        return  (
-            <div className="col-md-12 col-sm-12 col-xs-12">
-                <section id="board-of-crypto-currencies" className="row x_panel">
-                    <Header 
-                      classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
-                      titleText="Table of Currencies"
-                    />
-                    <ModalWindow 
-                      ref={mw => this.ModalWindow = mw}
-                      currentSign={this.props.signs[this.props.model.chart.filters.currency]}
-                      model={this.props.model.chart}
-                      limit={this.props.model.table.filters.limit}
-                      update={this.props.update}
-                      change={this.props.change}
-                      hashTable={this.state.hashTable}
-                      createURL={this.createURL}
-                      changeHashTableCurrency={this.changeHashTableCurrency}
-                    />
-                    <Board 
-                      model={this.props.model.table}
-                      update={this.props.update}
-                      change={this.props.change}
-                      hashTable={this.state.hashTable}
-                      createURL={this.createURL}
-                      toggleCheckbox={this.toggleCheckbox}
-                    />
-                </section>
-            </div>
-        );
-    }
+      return  (
+        <div className="col-md-12 col-sm-12 col-xs-12">
+          <section id="board-of-crypto-currencies" className="row x_panel">
+            <Header 
+              classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
+              titleText="Table of Currencies"
+            />
+            <ModalWindow 
+              ref={mw => this.ModalWindow = mw}
+              currentSign={this.props.signs[this.props.model.chart.filters.currency]}
+              model={this.props.model.chart}
+              limit={this.props.model.table.filters.limit}
+              update={this.props.update}
+              change={this.props.change}
+              hashTable={this.state.hashTable}
+              createURL={this.createURL}
+              changeHashTableCurrency={this.changeHashTableCurrency}
+            />
+            <Board
+              model={this.props.model.table}
+              update={this.props.update}
+              change={this.props.change}
+              hashTable={this.state.hashTable}
+              createURL={this.createURL}
+              toggleCheckbox={this.toggleCheckbox}
+            />
+          </section>
+        </div>
+    );
+  }
 };
