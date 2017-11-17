@@ -35,7 +35,7 @@ export default  class BitcoinCurrentPrice extends React.Component {
   componentWillUnmount() {
     clearInterval(this.state.intervalId);
   }
-  insertDiffJSX(diff, sign) {
+  insertDiffJSX(diff, sign) { // generates JSX based on diff value
     return (
       <span className={diff < 0 ? "red" : "green"}>
         <i className={`fa fa-sort-${diff < 0 ? "desc" : "asc"}`}></i>
