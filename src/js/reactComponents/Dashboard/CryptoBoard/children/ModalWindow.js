@@ -223,10 +223,28 @@ export default class ModalWindow extends React.Component {
             classesCSS="controll-group"
             onClickHandler = {this.handleControllBtnClick}
             buttons={[
-              { classesCSS: "btn-danger", id:"cancel-button", textValue: "Hide" },
-              { classesCSS: `btn-success  ${this.state.buttonIsDisabled ? "disabled" : ""}`, id: "build-button", textValue: "Build Chart" },
-              { classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? "disabled" : ""}`, id:"save-graph-button", textValue: "Save graph" },
-            ]}                    
+              {
+                classesCSS: "btn-danger",
+                id:"cancel-button",
+                textValue: "Hide" },
+              {
+                classesCSS: `btn-success  ${this.state.buttonIsDisabled ? "disabled" : ""}`,
+                id: "build-button",
+                textValue: "Build Chart" },
+              {
+                classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? "disabled" : ""}`,
+                id:"save-graph-button",
+                textValue: [
+                  "Save graph ",
+                  <span
+                    key="state-of-button"
+                    className="fa fa-check"
+                    style={{'display': `${this.state.chartIsSaved ? 'inline' : 'none'}`}}
+                  >
+                  </span>
+                ]
+              },
+            ]}
           />
           <Chart
             ref={chart => this.chart = chart}
