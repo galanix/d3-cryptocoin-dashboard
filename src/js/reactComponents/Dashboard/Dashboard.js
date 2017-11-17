@@ -1,11 +1,13 @@
 import React from 'react';
 
+// COMPONENTS
 import BitcoinCurrentPrice from './BitcoinCurrentPrice/BitcoinCurrentPrice';
 import BitcoinHistoryGraph from './BitcoinHistoryGraph/BitcoinHistoryGraph';
 import CurrencyPairGraph from './CurrencyPairGraph/CurrencyPairGraph';
 import CryptoBoard from './CryptoBoard/CryptoBoard';
 
 export default function Dashboard(props) {
+  // object that tells whether component should render or not
   const displayComponent = props.data.settings.displayComponent;
   return (    
     <div className="row">
@@ -13,28 +15,32 @@ export default function Dashboard(props) {
         <BitcoinCurrentPrice 
           update={props.update}
           model={props.data.currentPrice}                                         
-          signs={props.data.general.currencySigns} /> : null
+          signs={props.data.general.currencySigns} 
+        /> : null
       }
       { displayComponent.BitcoinHistoryGraph ?
-        <BitcoinHistoryGraph 
+        <BitcoinHistoryGraph
           update={props.update}
           change={props.change}
-          model={props.data.history}                                         
-          signs={props.data.general.currencySigns} /> : null
+          model={props.data.history}
+          signs={props.data.general.currencySigns}
+        /> : null
       }
       { displayComponent.CurrencyPairGraph ?
-          <CurrencyPairGraph 
+          <CurrencyPairGraph
             update={props.update}
             change={props.change}
-            model={props.data.currencyPair} /> : null
+            model={props.data.currencyPair}
+          /> : null
       }
       { displayComponent.CryptoBoard ?
-          <CryptoBoard 
+          <CryptoBoard
             update={props.update}
             change={props.change}
             model={props.data.cryptoBoard}
-            signs={props.data.general.currencySigns} /> : null
-      }             
+            signs={props.data.general.currencySigns}
+          /> : null
+      }
     </div>
   );
 }
