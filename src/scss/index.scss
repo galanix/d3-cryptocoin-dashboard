@@ -237,6 +237,13 @@ svg {
 /* < CRYPTOBOARD > */
 
 #board-of-crypto-currencies {
+    table  {
+        th[data-sort-by]:hover {
+            color: $info_darker;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    }
     .table-filters {
         h4, .dropdown {
             display: inline-block;
