@@ -44,7 +44,6 @@ class App extends React.Component {
   }
   render() {
     // routing
-    const locationPath = this.props.location.pathname || "/";
     const baseLocation = this.state.baseLocation;
     const mainPagePath = baseLocation;
     const settingsPagePath = baseLocation + "settings";
