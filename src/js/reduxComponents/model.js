@@ -2,6 +2,8 @@ import { formProperDateFormat } from '../helperFunctions';
 
 const today = new Date();
 
+// object that stores all of the raw data needed for app's initialization
+
 export const model = {
   general: {
     currencySigns: {
@@ -15,7 +17,7 @@ export const model = {
     url: 'https://api.coindesk.com/v1/bpi/currentprice.json',
     updateFrequency: 60000,    
     data: {},   
-  },
+  }, // data for BitcoinCurrentPrice component
   history: {
     url: 'https://api.coindesk.com/v1/bpi/historical/close.json',    
     margin: { top: 60, right: 60, bottom: 60, left: 60 },
@@ -32,7 +34,7 @@ export const model = {
       'less-than-3-month': '%e\'%b',        
     },
     data: {},
-  },
+  }, // data for BitcoinHistoryGraph component
   currencyPair: {
     margin: { top: 60, right: 60, bottom: 60, left: 60 }, 
     filters: {
@@ -54,7 +56,7 @@ export const model = {
       '24 hours': 24
     },
     data: {},
-  },
+  }, // data for CurrencyPairGraph component
   cryptoBoard: {
     url: 'https://api.coinmarketcap.com/v1/ticker/',
     table: {
@@ -103,7 +105,7 @@ export const model = {
         comparisionField: 'price_usd',
       }
     },    
-  },
+  }, // data for CryptoBoard component
   settings: {
     displayComponent: JSON.parse(window.localStorage.getItem('displayComponent')) || {
       BitcoinCurrentPrice: true,
@@ -111,6 +113,6 @@ export const model = {
       CurrencyPairGraph: true,
       CryptoBoard: true,
     }
-  },
-  savedGraphs: JSON.parse(window.localStorage.getItem('savedGraphs')) || [],
+  }, // data for Settings component
+  savedGraphs: JSON.parse(window.localStorage.getItem('savedGraphs')) || [], // data for SavedGraphs component  
 };

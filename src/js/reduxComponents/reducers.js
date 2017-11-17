@@ -4,7 +4,7 @@ export default function reducers(state = model, action) {
     const newState = Object.assign({}, state);    
     switch(action.type) {
        case 'UPDATE_DATA':
-          switch(action.forComponent) {
+          switch(action.forComponent) { // action handling is slightly different throughout components
             case 'BitcoinCurrentPrice':
               newState.currentPrice.data = action.data;
               break;
@@ -17,7 +17,7 @@ export default function reducers(state = model, action) {
               newState.currencyPair.data = action.data;
               break;
 
-            case 'CryptoBoard_table':
+            case 'CryptoBoard_table':              
               newState.cryptoBoard.table.data = action.data;
               break;
 
@@ -25,20 +25,20 @@ export default function reducers(state = model, action) {
               newState.cryptoBoard.chart.data = action.data;
               break;
 
-            case 'SavedGraphs': {              
+            case 'SavedGraphs': {
               const data = action.data;
               
               if(data instanceof Array) {
-                newState.savedGraphs = data;
-              } else {
-                if(data.actionSubtype === 'add') {
+                newState.savedGraphs = data; // replace dataset
+              } else { // update already existing dataset
+                if(data.actionSubtype === 'add') { 
                   newState.savedGraphs.unshift(data);
                 } else { // item.actionSubtype === 'delete'
                   newState.savedGraphs.splice(data.index, 1);
                 }
               }
           
-              window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs));              
+              window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs)); // to restore previously set dataset
               break;
             }
             
@@ -48,7 +48,7 @@ export default function reducers(state = model, action) {
           break;
         
         case 'CHANGE_FILTERS':
-          switch(action.forComponent) {
+          switch(action.forComponent) { // action handling is almost the same throughout components
             case 'BitcoinHistoryGraph':
               assignNewFilterValue(action, newState.history);
               break;
@@ -77,13 +77,17 @@ export default function reducers(state = model, action) {
         default:
           console.warn('action.type switch defaulted with', action.type);
     }
+
     return newState;
 };
 
+// abstraction that handles filter value  update
 function assignNewFilterValue(action, objectToAssignTo) {
   if(action.filterName instanceof Array) {
     action.filterName.forEach((name, index) => {
       objectToAssignTo.filters[name] = action.newFilterValue[index];
     })
-  } else objectToAssignTo.filters[action.filterName] = action.newFilterValue;  
+  } else {
+    objectToAssignTo.filters[action.filterName] = action.newFilterValue; 
+  }
 };
