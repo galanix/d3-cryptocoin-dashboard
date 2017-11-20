@@ -9,8 +9,10 @@ export default class Board extends React.Component {
 
     this.state = {
       componentToUpdate: 'CryptoBoard_table',
-      sortValue: 'market_cap',
-      sortOrder: 'desc' // asc
+      // default values
+      sortValue: 'market_cap_',
+      sortOrder: 'desc',
+      iconJSX: <span className="fa fa-sort-desc"></span>,
     };
 
     this.saveChanges = this.saveChanges.bind(this);
@@ -89,13 +91,75 @@ export default class Board extends React.Component {
   }
   sortTable(evt) {
     const target = evt.target;
-    const sortByValue = target.getAttribute('data-sort-by');
-    if(target.tagName !== 'TH' || !sortByValue) {
+    let sortValue = target.getAttribute('data-sort-by');
+    if(target.tagName !== 'TH' || !sortValue) {
       return;
     }
-    
-    
+  
+    // selected column(target) will have an icon that would tell the order of sorted data - asc / desc
+    let sortedDataset;
+    const dataset = [ ...this.props.model.data ]; // make a copy of current data
+    // wrap code with a function to prevent duplication
+    const saveSortedData = () => {
+      this.props.update(null, this.state.componentToUpdate, sortedDataset);
 
+      this.setState(prevState => ({
+        sortValue,
+        iconJSX: <span className={`fa fa-sort-${prevState.sortOrder}`}></span>,
+        filteredData: sortedDataset,
+      }), () => {
+        this.updateTable();
+      });
+    };
+
+    if(this.state.sortValue === sortValue) { // we just need to change order of the dataset
+      this.setState(prevState => ({
+        sortOrder: prevState.sortOrder === 'asc' ? 'desc' : 'asc',
+      }), () => {
+        sortedDataset = dataset.reverse();
+        saveSortedData();
+      });
+    } else {
+      this.setState({
+        sortOrder: 'desc', // the default        
+      }, () => {
+        let ascending;
+        let descending;
+        let prop = sortValue;
+        
+        if(
+          prop.indexOf('market_cap_') !== -1
+          || prop.indexOf('24h_volume_') !== -1
+          || prop.indexOf('price_') !== -1
+        ) {
+          // prop/sortValue is not complete for these three values,
+          // we need to add currently selected currency to it,
+          // ex: price_ + 'USD'.toLowerCase() --> price_usd          
+          prop += this.props.model.filters.currency.toLowerCase();
+        }
+
+        if(sortValue !== 'name') {
+          descending = (curr, next) => curr[prop] - next[prop];
+          ascending = (curr, next) => next[prop] - curr[prop];
+        } else {          
+          descending = (curr, next) => curr[prop].localeCompare(next[prop]);
+          ascending = (curr, next) => {
+            const compareResult = next[prop].localeCompare(curr[prop]);
+            if(compareResult === -1) {
+              return 1;
+            }
+            if(compareResult !== 0) {
+              return -1;
+            }
+            return 0;
+          }
+        }
+
+        const sortingMethod = this.state.sortedOrder === 'asc' ? ascending : descending;
+        sortedDataset = dataset.sort(sortingMethod);
+        saveSortedData();
+      });
+    }
   }
   saveChanges() {
     const {limit, currency} = this.props.model.filters;        
@@ -108,7 +172,7 @@ export default class Board extends React.Component {
           this.updateTable();
         });
       });
-  }  
+  }
   clearFilters() {
     const filterNames = [ 'marketCap', 'price', 'volume_24h' ];
     const newFilterValues = [ '0', '0', '0' ]; // default values
@@ -122,10 +186,10 @@ export default class Board extends React.Component {
   render() {
     return (
       <div>
-        <Filters 
+        <Filters
           filterByMarketCap={this.filterByMarketCap}
           filterByPrice={this.filterByPrice}
-          filterByVolume_24h={this.filterByVolume_24h}                         
+          filterByVolume_24h={this.filterByVolume_24h}
           changeTableCurrency={this.changeTableCurrency}
           changeTableLength={this.changeTableLength}
           clearFilters={this.clearFilters}
@@ -137,6 +201,8 @@ export default class Board extends React.Component {
           onClickHandler={this.props.toggleCheckbox}
           sortTable={this.sortTable}
           hashTable={this.props.hashTable}
+          sortOrderIcon={this.state.iconJSX}
+          colToSort={this.state.sortValue}
         />
       </div>
     );
