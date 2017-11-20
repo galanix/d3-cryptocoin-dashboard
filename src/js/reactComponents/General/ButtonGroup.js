@@ -1,6 +1,10 @@
 import React from 'react';
 
-export default class ButtonGroup extends React.Component { 
+export default class ButtonGroup extends React.Component {
+  constructor() {
+    super();
+    this.state = {};
+  }
   componentDidMount() {
     if(this.props.noSingleButtonSelection) return;
 
@@ -8,9 +12,11 @@ export default class ButtonGroup extends React.Component {
       prevClickedBtn: this.container.querySelector('.active')
     });
   }
-  handleClick(evt) {
+  handleClick(evt) {    
     const target = evt.target;
-    if(target === this.state.prevClickedBtn) return;
+    if(target === this.state.prevClickedBtn) {
+      return;
+    }
 
     if(!!this.state.prevClickedBtn && target.tagName === 'BUTTON') {
       this.state.prevClickedBtn.classList.remove('active');
