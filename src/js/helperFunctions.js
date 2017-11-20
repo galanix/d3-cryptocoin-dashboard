@@ -72,13 +72,15 @@ export function createDateObj(dateStr) {
   return new Date(year, month, day);
 }
 
-export function getRandomColor() {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i+=1) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+export function getRandomColor() {  
+  const randomInt = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+  
+  const h = randomInt(0, 360);
+  const s = randomInt(42, 98);
+  const l = randomInt(40, 90);
+  return `hsl(${h},${s}%,${l}%)`;
 }
 
 export function changeCSSProperties (properties, values, element) {
