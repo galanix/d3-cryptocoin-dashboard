@@ -37,19 +37,19 @@ export default class SavedGraphs extends React.Component {
     }
   }
   updateGraphCollectionData() {    
-    const graphCollection = this.props.graphCollection;      
+    const graphCollection = this.props.graphCollection;    
 
     if(graphCollection.length === 0) {
-      return;  
+      return;
     }
-      
 
-    // this is done to only make one request per same url
+    // this is done to make only one request per same url
     /*
      {
-       [url]: [ ...itemsThatHaveThisURL ]
+       [url]: [ ...datasetsThatHaveThisURL ]
      },
     */
+
     const updateDataset = {};
     graphCollection.forEach(item => {
       if(!updateDataset[item.url]) {
@@ -57,32 +57,38 @@ export default class SavedGraphs extends React.Component {
       }
       updateDataset[item.url].push(item);
     });
-    
+
     const urls = Object.keys(updateDataset);
 
-    const fetchedData = urls.map(url => {
-      return fetch(url)
-        .then(res => res.json());
-    });
-    
-    Promise.all(fetchedData) // to update once all of the data is received
-      .then(results => {
-        const newGraphCollection = [];
+    this.props.updateAll(urls, this.state.componentToUpdate, this.createDataCollection(urls, updateDataset));    
+  }
+  createDataCollection(urls, updateDataset) {
+    const newGraphCollection = [];
+      return results => {
         urls.forEach((url, index) => {
-          updateDataset[url].forEach(item => {            
-            const ids = Object.keys(item.hashTable);
-            const newGraphItem = JSON.parse(JSON.stringify(item));            
-            ids.forEach(id => {
-              newGraphItem.hashTable[id] = results[index].find(d => d.id === id);
-              // results do not have color props, we need to take them from old data
-              newGraphItem.hashTable[id].color = item.hashTable[id].color;
-            });
-            newGraphCollection.push(newGraphItem);
+        // iterate over unique urls
+        updateDataset[url].forEach(item => { // each url is mapped to an array of datasets that depend on it for data :
+          /*
+          {
+            [url]: [ ...datasets ]
+          },
+          */
+          // iterate over datasets arrays
+          const ids = Object.keys(item.hashTable); // each dataset item is an array of objects { id: {...properties} }
+          const newGraphItem = JSON.parse(JSON.stringify(item));
+
+          ids.forEach(id => { // iterate over ids
+            newGraphItem.hashTable[id] = results[index].find(d => d.id === id);
+            // results do not have color props, we need to take them from old data
+            newGraphItem.hashTable[id].color = item.hashTable[id].color;
           });
-        });
-        this.props.update(null, this.state.componentToUpdate, newGraphCollection);        
+          newGraphCollection.push(newGraphItem);
+        });                       
       });
-  }  
+      return newGraphCollection;
+    }
+
+  }
   selectChartForDeletion(e) {
     const target = e.target;
     if(target.tagName !== 'SPAN') return;
@@ -102,18 +108,17 @@ export default class SavedGraphs extends React.Component {
       return res;
     });
 
-    // faking an item from graphCollection to prevent from searching 2 times
+    // faking an item of graphCollection to prevent from searching 2 times
     // reducers.js only needs to know the index of an element for deletion
-
     const itemToDelete = {
       index,
       actionSubtype: 'delete',
     };
     
-    this.props.update(null, this.state.componentToUpdate, itemToDelete);    
+    this.props.update(null, this.state.componentToUpdate, itemToDelete);
   }
   render() {
-    const popUpId = this.state.popUpId;
+    const popUpId = this.state.popUpId;    
     return (
       <section id="saved-graphs" className="row">
         <PopUp
