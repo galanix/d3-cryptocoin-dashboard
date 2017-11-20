@@ -76,7 +76,7 @@ export default class CryptoBoard extends React.Component {
 
       return url;      
     }    
-    render() {        
+    render() {
       return  (
         <div className="col-md-12 col-sm-12 col-xs-12">
           <section id="board-of-crypto-currencies" className="row x_panel">
