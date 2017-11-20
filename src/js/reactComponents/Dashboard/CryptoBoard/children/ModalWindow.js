@@ -22,8 +22,7 @@ export default class ModalWindow extends React.Component {
     this.changeComparisionField = this.changeComparisionField.bind(this);
     this.changeChartType = this.changeChartType.bind(this);
   }
-  componentWillUnmount() {
-    console.log('called');
+  componentWillUnmount() {    
     this.changeChartType();
   }
   openModalWindow() {
@@ -95,7 +94,7 @@ export default class ModalWindow extends React.Component {
       url: this.props.createURL(this.props.limit, this.props.model.filters.currency), // for updating data
       id: Math.random().toString(36).slice(2) // randomly generated string, used as unique identifier
     };
-
+ 
     this.setState({ chartIsSaved: true }); // to prevent duplication
     this.props.update(null, this.state.componentsToUpdate[1], newCollectionItem);    
   }
