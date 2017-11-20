@@ -304,7 +304,20 @@ svg {
         border: 1px solid $success_darker;
     }
     th {
-        text-align: center;        
+        text-align: center;
+       
+        .fa {
+            position: relative;
+            right: 5px;
+        }
+
+        .fa-sort-asc {
+            color: $success_darker;
+        }
+        
+        .fa-sort-desc {
+            color: $danger;
+        }
     }
     td {
         position: relative; 
