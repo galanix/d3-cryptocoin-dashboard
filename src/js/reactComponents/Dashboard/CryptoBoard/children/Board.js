@@ -100,28 +100,30 @@ export default class Board extends React.Component {
     let sortedDataset;
     const dataset = [ ...this.props.model.data ]; // make a copy of current data
     // wrap code with a function to prevent duplication
-    const saveSortedData = () => {
+    const saveSortedData = (sortedDataset, sortValue, sortOrder) => {
       this.props.update(null, this.state.componentToUpdate, sortedDataset);
-
       this.setState(prevState => ({
         sortValue,
-        iconJSX: <span className={`fa fa-sort-${prevState.sortOrder}`}></span>,
+        iconJSX: <span className={`fa fa-sort-${sortOrder}`}></span>,
         filteredData: sortedDataset,
       }), () => {
         this.updateTable();
       });
     };
+    
+    if(this.state.sortValue === sortValue) {
+      // if the same th is clicked
+      // we just need to change order of the dataset
 
-    if(this.state.sortValue === sortValue) { // we just need to change order of the dataset
       this.setState(prevState => ({
         sortOrder: prevState.sortOrder === 'asc' ? 'desc' : 'asc',
       }), () => {
         sortedDataset = dataset.reverse();
-        saveSortedData();
+        saveSortedData(sortedDataset, sortValue, this.state.sortOrder);
       });
     } else {
       this.setState({
-        sortOrder: 'desc', // the default        
+        sortOrder: 'desc', // the default
       }, () => {
         let ascending;
         let descending;
@@ -139,9 +141,11 @@ export default class Board extends React.Component {
         }
 
         if(sortValue !== 'name') {
-          descending = (curr, next) => curr[prop] - next[prop];
-          ascending = (curr, next) => next[prop] - curr[prop];
-        } else {          
+          // for numbers
+          descending = (curr, next) => next[prop] - curr[prop];
+          ascending = (curr, next) => curr[prop] - next[prop];
+        } else {
+          // for strings   
           descending = (curr, next) => curr[prop].localeCompare(next[prop]);
           ascending = (curr, next) => {
             const compareResult = next[prop].localeCompare(curr[prop]);
@@ -157,7 +161,7 @@ export default class Board extends React.Component {
 
         const sortingMethod = this.state.sortedOrder === 'asc' ? ascending : descending;
         sortedDataset = dataset.sort(sortingMethod);
-        saveSortedData();
+        saveSortedData(sortedDataset, sortValue, this.state.sortOrder);
       });
     }
   }
