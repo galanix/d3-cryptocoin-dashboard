@@ -10,7 +10,10 @@ import Settings from './Settings/Settings';
 import SavedGraphs from './SavedGraphs/SavedGraphs.js';
 
 // EVENT DISPATCHERS
-import { dataRequest } from "../reduxComponents/actions/update";
+import { 
+  handleDataRequest, 
+  handleMultipleDataReqeuests 
+} from "../reduxComponents/actions/update";
 import { filterChange } from "../reduxComponents/actions/change";
 
 // UI THEME EFFECTS
@@ -24,7 +27,8 @@ function mapStateToProps(state) {
 }
 function mapDispatchToProps(dispatch) {
   return {
-    update: (url, display, componentToUpdate) => dispatch(dataRequest(url, display, componentToUpdate)),
+    update: (url, display, componentToUpdate) => dispatch(handleDataRequest(url, display, componentToUpdate)),
+    updateAll: (urls, componentToUpdate, createDataCollection) => dispatch(handleMultipleDataReqeuests(urls, componentToUpdate, createDataCollection)),
     change: (newFilterValue, filterName, componentToUpdate) => dispatch(filterChange(newFilterValue, filterName, componentToUpdate))
   };
 }
@@ -83,6 +87,7 @@ class App extends React.Component {
               render={() => (
                 <SavedGraphs 
                   update={this.props.update.bind(this)}
+                  updateAll={this.props.updateAll.bind(this)}
                   linkToGraphCreation={mainPagePath}
                   graphCollection={this.props.appData.savedGraphs}
                   margin={this.props.appData.cryptoBoard.chart.margin}                      
