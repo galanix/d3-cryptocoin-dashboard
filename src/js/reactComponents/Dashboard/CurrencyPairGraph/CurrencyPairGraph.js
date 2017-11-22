@@ -32,7 +32,7 @@ export default class CurrencyPairGraph extends React.Component {
     if(isModuleBeingUpdated) this.charts.updateLines(this.props.model.data);
     // build new graphs from scratch and add event listeners for filters
     else this.charts.buildLines(this.props.model.data);
-  }  
+  }
   saveChangesAndRerender(newFilterValue, filterName) {
     this.charts.showPreloader();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
@@ -102,7 +102,7 @@ export default class CurrencyPairGraph extends React.Component {
           />
           <div className="col-md-12 col-sm-12 col-xs-12">
             <div className="well dropdown-group">
-              <Dropdown 
+              <Dropdown
                 classesCSS={{ button: "btn-success", dropdown: "dropdown_currency" }}
                 titleText="Currency"
                 onClickHandler={this.currencyFilterChange}
@@ -136,7 +136,7 @@ export default class CurrencyPairGraph extends React.Component {
             <InputForm 
               formId="hours-input"
               inputName="hours"
-              placeholder="Hours"
+              placeholder="2 Hours"
               inputIcon="fa fa-clock-o"
               onSubmitHandler={this.hoursFilterChange}
             />
