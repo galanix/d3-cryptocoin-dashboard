@@ -17,6 +17,8 @@ export default class Chart extends React.Component {
     super();
     this.state = {
       duration: 300,
+      maxWidth: 600,
+      minWidth: 450,   
       prevType: 'bar',
       chartIsRendered: false,      
     };
@@ -28,14 +30,16 @@ export default class Chart extends React.Component {
   componentDidMount() {
     if(this.props.immediateRender) {
       this.renderChart(this.props.type, this.props.comparisionField);
-    }
+    }   
 
     window.addEventListener('resize', () => {
       if(this.state.chartIsRendered) {
-        this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
-      }        
+        setTimeout(() => {
+          this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
+        }, this.state.duration);
+      }
     });
-  }
+  } 
   renderChart(type, comparisionField, reMountForcefully) {
     if(!this.svgDiv) {
       return;
@@ -45,33 +49,36 @@ export default class Chart extends React.Component {
       this.setState({ chartIsRendered: true });
     }    
 
-    let ChartJSX = null;    
-    let width = Math.round(this.svgDiv.getBoundingClientRect().width);        
-    if(width > 600) {
-      width = 600;
+    let ChartJSX = null;
+    let width = Math.round(this.svgDiv.getBoundingClientRect().width);
+    const { maxWidth, minWidth } = this.state;
+
+    if(width > maxWidth) {
+      width = maxWidth;
     }
-    if(width < 500) {
-      width = 500;
-    }    
+    if(width < minWidth) {
+      width = minWidth;
+    }
 
     const height = Math.round(width / 2);
-    
-    const hashTable = this.props.hashTable;        
+    const hashTable = this.props.hashTable;
     const keys = Object.keys(hashTable);
     const dataset = keys.map(key => hashTable[key]);
     const colorValues = keys.map(key => hashTable[key].color);
-    const color = d3.scaleOrdinal(colorValues);    
+    const color = d3.scaleOrdinal(colorValues);
     const props = {
       dataset,
       width,
       height,
+      // minWidth,
+      // maxWidth,
       comparisionField,
       type,
       color: color.bind(this),
-      margin: this.props.margin,        
+      margin: this.props.margin,
       currentSign: this.props.currentSign,
       determineSign: this.determineSign,
-      drawCurrencySign: this.drawCurrencySign,        
+      drawCurrencySign: this.drawCurrencySign,
       didPropsUpdate: this.didPropsUpdate,
       recalc: this.recalc,
     };
@@ -101,10 +108,10 @@ export default class Chart extends React.Component {
     }
   
     const callback = () => {
-      this.setState({
+      this.setState({        
         ChildChartJSX: ChartJSX,
-        prevType: type,
-        prevComparisonField: comparisionField // for resize function
+        prevType: type, // type and comparisionField are for resize function
+        prevComparisonField: comparisionField,        
       });
     };
 
