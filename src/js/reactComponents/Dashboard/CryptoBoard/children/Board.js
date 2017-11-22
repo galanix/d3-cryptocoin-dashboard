@@ -136,7 +136,7 @@ export default class Board extends React.Component {
         ) {
           // prop/sortValue is not complete for these three values,
           // we need to add currently selected currency to it,
-          // ex: price_ + 'USD'.toLowerCase() --> price_usd          
+          // ex: price_ + 'USD'.toLowerCase() --> price_usd
           prop += this.props.model.filters.currency.toLowerCase();
         }
 
@@ -145,18 +145,9 @@ export default class Board extends React.Component {
           descending = (curr, next) => next[prop] - curr[prop];
           ascending = (curr, next) => curr[prop] - next[prop];
         } else {
-          // for strings   
-          descending = (curr, next) => curr[prop].localeCompare(next[prop]);
-          ascending = (curr, next) => {
-            const compareResult = next[prop].localeCompare(curr[prop]);
-            if(compareResult === -1) {
-              return 1;
-            }
-            if(compareResult !== 0) {
-              return -1;
-            }
-            return 0;
-          }
+          // for strings          
+          descending = (curr, next) => next[prop].localeCompare(curr[prop]);
+          ascending = (curr, next) => curr[prop].localeCompare(next[prop]);
         }
 
         const sortingMethod = this.state.sortedOrder === 'asc' ? ascending : descending;
