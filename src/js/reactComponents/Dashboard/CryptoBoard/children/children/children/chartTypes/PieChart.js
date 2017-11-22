@@ -23,16 +23,18 @@ export default class PieChart extends React.Component {
   }
   renderSVG() {
     let radius;
-    if(this.props.width > 800) { 
-        radius = 150;
-    } else if(this.props.width > 500) {
-        radius = 100;
-    } else {
-        radius = Math.round(this.props.height / 2);
-    }
+    // REDO - pick more civilized approach to determining radius
+    // if(this.props.width > this.props.maxWidth - 100) {
+    //   radius = 90;
+    // // } else if(this.props.width > this.props.minWidth - 50) {
+    // //   radius = 80;
+    // } else {
+    //   radius = Math.round(this.props.height / 2);
+    // }
+    radius = 90;
 
     const holeRadius = Math.round(radius * 0.6); // for donut chart
-    const labelr = radius + 20; // label radius
+    const labelr = radius + 5; // label radius
     const svg = d3.select(this.svg);
 
     svg.attr("width", this.props.width)
@@ -275,11 +277,12 @@ export default class PieChart extends React.Component {
       <div>
         <WordLengthTester ref={div => this.WordLengthTester = div} />
         <svg ref={svg => this.svg = svg}></svg>
-        <Legend  ref={legend => this.legend = legend}
-                onHoverHandler={this.handleHoverEvtHandler}
-                color={this.props.color}
-                comparisionField={this.props.comparisionField}
-                dataset={this.props.dataset}
+        <Legend  
+          ref={legend => this.legend = legend}
+          onHoverHandler={this.handleHoverEvtHandler}
+          color={this.props.color}
+          comparisionField={this.props.comparisionField}
+          dataset={this.props.dataset}
         />
       </div>
     );
