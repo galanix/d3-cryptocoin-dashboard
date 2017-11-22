@@ -10,11 +10,11 @@
 */
 
 .left_col {    
-    transition: all .5s ease-out;
+    transition: all .3s ease-out;
 }
 
 .right_col {
-    transition: margin-left .5s ease-out;
+    transition: margin-left .3s ease-out;
 }
 
 html, body {
@@ -486,14 +486,14 @@ svg {
 
 /* < GALLERY > */
 
-#saved-graphs {        
+#saved-graphs {
     min-height: 100vh;
     p {
         font-size: 18px;
     }
     a {
         color: $info_darker;
-        margin-left: 50px;      
+        margin-left: 50px;
     }
     a:hover {
         color: $info;
