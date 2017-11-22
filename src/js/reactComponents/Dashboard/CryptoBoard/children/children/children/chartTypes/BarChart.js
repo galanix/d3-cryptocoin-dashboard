@@ -143,12 +143,12 @@ export default class BarChart extends React.Component {
         .transition()
         .duration(duration)
         .attrs({
-            'fill':  d => this.props.color(Number(d[comparisionField])),
-            'data-currency-id': d => d.id,
-            'width': () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
-            'x': (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
-            'y': d => Number(d[comparisionField]) < 0 ? (this.yScale(0)) : this.yScale(Number(d[comparisionField])),
-            'height': d => Math.abs(this.yScale(Number(d[comparisionField])) - (this.yScale(0))),
+          'fill':  d => this.props.color(Number(d[comparisionField])),
+          'data-currency-id': d => d.id,
+          'width': () => this.xScale.bandwidth() > 200 ? 200 : this.xScale.bandwidth(),            
+          'x': (_d,i) => this.xScale(i + 1) + (this.xScale.bandwidth() > 200 ? (this.xScale.bandwidth() - 200) / 2 : 0),
+          'y': d => Number(d[comparisionField]) < 0 ? (this.yScale(0)) : this.yScale(Number(d[comparisionField])),
+          'height': d => Math.abs(this.yScale(Number(d[comparisionField])) - (this.yScale(0))),
         });
           
       this.props.drawCurrencySign(comparisionField, g);
@@ -167,9 +167,9 @@ export default class BarChart extends React.Component {
       
       // r - rect
       const show = r => {
-          if(r !== rect) {
-             r.style.opacity = 0.2;
-          }
+        if(r !== rect) {
+            r.style.opacity = 0.2;
+        }
       };
       const hide = r => {
           r.style.opacity = 1;
@@ -224,11 +224,12 @@ export default class BarChart extends React.Component {
       return (
         <div>          
           <svg ref={svg => this.svg = svg}></svg>
-          <Legend ref={legend => this.legend = legend}
-                  onHoverHandler={this.handleHoverEvtHandler}
-                  color={this.props.color}
-                  comparisionField={this.props.comparisionField}
-                  dataset={this.props.dataset}
+          <Legend
+            ref={legend => this.legend = legend}
+            onHoverHandler={this.handleHoverEvtHandler}
+            color={this.props.color}
+            comparisionField={this.props.comparisionField}
+            dataset={this.props.dataset}
           />          
         </div>
       );
