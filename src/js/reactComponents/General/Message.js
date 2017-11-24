@@ -11,7 +11,7 @@ export default class Message extends React.Component {
     return (
       <p 
         ref={p => this.p = p} 
-        className={`message ${this.props.additionalClasses}`}        
+        className={`message ${this.props.CSSClasses}`}        
       >
         {this.props.msg}
       </p>
