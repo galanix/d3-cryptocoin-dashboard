@@ -3,7 +3,7 @@ import React from 'react';
 // COMPONENTS
 import Header from '../../General/Header';
 import Dropdown from '../../General/Dropdown';
-import CalendarForm from '../../General/CalendarForm';
+import CalendarWidget from '../../General/CalendarWidget';
 import ButtonGroup from '../../General/ButtonGroup';
 import LineChart from './children/LineChart';
 import Message from '../../General/Message';
@@ -15,36 +15,35 @@ export default class BitcoinHistoryGraph extends React.Component {
   constructor() {
     super();
     this.state = {
-      componentToUpdate: 'BitcoinHistoryGraph',      
-    };        
+      componentToUpdate: 'BitcoinHistoryGraph',
+    };
 
     this.createURL = this.createURL.bind(this);
     this.renderGraph = this.renderGraph.bind(this);
     this.timelineFilterChange = this.timelineFilterChange.bind(this);
     this.currencyFilterChange = this.currencyFilterChange.bind(this);
     this.onWidgetChange = this.onWidgetChange.bind(this);
-
   }
   componentDidMount() {
     const { start, end } = this.props.model.filters;
     this.setState({
       startPlaceholder: 'From: ' + start,
-      endPlaceholder: 'To: ' + end,            
+      endPlaceholder: 'To: ' + end,
     }, () => {
       this.hideErrorMsg();
     });
 
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => this.renderGraph(false))
-      .catch(err => { console.warn('failed fetch', err) });
+      .catch(err => console.log('failed fetch', err));
   }
   hideErrorMsg() {
-    this.Message.hide();
+    this.message.hide();
     this.endForm.hideError();
     this.startForm.hideError();
   }
   showErrorMsg() {
-    this.Message.show();
+    this.message.show();
     this.startForm.showError();
     this.endForm.showError();
   }
@@ -223,23 +222,27 @@ export default class BitcoinHistoryGraph extends React.Component {
               ]}
             />
             <div className="well" style={{ "overflow" : "auto"}}>
-              <CalendarForm
+              <CalendarWidget
                 ref={form => this.startForm = form}
+                formCSSClasses="calendar-date form-horizontal"
                 name="start" 
                 id="start"
+                inputIcon="fa fa-calendar"
                 placeholder={this.state.startPlaceholder}                
                 onWidgetChange={this.onWidgetChange}
               />
-              <CalendarForm
+              <CalendarWidget
                 ref={form => this.endForm = form}
+                formCSSClasses="calendar-date form-horizontal"
                 name="end" 
                 id="end"
+                inputIcon="fa fa-calendar"
                 placeholder={this.state.endPlaceholder}                
                 onWidgetChange={this.onWidgetChange}
               />
               <Message
-                ref={Message => this.Message = Message}
-                additionalClasses="error"
+                ref={message => this.message = message}
+                CSSClasses="error"
                 msg="Error: 'From' value is later then 'To'"
               />
             </div>
