@@ -1,23 +1,58 @@
 import React from 'react';
 
-export default  function InputForm(props) {
-  return (
-    <form className="well form-horizontal form-label-left input_mask" 
-          id={props.formId}
-          onSubmit={evt => props.onSubmitHandler(evt)}
-    >
-      <fieldset>
-        <div className="control-group">
-          <div className="controls">
-            <div className="input-prepend input-group">                                                    
-              <span className="add-on input-group-addon">
-                <i className={props.inputIcon} aria-hidden="true"></i>
-              </span>
-              <input type="text" name={props.inputName} className="form-control" placeholder={props.placeholder} />
+export default class InputForm extends React.Component {
+  componentDidMount() {
+    this.span.style.transition = 'border-color .15s linear';
+    this.input.style.transition = 'border-color .15s linear';    
+  }
+  showError() {
+    this.input.style.borderColor = '#c9302c';
+    this.span.style.borderColor = '#c9302c';
+  }
+  hideError() {
+    this.input.style.borderColor = '#ccc';
+    this.span.style.borderColor = '#ccc';
+  }
+  handleSubmit(evt) {
+    evt.preventDefault();
+
+    if(typeof this.props.onSubmitHandler === 'function') {
+      this.props.onSubmitHandler(evt);
+    }
+  }
+  render() {
+    return (
+      <div className="col-md-6 col-sm-12 col-xs-12">
+        <form
+          className={this.props.formCSSClasses}
+          onSubmit={evt => this.props.onSubmitHandler(evt)}
+        >
+          <fieldset>
+            <div className="control-group">
+              <div className="controls">
+                <div className="input-prepend input-group">                                                    
+                  <span 
+                    className="add-on input-group-addon"
+                    ref={span => this.span = span}
+                  >
+                    <i className={this.props.inputIcon} aria-hidden="true"></i>
+                  </span>
+                  <input 
+                    ref={input => this.input = input}
+                    id={this.props.id}
+                    className="form-control"
+                    type="text"
+                    style={{"width" : "150px"}}                    
+                    name={this.props.inputName}
+                    placeholder={this.props.placeholder}
+                    value=""
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </fieldset>       
-    </form>
-  );
+          </fieldset>       
+        </form>
+      </div>
+    );
+  }
 }
