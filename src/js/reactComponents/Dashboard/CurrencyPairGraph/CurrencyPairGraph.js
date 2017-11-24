@@ -1,18 +1,20 @@
-import React from "react";
+import React from 'react';
 
-import Header from "../../General/Header";
-import Dropdown from "../../General/Dropdown";
-import InputForm from "../../General/InputForm";
-import ButtonGroup from "../../General/ButtonGroup";
-import LineChartGroup from "./children/LineChartGroup";
+import Header from '../../General/Header';
+import Dropdown from '../../General/Dropdown';
+import InputForm from '../../General/InputForm';
+import ButtonGroup from '../../General/ButtonGroup';
+import LineChartGroup from './children/LineChartGroup';
+import Message from '../../General/Message';
 
-import { scaleGraphSize } from "../../../helperFunctions";
+
+import { scaleGraphSize } from '../../../helperFunctions';
 
 export default class CurrencyPairGraph extends React.Component {
   constructor() {
     super();
     this.state = {
-      componentToUpdate: "CurrencyPairGraph"
+      componentToUpdate: 'CurrencyPairGraph'
     };
     this.currencyFilterChange = this.currencyFilterChange.bind(this);
     this.hoursFilterChange = this.hoursFilterChange.bind(this);
@@ -43,13 +45,13 @@ export default class CurrencyPairGraph extends React.Component {
       });
   }
   currencyFilterChange(target) {
-    const filterName = "pairName";
-    const newFilterValue = target.getAttribute("data-value");        
+    const filterName = 'pairName';
+    const newFilterValue = target.getAttribute('data-value');        
         
     this.saveChangesAndRerender(newFilterValue, filterName);
   }
   frequencyFilterChange(target) {
-    const frequency = target.getAttribute("data-value") || "";
+    const frequency = target.getAttribute('data-value') || '';
     const hours = this.props.model.filters.hours;
     const divisor = this.props.model.dataPointDivisors[frequency];
 
@@ -59,34 +61,48 @@ export default class CurrencyPairGraph extends React.Component {
         dataPoints++;
       }        
 
-      const filterNames = ["dataPoints", "currentDivisor", "frequency"];
+      const filterNames = ['dataPoints', 'currentDivisor', 'frequency'];
       const newFilterValues = [dataPoints, divisor, frequency];
     
       this.saveChangesAndRerender(newFilterValues, filterNames);
     }
   }
   hoursFilterChange(evt) {
-    evt.preventDefault();
+    const input = evt.target.querySelector('input');
+    const hours = parseFloat(input.value);
+
+    if(!hours) {
+      this.showError();
+      return;
+    }
     
-    const input = evt.target.getElementsByTagName("input")[0];
-    const hours = +input.value;
+    this.hideError();
+
     const divisor = this.props.model.filters.currentDivisor;        
     const dataPoints = Math.floor(hours / divisor);        
-    const filterNames = ["dataPoints", "hours"];        
+    const filterNames = ['dataPoints', 'hours'];        
     const newFilterValues = [dataPoints, hours];
 
-    input.placeholder = hours + " Hours"
-    input.value = "";
+    input.placeholder = hours + ' Hours'
+    input.value = '';
     input.blur();
 
     this.saveChangesAndRerender(newFilterValues, filterNames);
   }
+  showError() {
+    this.message.show();
+    this.form.showError();
+  }
+  hideError() {
+    this.message.hide();
+    this.form.hideError();
+  }
   toggleGraphs(target) {
     let targetBtn = target;
-    if(targetBtn.tagName === "SPAN") targetBtn = targetBtn.parentElement;        
+    if(targetBtn.tagName === 'SPAN') targetBtn = targetBtn.parentElement;        
     const id = targetBtn.id;
 
-    const active = targetBtn.classList.contains("active");
+    const active = targetBtn.classList.contains('active');
     if(!active) targetBtn.classList.add('active');
     else targetBtn.classList.remove('active');
 
@@ -133,13 +149,25 @@ export default class CurrencyPairGraph extends React.Component {
                 ]}
               />
             </div>
-            <InputForm 
-              formId="hours-input"
-              inputName="hours"
-              placeholder="2 Hours"
-              inputIcon="fa fa-clock-o"
-              onSubmitHandler={this.hoursFilterChange}
-            />
+            <div className="well" style={{"overfow": "auto"}}>
+              <div className="col-md-12 col-sm-12 col-xs-12">
+                <InputForm
+                  ref={form => this.form = form}
+                  formCSSClasses="form-horizontal form-label-left input_mask"
+                  formId="hours-input"
+                  inputName="hours"
+                  placeholder="2 Hours"
+                  inputIcon="fa fa-clock-o"
+                  onSubmitHandler={this.hoursFilterChange}
+                />
+              </div>
+              <Message
+                ref={message => this.message = message}
+                msg="Invalid input, try numbers"                
+                CSSClasses="error"
+              />
+              <div className="clearfix"></div>
+            </div>
             <div className="well toggle-graphs">
               <ButtonGroup 
                 containerAttrs={{ "data-toggle": "buttons"}}

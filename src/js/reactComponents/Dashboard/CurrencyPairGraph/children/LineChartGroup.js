@@ -49,8 +49,7 @@ export default class LineChartGroup extends React.Component {
       });
     });
   }
-  updateLines(dataset) {
-    console.log('boom');
+  updateLines(dataset) {    
     if(!dataset) {
       return;
     }
@@ -71,10 +70,10 @@ export default class LineChartGroup extends React.Component {
     this.appendAxises(dataset, actualHeight);
   }
   showPreloader() {
-    this.Message.show();
+    this.message.show();
   }
   hidePreloader() {
-    this.Message.hide();
+    this.message.hide();
   }
   appendAxises(dataset, actualHeight) {
     const { 
@@ -218,10 +217,10 @@ export default class LineChartGroup extends React.Component {
         ask, bid, spread,
       }
     }, callback);  
-  }  
+  }
   toggleGraphs(id, active) {
     const svg = d3.select(this.svg);
-    const graphs = this.state.graphs;    
+    const graphs = this.state.graphs;
 
     svg
       .select('#graph-type--' + id)
@@ -232,17 +231,18 @@ export default class LineChartGroup extends React.Component {
     // Toggled graph
     graphs[id].hidden = active;
     
-    /* 
+    /*
       we want to update graphs always except for the 2 cases:
         1. all graphs are hidden
-        2. when ask graph is hidden but bid isn't and vice versa - because in this case ask/bid only changes opacity, 
+        2. when ask graph is hidden but bid isn't and vice versa - because in this case ask/bid only changes opacity,
            scale doesn't need to be decalculated
     */
-
+    console.log('here');
+    // #REDO - if statement doesn't yield true
     if(
       !(
-        graphs['ask'].hidden 
-        && graphs['bid'].hidden 
+        graphs['ask'].hidden
+        && graphs['bid'].hidden
         && graphs['spread'].hidden)
       && !(
         (!graphs['ask'].hidden || graphs['bid'].hidden)
@@ -250,6 +250,7 @@ export default class LineChartGroup extends React.Component {
       )
     ) {
       // remake scales to fit/unfit the graphs
+      console.log('not here');
       this.updateLines(this.props.model.data);
     }
   }
@@ -257,7 +258,7 @@ export default class LineChartGroup extends React.Component {
     return (
       <div ref={div => this.container = div} className="graph">
         <svg ref={svg => this.svg = svg}></svg>
-        <Message ref={waitMessage => this.Message = waitMessage} msg="Wait, please"/>
+        <Message ref={message => this.message = message} msg="Wait, please"/>
       </div>
     );
   }
