@@ -2,7 +2,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import { attrs } from 'd3-selection-multi';
 
-import WaitMessage from '../../../../../../General/WaitMessage.js';
+import Message from '../../../../../../General/Message.js';
 import Legend from '../Legend.js';
 
 import Graph from '../../../../../../../components/Graph.js';
@@ -233,10 +233,10 @@ export default class LineChart extends React.Component {
     this.buildLine(4);
   }
   showPreloader() {
-    this.WaitMessage.show();
+    this.Message.show();
   }
   hidePreloader() {
-    this.WaitMessage.hide();
+    this.Message.hide();
   }
   handleHoverEvtHandler(id, mouseOut) {
     const d = this.props.dataset.find(item => item.id === id);      
@@ -289,8 +289,8 @@ export default class LineChart extends React.Component {
     return (
       <div>          
         <svg ref={svg => this.svg = svg}></svg>                
-        <WaitMessage 
-          ref={waitMessage => this.WaitMessage = waitMessage} 
+        <Message 
+          ref={waitMessage => this.Message = waitMessage} 
           msg="Wait, please"
         />          
       </div>

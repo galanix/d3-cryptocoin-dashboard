@@ -1,0 +1,26 @@
+import React from 'react';
+
+export default class Message extends React.Component {
+  constructor() {
+    super();    
+  }
+  componentDidMount() {
+    this.hide();
+  }
+  show() {
+    this.p.style.opacity = 0.75;
+  }
+  hide() {
+    this.p.style.opacity = 0;
+  }
+  render() {
+    return (
+      <p 
+        ref={p => this.p = p} 
+        className={`message ${this.props.additionalClasses}`}        
+      >
+        {this.props.msg}
+      </p>
+    );
+  }
+};

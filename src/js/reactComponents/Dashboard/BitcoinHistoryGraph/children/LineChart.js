@@ -3,7 +3,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import { attrs } from 'd3-selection-multi';
 
-import WaitMessage from '../../../General/WaitMessage';
+import Message from '../../../General/Message';
 
 import Graph from '../../../../components/Graph';
 import { formProperDateFormat, removeDuplicates, formTickValues } from '../../../../helperFunctions';
@@ -84,10 +84,10 @@ export default class LineChart extends React.Component {
     this.createHashTable(dataset);               
   }
   showPreloader() {
-    this.WaitMessage.show();
+    this.Message.show();
   }
   hidePreloader() {
-    this.WaitMessage.hide();
+    this.Message.hide();
   }
   determineTicks(dataset) {
     const xTicksFormat = this.props.model.xTicksFormat[this.props.model.filters.currentTimeline];
@@ -338,7 +338,7 @@ export default class LineChart extends React.Component {
     return (
       <div className="graph" ref={container => this.container = container}>
         <svg ref={svg => this.svg = svg}></svg>
-        <WaitMessage ref={WaitMessage => this.WaitMessage = WaitMessage} msg="Wait, please"/>
+        <Message ref={Message => this.Message = Message} msg="Wait, please"/>
       </div>
     );
   }
