@@ -31,8 +31,6 @@ export default class LineChartGroup extends React.Component {
       height,
       id: 'ask-bid-spread',
     });
-    
-    this.makeScales(dataset, actualWidth, actualHeight);
 
     this.setState({
       width,
@@ -41,13 +39,18 @@ export default class LineChartGroup extends React.Component {
         .attr('transform', `translate(${margin.left}, ${margin.top})`)
     }, () => {
       // INSTANTIATE GRAPH OBJECTS
-      // AND WHEN DONE, CALLBACK TO APPEND AXISES
+      // AND WHEN DONE, CALLBACK TO CREATE SCALES AND APPEND AXISES
       this.createGraphInstances(dataset, () => {
+        this.makeScales(dataset, actualWidth, actualHeight);
         this.appendAxises(dataset, actualHeight);
+        // add graphs after scales are defined
+        const graphs = this.state.graphs;
+        Object.keys(graphs).forEach(type => graphs[type].append(dataset));
       });
-    });            
+    });
   }
   updateLines(dataset) {
+    console.log('boom');
     if(!dataset) {
       return;
     }
@@ -137,90 +140,116 @@ export default class LineChartGroup extends React.Component {
     const firstDate = new Date(dataset[0].created_on).getTime();
     const lastDate = new Date(dataset[dataset.length - 1].created_on).getTime();
 
+    let spread;
+    let ask;
+    let bid;
+    let minValY;
+    let maxValY;
+
+    // if graphs are already instantiated
+    const graphs = this.state.graphs;
+    if(!!graphs) {      
+      spread = graphs['spread'];
+      ask = graphs['ask'];
+      bid = graphs['bid'];
+    }
+
+    if(spread.hidden) {
+      minValY = d => Math.min(Number(d.ticker.ask), Number(d.ticker.bid));      
+    } else {
+      minValY = d => Math.abs(Number(d.ticker.ask) - Number(d.ticker.bid));
+    }
+
+    if(ask.hidden && bid.hidden) {
+      maxValY = d => Math.abs(Number(d.ticker.ask) - Number(d.ticker.bid));
+    } else {
+      maxValY = d => Math.max(Number(d.ticker.ask), Number(d.ticker.bid));
+    }
+
+    this.yScale = d3.scaleLinear()
+      .domain([
+        d3.min(dataset, d => minValY(d)),
+        d3.max(dataset, d => maxValY(d))
+      ])
+      .range([height, 0]);
+    
     this.xScale = d3.scaleLinear()
       .domain([
         firstDate,
         lastDate
       ])
-      .range([0, width]);              
-    
-    const spread = (!!this.state && !!this.state.graphs) ? this.state.graphs['spread'] : null;
-
-    if(!spread || !!spread.hidden) {
-      const askMin = d3.min(dataset, d => Number(d.ticker.ask));
-      const bidMin = d3.min(dataset, d => Number(d.ticker.bid));
-
-      this.minFuncForY = askMin < bidMin ? d => Number(d.ticker.ask) : d => Number(d.ticker.bid);    
-    } else {
-      this.minFuncForY = d => Math.abs((Number(d.ticker.ask)) - (Number(d.ticker.bid)));
-    }
-
-    const askMax = d3.max(dataset, d => Number(d.ticker.ask));    
-    const bidMax = d3.max(dataset, d => Number(d.ticker.bid));    
-    this.maxFuncForY = askMax > bidMax ? d => Number(d.ticker.ask) : d => Number(d.ticker.bid);
-
-    this.yScale = d3.scaleLinear()
-      .domain([
-        d3.min(dataset, d => this.minFuncForY(d)),
-        d3.max(dataset, d => this.maxFuncForY(d))
-      ])
-      .range([height, 0]);        
+      .range([0, width]);
   }
   createGraphInstances(dataset, callback) {
     const g = this.state.g;
-    const instantiatedGraphs = {};
-    const graphsInitData = {
-      ask: {
-        type: 'ask',
-        color: '#31b0d5',
-        hidden: false,
-        lineFunction:  d3.line()
-          .x(d => this.xScale(new Date(d.created_on).getTime()))
-          .y(d => this.yScale(Number(d.ticker.ask))),
-        container: g,
-      },
-      bid: {
-        type: 'bid',
-        color: '#c9302c',
-        hidden: false,
-        lineFunction: d3.line()
-          .x(d => this.xScale(new Date(d.created_on).getTime()))
-          .y(d => this.yScale(Number(d.ticker.bid))),
-        container: g,
-      },
-      spread: {
-        type: 'spread',
-        color: '#26B99A',
-        hidden: true,
-        lineFunction: d3.line()
-          .x(d => this.xScale(new Date(d.created_on).getTime()))
-          .y(d => this.yScale((Number(d.ticker.ask)) - (Number(d.ticker.bid)))),
-        container: g,
-      }
-    };
+    
+    const ask = new Graph({
+      type: 'ask',
+      color: '#31b0d5',
+      hidden: false,
+      lineFunction:  d3.line()
+        .x(d => this.xScale(new Date(d.created_on).getTime()))
+        .y(d => this.yScale(Number(d.ticker.ask))),
+      container: g,
+    });
 
-    Object.keys(graphsInitData).map(key => {
-      const graph = new Graph(graphsInitData[key]);
-      graph.append(dataset);
-      instantiatedGraphs[key] = graph;
+    const bid = new Graph({
+      type: 'bid',
+      color: '#c9302c',
+      hidden: false,
+      lineFunction: d3.line()
+        .x(d => this.xScale(new Date(d.created_on).getTime()))
+        .y(d => this.yScale(Number(d.ticker.bid))),
+      container: g,
+    });
+
+    const spread = new Graph({
+      type: 'spread',
+      color: '#26B99A',
+      hidden: true,
+      lineFunction: d3.line()
+        .x(d => this.xScale(new Date(d.created_on).getTime()))
+        .y(d => this.yScale((Number(d.ticker.ask)) - (Number(d.ticker.bid)))),
+      container: g,
     });
 
     this.setState({
-      graphs: instantiatedGraphs,
-    }, callback);
-  }
+      graphs: {
+        ask, bid, spread,
+      }
+    }, callback);  
+  }  
   toggleGraphs(id, active) {
     const svg = d3.select(this.svg);
+    const graphs = this.state.graphs;    
+
     svg
       .select('#graph-type--' + id)
       .transition()
       .duration(600)
       .style('opacity', active ? 0 : 1);
     
-    const toggledGraph = this.state.graphs[id];
-    toggledGraph.hidden = active;
-    // remake scales to fit/unfit the spread graph
-    if(id === 'spread') {
+    // Toggled graph
+    graphs[id].hidden = active;
+    
+    /* 
+      we want to update graphs always except for the 2 cases:
+        1. all graphs are hidden
+        2. when ask graph is hidden but bid isn't and vice versa - because in this case ask/bid only changes opacity, 
+           scale doesn't need to be decalculated
+    */
+
+    if(
+      !(
+        graphs['ask'].hidden 
+        && graphs['bid'].hidden 
+        && graphs['spread'].hidden)
+      && !(
+        (!graphs['ask'].hidden || graphs['bid'].hidden)
+        || (graphs['ask'].hidden || !graphs['bid'].hidden)
+      )
+    ) {
+      // remake scales to fit/unfit the graphs
       this.updateLines(this.props.model.data);
     }
   }
