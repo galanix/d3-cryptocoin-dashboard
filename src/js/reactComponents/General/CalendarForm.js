@@ -6,9 +6,24 @@ import "flatpickr/dist/themes/material_green.css";
 // HELPER FUNCTIONS
 import { formProperDateFormat, createDateObj } from "../../helperFunctions";
 
-export default class CalendarForm extends React.Component {  
+export default class CalendarForm extends React.Component {   
   componentDidMount() {
     this.initCalendar();
+    this.setState({
+      icon: this.input.parentElement.querySelector('span')
+    }, () => {
+      this.state.icon.style.transition = 'border-color .15s linear';
+      this.input.style.transition = 'border-color .15s linear';
+    });
+
+  }
+  showError() {
+    this.input.style.borderColor = '#c9302c';
+    this.state.icon.style.borderColor = '#c9302c';
+  }
+  hideError() {
+    this.input.style.borderColor = '#ccc';
+    this.state.icon.style.borderColor = '#ccc';
   }
   initCalendar() {
     const self = this; // for onChange method
