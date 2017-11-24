@@ -1,12 +1,6 @@
 import React from 'react';
 
-export default class Message extends React.Component {
-  constructor() {
-    super();    
-  }
-  componentDidMount() {
-    this.hide();
-  }
+export default class Message extends React.Component {  
   show() {
     this.p.style.opacity = 0.75;
   }
