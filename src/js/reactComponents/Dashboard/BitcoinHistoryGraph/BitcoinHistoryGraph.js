@@ -26,12 +26,12 @@ export default class BitcoinHistoryGraph extends React.Component {
 
   }
   componentDidMount() {
-    this.hideErrorMsg();
-
     const { start, end } = this.props.model.filters;
     this.setState({
       startPlaceholder: 'From: ' + start,
-      endPlaceholder: 'To: ' + end,
+      endPlaceholder: 'To: ' + end,            
+    }, () => {
+      this.hideErrorMsg();
     });
 
     this.props.update(this.createURL(), this.state.componentToUpdate)
@@ -40,9 +40,13 @@ export default class BitcoinHistoryGraph extends React.Component {
   }
   hideErrorMsg() {
     this.Message.hide();
+    this.endForm.hideError();
+    this.startForm.hideError();
   }
   showErrorMsg() {
-    this.Message.show();  
+    this.Message.show();
+    this.startForm.showError();
+    this.endForm.showError();
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -220,12 +224,14 @@ export default class BitcoinHistoryGraph extends React.Component {
             />
             <div className="well" style={{ "overflow" : "auto"}}>
               <CalendarForm
+                ref={form => this.startForm = form}
                 name="start" 
-                id="start"                
+                id="start"
                 placeholder={this.state.startPlaceholder}                
                 onWidgetChange={this.onWidgetChange}
               />
-              <CalendarForm 
+              <CalendarForm
+                ref={form => this.endForm = form}
                 name="end" 
                 id="end"
                 placeholder={this.state.endPlaceholder}                
@@ -234,7 +240,7 @@ export default class BitcoinHistoryGraph extends React.Component {
               <Message
                 ref={Message => this.Message = Message}
                 additionalClasses="error"
-                msg="An error has occured..."
+                msg="Error: 'From' value is later then 'To'"
               />
             </div>
             <ButtonGroup 
