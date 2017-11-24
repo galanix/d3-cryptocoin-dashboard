@@ -71,8 +71,8 @@ svg {
 
 .message.error {
     color: $danger;
-    position: relative;
-    font-size: 12px;
+    position: static;
+    font-size: 12px;    
 }
 
 .x_title h2 {
@@ -200,6 +200,10 @@ svg {
 #currency-pair {
     .graph {
         display: inline-block !important;
+    }
+    .message.error {
+        text-align: left;
+        padding-left: 5%;
     }
     .form-control-feedback.fa-clock-o {
         margin-top: 6px;
