@@ -235,22 +235,22 @@ export default class LineChartGroup extends React.Component {
       we want to update graphs always except for the 2 cases:
         1. all graphs are hidden
         2. when ask graph is hidden but bid isn't and vice versa - because in this case ask/bid only changes opacity,
-           scale doesn't need to be decalculated
+           scale doesn't need to be recalculated
     */
-    console.log('here');
-    // #REDO - if statement doesn't yield true
+    // #REDO - ONLY HAVE WRITTEN 1ST CASE
     if(
-      !(
-        graphs['ask'].hidden
-        && graphs['bid'].hidden
-        && graphs['spread'].hidden)
-      && !(
-        (!graphs['ask'].hidden || graphs['bid'].hidden)
-        || (graphs['ask'].hidden || !graphs['bid'].hidden)
-      )
+      // !(
+      //   graphs['ask'].hidden
+      //   && graphs['bid'].hidden
+      //   && graphs['spread'].hidden
+      // )
+      // && !(
+      //   (!graphs['ask'].hidden || graphs['bid'].hidden)
+      //   || (graphs['ask'].hidden || !graphs['bid'].hidden)
+      // )      
+      !(graphs['spread'].hidden && graphs['ask'].hidden && graphs['bid'].hidden)
     ) {
-      // remake scales to fit/unfit the graphs
-      console.log('not here');
+      // remake scales to fit/unfit the graphs  
       this.updateLines(this.props.model.data);
     }
   }
