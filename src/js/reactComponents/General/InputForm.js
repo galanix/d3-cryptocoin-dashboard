@@ -25,7 +25,7 @@ export default class InputForm extends React.Component {
       <div className="col-md-6 col-sm-12 col-xs-12">
         <form
           className={this.props.formCSSClasses}
-          onSubmit={evt => this.props.onSubmitHandler(evt)}
+          onSubmit={evt => this.handleSubmit(evt)}
         >
           <fieldset>
             <div className="control-group">
@@ -37,15 +37,14 @@ export default class InputForm extends React.Component {
                   >
                     <i className={this.props.inputIcon} aria-hidden="true"></i>
                   </span>
-                  <input 
+                  <input                                        
                     ref={input => this.input = input}
                     id={this.props.id}
                     className="form-control"
                     type="text"
                     style={{"width" : "150px"}}                    
                     name={this.props.inputName}
-                    placeholder={this.props.placeholder}
-                    value=""
+                    placeholder={this.props.placeholder}                    
                   />
                 </div>
               </div>
