@@ -4,7 +4,7 @@ import Header from '../../General/Header';
 import Dropdown from '../../General/Dropdown';
 import InputForm from '../../General/InputForm';
 import ButtonGroup from '../../General/ButtonGroup';
-import LineChartGroup from './children/LineChartGroup';
+import LineChart from './children/AugmentedBasicLineChart';
 import Message from '../../General/Message';
 
 
@@ -31,9 +31,9 @@ export default class CurrencyPairGraph extends React.Component {
   }
   renderGraphs(isModuleBeingUpdated) {
     // substitute dataset and update current graphs
-    if(isModuleBeingUpdated) this.charts.updateLines(this.props.model.data);
+    if(isModuleBeingUpdated) this.charts.updateLine(this.props.model.data);
     // build new graphs from scratch and add event listeners for filters
-    else this.charts.buildLines(this.props.model.data);
+    else this.charts.buildLine(this.props.model.data);
   }
   saveChangesAndRerender(newFilterValue, filterName) {
     this.charts.showPreloader();
@@ -191,9 +191,10 @@ export default class CurrencyPairGraph extends React.Component {
               />
             </div>
           </div>
-          <LineChartGroup
+          <LineChart
             ref={lineCharts => this.charts = lineCharts}
-            model={this.props.model}                                
+            model={this.props.model}
+            graphId="ask-bid-spread"                            
           />
         </section>
       </div>
