@@ -5,7 +5,7 @@ import Header from '../../General/Header';
 import Dropdown from '../../General/Dropdown';
 import CalendarWidget from '../../General/CalendarWidget';
 import ButtonGroup from '../../General/ButtonGroup';
-import LineChart from './children/LineChart';
+import LineChart from './children/AugmentedBasicLineChart';
 import Message from '../../General/Message';
 
 // HELPER FUNCTIONS
@@ -70,8 +70,11 @@ export default class BitcoinHistoryGraph extends React.Component {
       });
     });
 
-    if(componentIsUpdated) this.chart.updateLine(dataset);
-    else this.chart.buildLine(dataset);
+    if(componentIsUpdated) {
+      this.chart.updateLine(dataset);
+    } else {
+      this.chart.buildLine(dataset);
+    }
   }
   saveChangesAndRerender(newFilterValue, filterName) {
     this.chart.showPreloader();
@@ -196,7 +199,7 @@ export default class BitcoinHistoryGraph extends React.Component {
       this.showErrorMsg();
     }
 
-  }  
+  }
   render() {
     return (
       <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
@@ -246,7 +249,7 @@ export default class BitcoinHistoryGraph extends React.Component {
                 msg="Error: 'From' value is later then 'To'"
               />
             </div>
-            <ButtonGroup 
+            <ButtonGroup
               onClickHandler={this.timelineFilterChange}
               classesCSS="well btn-group full-width"                                 
               buttons={[
@@ -277,10 +280,11 @@ export default class BitcoinHistoryGraph extends React.Component {
               ]}
             />
           </div>
-          <LineChart 
+          <LineChart
             ref={lineChart => this.chart = lineChart}
             model={this.props.model}
             signs={this.props.signs}
+            graphId="historical-data"
           />
         </section>
       </div>
