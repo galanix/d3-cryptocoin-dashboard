@@ -1,16 +1,10 @@
 import React from 'react';
 
-export default class Message extends React.Component {  
-  show() {
-    this.p.style.opacity = 0.75;
-  }
-  hide() {
-    this.p.style.opacity = 0;
-  }
+export default class Message extends React.Component {    
   render() {
     return (
       <p 
-        ref={p => this.p = p} 
+        style={{ opacity: this.props.isMessageVisible ? 0.75 : 0 }}        
         className={`message ${this.props.CSSClasses || ''}`}        
       >
         {this.props.msg}

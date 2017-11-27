@@ -6,17 +6,28 @@ import * as d3 from 'd3';
 import { attrs } from 'd3-selection-multi';
 
 export default class BasicLineChart extends React.Component {
-  componentDidMount() {
-      this.hidePreloader();
+  constructor() {
+    super();
+    this.state = {
+      isMessageVisible: false,
+    };
   }
-  showPreloader() {
-    this.message.show();
+  hideMessage() {
+    this.setState({
+      isMessageVisible: false
+    });
   }
-  hidePreloader() {
-    this.message.hide();
+  showMessage() {
+    this.setState({
+      isMessageVisible: true,
+    });
   }
   buildLine(dataset) {
-    let width = Math.round(this.container.getBoundingClientRect().width);
+    if(!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
+      return;
+    }
+
+    let width = Math.round(this.svg.parentElement.getBoundingClientRect().width);
     if(width > 600) {
       width = 600;
     } else if(width < 500) {
@@ -45,11 +56,12 @@ export default class BasicLineChart extends React.Component {
         dataset, 
         actualWidth,
         actualHeight,
-      );      
-    });    
+      );
+    });
   }
   updateLine(dataset) {
-    if(!dataset) {
+    // because we expect an array
+    if(!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
       return;
     }
 
@@ -98,11 +110,11 @@ export default class BasicLineChart extends React.Component {
       .call(xAxisGen);
   }
   render() {
-      return (
-        <div ref={div => this.container = div} className="graph">
-          <svg ref={svg => this.svg = svg}></svg>
-          <Message ref={message => this.message = message} msg="Wait, please"/>
-      </div>
-      );
+    return (
+      <div className="graph">
+        <svg ref={svg => this.svg = svg}></svg>
+        <Message msg="Wait, please" isMessageVisible={this.state.isMessageVisible} />
+    </div>
+    );
   }
 }

@@ -14,11 +14,14 @@ export default class CurrencyPairGraph extends React.Component {
   constructor() {
     super();
     this.state = {
-      componentToUpdate: 'CurrencyPairGraph'
+      componentToUpdate: 'CurrencyPairGraph',
+      isErrorMessageVisible: false,
+      isFormHighlighted: false,
     };
     this.currencyFilterChange = this.currencyFilterChange.bind(this);
     this.hoursFilterChange = this.hoursFilterChange.bind(this);
     this.toggleGraphs = this.toggleGraphs.bind(this);
+    this.frequencyFilterChange = this.frequencyFilterChange.bind(this);
   }
   componentDidMount() {
     this.props.update(this.createURL(), this.state.componentToUpdate)
@@ -26,22 +29,25 @@ export default class CurrencyPairGraph extends React.Component {
     .catch(err => console.warn(err));
   }
   createURL() {
-    const { pairName, dataPoints, hours } = this.props.model.filters;
+    const { pairName, dataPoints, hours } = this.props.model.filters;    
     return `https://api.nexchange.io/en/api/v1/price/${pairName}/history/?data_points=${dataPoints}&format=json&hours=${hours}`;
   }
-  renderGraphs(isModuleBeingUpdated) {
-    // substitute dataset and update current graphs
-    if(isModuleBeingUpdated) this.charts.updateLine(this.props.model.data);
-    // build new graphs from scratch and add event listeners for filters
-    else this.charts.buildLine(this.props.model.data);
+  renderGraphs(isModuleBeingUpdated) {    
+    if(isModuleBeingUpdated) {
+      // substitute dataset and update current graphs
+      this.charts.updateLine(this.props.model.data);
+    } else {
+      // build new graphs from scratch and add event listeners for filters
+      this.charts.buildLine(this.props.model.data);
+    }
   }
   saveChangesAndRerender(newFilterValue, filterName) {
-    this.charts.showPreloader();
+    this.charts.showMessage();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => {
         this.renderGraphs(true);
-        this.charts.hidePreloader();
+        this.charts.hideMessage();
       });
   }
   currencyFilterChange(target) {
@@ -90,12 +96,16 @@ export default class CurrencyPairGraph extends React.Component {
     this.saveChangesAndRerender(newFilterValues, filterNames);
   }
   showError() {
-    this.message.show();
-    this.form.showError();
+    this.setState({
+      isErrorMessageVisible: true,
+      isFormHighlighted: true,
+    });
   }
   hideError() {
-    this.message.hide();
-    this.form.hideError();
+    this.setState({
+      isErrorMessageVisible: false,
+      isFormHighlighted: false,
+    });
   }
   toggleGraphs(target) {
     let targetBtn = target;
@@ -134,7 +144,7 @@ export default class CurrencyPairGraph extends React.Component {
               />
               <Dropdown 
                 classesCSS={{ button: "btn-success", dropdown: "dropdown_frequency" }}
-                onClickHandler={this.frequencyFilterChange.bind(this)}
+                onClickHandler={this.frequencyFilterChange}
                 titleText="Frequencies"
                 defaultDataValue={this.props.model.filters.frequency}
                 options={[
@@ -152,7 +162,7 @@ export default class CurrencyPairGraph extends React.Component {
             <div className="well" style={{"overfow": "auto"}}>
               <div className="col-md-12 col-sm-12 col-xs-12">
                 <InputForm
-                  ref={form => this.form = form}
+                  isFormHighlighted={this.state.isFormHighlighted}
                   formCSSClasses="form-horizontal form-label-left input_mask"
                   formId="hours-input"
                   inputName="hours"
@@ -162,7 +172,7 @@ export default class CurrencyPairGraph extends React.Component {
                 />
               </div>
               <Message
-                ref={message => this.message = message}
+                isMessageVisible={this.state.isErrorMessageVisible}
                 msg="Invalid input, try numbers"                
                 CSSClasses="error"
               />

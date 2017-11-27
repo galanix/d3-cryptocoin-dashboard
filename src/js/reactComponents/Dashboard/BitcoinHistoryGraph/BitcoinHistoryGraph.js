@@ -16,6 +16,8 @@ export default class BitcoinHistoryGraph extends React.Component {
     super();
     this.state = {
       componentToUpdate: 'BitcoinHistoryGraph',
+      isFormHighlighted: false,
+      isErrorMessageVisible: false,
     };
 
     this.createURL = this.createURL.bind(this);
@@ -29,23 +31,23 @@ export default class BitcoinHistoryGraph extends React.Component {
     this.setState({
       startPlaceholder: 'From: ' + start,
       endPlaceholder: 'To: ' + end,
-    }, () => {
-      this.hideErrorMsg();
     });
 
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => this.renderGraph(false))
       .catch(err => console.log('failed fetch', err));
+  }  
+  showError() {
+    this.setState({
+      isErrorMessageVisible: true,
+      isFormHighlighted: true,
+    });
   }
-  hideErrorMsg() {
-    this.message.hide();
-    this.endForm.hideError();
-    this.startForm.hideError();
-  }
-  showErrorMsg() {
-    this.message.show();
-    this.startForm.showError();
-    this.endForm.showError();
+  hideError() {
+    this.setState({
+      isErrorMessageVisible: false,
+      isFormHighlighted: false,
+    });
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -57,7 +59,7 @@ export default class BitcoinHistoryGraph extends React.Component {
       return;
     }
 
-    this.hideErrorMsg();
+    this.hideError();
 
     // transforms a string into a Date object
     // create an array(dataset) from an object(data)
@@ -77,12 +79,12 @@ export default class BitcoinHistoryGraph extends React.Component {
     }
   }
   saveChangesAndRerender(newFilterValue, filterName) {
-    this.chart.showPreloader();
+    this.chart.showMessage();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate)
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => {
         this.renderGraph(true);
-        this.chart.hidePreloader();
+        this.chart.hideMessage();
       })
       .catch(err => console.log(err));
   }
@@ -196,7 +198,7 @@ export default class BitcoinHistoryGraph extends React.Component {
       this.saveChangesAndRerender(newFilterValues, filterNames);
 
     } else {
-      this.showErrorMsg();
+      this.showError();
     }
 
   }
@@ -226,7 +228,7 @@ export default class BitcoinHistoryGraph extends React.Component {
             />
             <div className="well" style={{ "overflow" : "auto"}}>
               <CalendarWidget
-                ref={form => this.startForm = form}
+                isFormHighlighted={this.state.isFormHighlighted}
                 formCSSClasses="calendar-date form-horizontal"
                 name="start" 
                 id="start"
@@ -235,7 +237,7 @@ export default class BitcoinHistoryGraph extends React.Component {
                 onWidgetChange={this.onWidgetChange}
               />
               <CalendarWidget
-                ref={form => this.endForm = form}
+                isFormHighlighted={this.state.isFormHighlighted}
                 formCSSClasses="calendar-date form-horizontal"
                 name="end" 
                 id="end"
@@ -244,7 +246,7 @@ export default class BitcoinHistoryGraph extends React.Component {
                 onWidgetChange={this.onWidgetChange}
               />
               <Message
-                ref={message => this.message = message}
+                isMessageVisible={this.state.isErrorMessageVisible}
                 CSSClasses="error"
                 msg="Error: 'From' value is later then 'To'"
               />

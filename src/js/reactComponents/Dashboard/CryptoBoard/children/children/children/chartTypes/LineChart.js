@@ -13,11 +13,11 @@ export default class LineChart extends React.Component {
   constructor() {
     super();
     this.state = {
-      duration: 300
+      duration: 300,
+      isMessageVisible: false
     };
   }
-  componentDidMount() {
-    this.hidePreloader();
+  componentDidMount() {    
     this.renderSVG();      
   }
   shouldComponentUpdate(nextProps) {
@@ -61,7 +61,7 @@ export default class LineChart extends React.Component {
           });
 
       this.updateSVG();
-    });       
+    });
   }
   updateSVG() {
     const { g, duration } = this.state;
@@ -232,11 +232,15 @@ export default class LineChart extends React.Component {
     this.createGraphInstance('area', appendCallback, updateCallback, params);
     this.buildLine(4);
   }
-  showPreloader() {
-    this.Message.show();
+  showMessage() {
+    this.setState({
+      isMessageVisible: true
+    })
   }
-  hidePreloader() {
-    this.Message.hide();
+  hideMessage() {
+    this.setState({
+      isMessageVisible: false
+    })
   }
   handleHoverEvtHandler(id, mouseOut) {
     const d = this.props.dataset.find(item => item.id === id);      
@@ -290,7 +294,7 @@ export default class LineChart extends React.Component {
       <div>          
         <svg ref={svg => this.svg = svg}></svg>                
         <Message 
-          ref={waitMessage => this.Message = waitMessage} 
+          isMessageVisible={this.state.isMessageVisible}
           msg="Wait, please"
         />          
       </div>

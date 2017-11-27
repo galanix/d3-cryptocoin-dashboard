@@ -122,7 +122,7 @@ function LineChartHOC(BaseComponent) {
         })
         .style('opacity', 0);      
   
-      d3.select(this.container).append('div') // adding tooltip
+      d3.select(this.svg.parentElement).append('div') // adding tooltip
         .attr('class', 'tooltip')
         .style('opacity', 0);
               
@@ -166,7 +166,7 @@ function LineChartHOC(BaseComponent) {
         
         const value = hashTable[String(valueKey)];
         if(!!value) {
-          this.showDotsAndTooltip(Object.assign({}, value));``
+          this.showDotsAndTooltip(Object.assign({}, value));
         } else {
           this.hideDotsAndTooltip();
         }
@@ -192,7 +192,7 @@ function LineChartHOC(BaseComponent) {
         .duration(100)
         .style('opacity', 0.9);
     
-      const tooltip = d3.select(this.container).select('.tooltip');
+      const tooltip = d3.select(this.svg.parentElement).select('.tooltip');
   
       tooltip
         .transition()
@@ -219,7 +219,7 @@ function LineChartHOC(BaseComponent) {
         .duration(300)
         .style('opacity', 0);
   
-      d3.select(this.container).select('.tooltip')
+      d3.select(this.svg.parentElement).select('.tooltip')
         .transition()
         .duration(300)
         .style('opacity', 0);
