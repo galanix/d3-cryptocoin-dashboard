@@ -1,28 +1,48 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-export default class ButtonGroup extends React.Component {
-  constructor() {
-    super();
-    this.state = {};
+class ButtonGroup extends React.Component {
+  componentWillReceiveProps(newProps) {
+    if (!newProps.isActiveBtnDisplayed) {
+      if (!!this.state && !!this.state.activeBtn) {
+        this.state.activeBtn.classList.remove('active');
+        this.setState({
+          activeBtn: null,
+        });
+      }
+    }
   }
   componentDidMount() {
-    if(this.props.noSingleButtonSelection) return;
-
-    this.setState({
-      prevClickedBtn: this.container.querySelector('.active')
-    });
+    if (this.props.isActiveBtnDisplayed) {
+      this.setState({
+        activeBtn: this.container.querySelector('.active'),
+      });
+    }
   }
-  handleClick(evt) {    
-    const target = evt.target;
-    if(target === this.state.prevClickedBtn) {
+  handleClick(evt) {
+    let { target } = evt;
+
+    if (target.tagName === 'SPAN' || target.tagName === 'I') {
+      target = target.parentElement;
+    }
+
+    if (target.tagName !== 'BUTTON') {
       return;
     }
 
-    if(!!this.state.prevClickedBtn && target.tagName === 'BUTTON') {
-      this.state.prevClickedBtn.classList.remove('active');
+    // we should deal with active(selected) class
+    // if button group only allows one at a time
+    if (
+      !this.props.areMultipleActiveBtnsAllowed
+      && target !== this.state.activeBtn
+    ) {
+      if (this.state.activeBtn) {
+        this.state.activeBtn.classList.remove('active');
+      }
+
       this.setState({
-        prevClickedBtn: target
-      }, () => this.state.prevClickedBtn.classList.add('active'));
+        activeBtn: target,
+      }, () => this.state.activeBtn.classList.add('active'));
     }
 
     this.props.onClickHandler(target);
@@ -30,21 +50,31 @@ export default class ButtonGroup extends React.Component {
   render() {
     return (
       <div
-        ref={div => this.container = div}
+        ref={(div) => { this.container = div; }}
         className={this.props.classesCSS}
         onClick={evt => this.handleClick(evt)}
         {...this.props.containerAttrs}
       >
         {this.props.buttons.map((btn, index) => (
-            <button
-              key={index} {...btn.attrs }
-              className={`btn ${btn.classesCSS || ''}`}
-              id={btn.id}
-            >
-              {btn.textValue}
-            </button>
+          <button
+            key={index}
+            {...btn.attrs}
+            className={`btn ${btn.classesCSS || ''}`}
+            id={btn.id}
+          >
+            {btn.textValue}
+          </button>
         ))}
       </div>
     );
   }
 }
+
+ButtonGroup.propTypes = {
+  onClickHandler: PropTypes.func,
+  areMultipleActiveBtnsAllowed: PropTypes.bool,
+  isActiveBtnDisplayed: PropTypes.bool,
+  buttons: PropTypes.array,
+};
+
+export default ButtonGroup;

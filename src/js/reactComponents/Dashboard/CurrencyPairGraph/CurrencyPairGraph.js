@@ -183,8 +183,8 @@ class CurrencyPairGraph extends React.Component {
               <ButtonGroup
                 containerAttrs={{ 'data-toggle': 'buttons' }}
                 classesCSS="btn-group"
-                noSingleButtonSelection
                 onClickHandler={this.toggleGraphs}
+                areMultipleActiveBtnsAllowed
                 buttons={[{
                     classesCSS: 'btn-info active',
                     id: 'ask',

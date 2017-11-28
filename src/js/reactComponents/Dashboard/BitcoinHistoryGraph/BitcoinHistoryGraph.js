@@ -19,6 +19,7 @@ class BitcoinHistoryGraph extends React.Component {
       componentToUpdate: 'BitcoinHistoryGraph',
       isFormHighlighted: false,
       isErrorMessageVisible: false,
+      isActiveBtnDisplayed: true,
     };
 
     this.createURL = this.createURL.bind(this);
@@ -74,7 +75,7 @@ class BitcoinHistoryGraph extends React.Component {
 
     this.saveChangesAndRerender(newFilterValue, filterName);
   }
-  onWidgetChange({ inputId, dateStr }) {    
+  onWidgetChange({ inputId, dateStr }) {
     let filterName;
     let startDate;
     let endDate;
@@ -107,11 +108,14 @@ class BitcoinHistoryGraph extends React.Component {
       const filterNames = ['currentTimeline', filterName];
       const newFilterValues = [timeline, dateStr];
       this.saveChangesAndRerender(newFilterValues, filterNames);
+      this.setState({
+        isActiveBtnDisplayed: false,
+      });
     } else {
       this.showError();
     }
   }
-  timelineFilterChange(target) {
+  timelineFilterChange(target) {    
     if (target.tagName !== 'BUTTON') {
       return;
     }
@@ -167,8 +171,12 @@ class BitcoinHistoryGraph extends React.Component {
     ];
 
     this.saveChangesAndRerender(newFilterValues, filterNames);
+    this.setState({
+      isActiveBtnDisplayed: true,
+    });
   }
   saveChangesAndRerender(newFilterValue, filterName) {
+    console.log(this.createURL());
     this.chart.showMessage();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
     this.props.update(this.createURL(), this.state.componentToUpdate)
@@ -176,7 +184,7 @@ class BitcoinHistoryGraph extends React.Component {
         this.renderGraph(true);
         this.chart.hideMessage();
       })
-      .catch(err => console.log(err));
+      .catch(err => console.warn(err));
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -238,6 +246,7 @@ class BitcoinHistoryGraph extends React.Component {
             <ButtonGroup
               onClickHandler={this.timelineFilterChange}
               classesCSS="well btn-group full-width"
+              isActiveBtnDisplayed={this.state.isActiveBtnDisplayed}
               buttons={[{
                   attrs: { 'data-timeline': 'all-time' },
                   classesCSS: 'btn-success',
