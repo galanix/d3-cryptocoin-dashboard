@@ -147,6 +147,7 @@ svg {
     }
     .btn-group {
         .btn {
+            transition: background-color .15s ease-in;
             padding-left: 8px;
             padding-right: 8px;
         }
@@ -208,7 +209,9 @@ svg {
     .form-control-feedback.fa-clock-o {
         margin-top: 6px;
     }
-    
+    .InputFormContainer {
+        text-align: center;
+    }    
     .toggle-graphs {
         margin-top: 16px;
     
