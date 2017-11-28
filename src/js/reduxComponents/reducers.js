@@ -1,93 +1,91 @@
-import { model } from './model';
+import model from './model';
+
+// abstraction that handles filter value  update
+function assignNewFilterValue(action, prevFilters) {
+  const filters = JSON.parse(JSON.stringify(prevFilters));
+
+  if (action.filterName instanceof Array) {
+    action.filterName.forEach((name, index) => {
+      filters[name] = action.newFilterValue[index];
+    });
+  } else {
+    filters[action.filterName] = action.newFilterValue;
+  }
+  return filters;
+}
+
 
 export default function reducers(state = model, action) {
-    const newState = Object.assign({}, state);    
-    switch(action.type) {
-       case 'UPDATE_DATA':
-          switch(action.forComponent) { // action handling is slightly different throughout components
-            case 'BitcoinCurrentPrice':
-              newState.currentPrice.data = action.data;
-              break;
-
-            case 'BitcoinHistoryGraph':
-              newState.history.data = action.data;
-              break;
-
-            case 'CurrencyPairGraph':
-              newState.currencyPair.data = action.data;
-              break;
-
-            case 'CryptoBoard_table':              
-              newState.cryptoBoard.table.data = action.data;
-              break;
-
-            case 'CryptoBoard_chart':
-              newState.cryptoBoard.chart.data = action.data;
-              break;
-
-            case 'SavedGraphs': {
-              const data = action.data;
-              
-              if(data instanceof Array) {
-                newState.savedGraphs = data; // replace dataset
-              } else { // update already existing dataset
-                if(data.actionSubtype === 'add') { 
-                  newState.savedGraphs.unshift(data);
-                } else { // item.actionSubtype === 'delete'
-                  newState.savedGraphs.splice(data.index, 1);
-                }
-              }
-          
-              window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs)); // to restore previously set dataset
-              break;
-            }
-            
-            default:
-              console.warn('action.forComponent(UPDATA_DATA) switch defaulted with:', action.forComponent);
-          }
+  const newState = Object.assign({}, state);
+  switch (action.type) {
+    case 'UPDATE_DATA':
+      switch (action.forComponent) { // action handling is slightly different throughout components
+        case 'BitcoinCurrentPrice':
+          newState.currentPrice.data = action.data;
           break;
-        
-        case 'CHANGE_FILTERS':
-          switch(action.forComponent) { // action handling is almost the same throughout components
-            case 'BitcoinHistoryGraph':
-              assignNewFilterValue(action, newState.history);
-              break;
 
-            case 'CurrencyPairGraph':
-              assignNewFilterValue(action, newState.currencyPair);
-              break;
+        case 'BitcoinHistoryGraph':
+          newState.history.data = action.data;
+          break;
 
-            case 'CryptoBoard_table':
-              assignNewFilterValue(action, newState.cryptoBoard.table);
-              break;
+        case 'CurrencyPairGraph':
+          newState.currencyPair.data = action.data;
+          break;
 
-            case 'CryptoBoard_chart':
-              assignNewFilterValue(action, newState.cryptoBoard.chart);
-              break;
+        case 'CryptoBoard_table':
+          newState.cryptoBoard.table.data = action.data;
+          break;
 
-            case 'Settings':
-              newState.settings[action.filterName] = action.newFilterValue;
-              break;
+        case 'CryptoBoard_chart':
+          newState.cryptoBoard.chart.data = action.data;
+          break;
 
-            default:
-              console.warn('action.forComponent(CHANGE_FILTERS) switch defaulted with:', action.forComponent);
+        case 'SavedGraphs': {
+          const { data } = action;
+          if (data instanceof Array) {
+            newState.savedGraphs = data; // replace dataset
+          } else if (data.actionSubtype === 'add') { // update already existing dataset
+            newState.savedGraphs.unshift(data);
+          } else { // data.actionSubtype === 'delete'
+            newState.savedGraphs.splice(data.index, 1);
           }
+          window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs)); // to restore previously set dataset
+          break;
+        }
+        default:
+          console.warn('action.forComponent(UPDATA_DATA) switch defaulted with:', action.forComponent);
+      }
+      break;
+    case 'CHANGE_FILTERS':
+      switch (action.forComponent) { // action handling is almost the same throughout components
+        case 'BitcoinHistoryGraph':
+          newState.history.filters = assignNewFilterValue(action, newState.history.filters);
+          break;
+
+        case 'CurrencyPairGraph':
+          newState.currencyPair.filters = assignNewFilterValue(action, newState.currencyPair.filters);
+          break;
+
+        case 'CryptoBoard_table':
+          newState.cryptoBoard.table.filters = assignNewFilterValue(action, newState.cryptoBoard.table.filters);
+          break;
+
+        case 'CryptoBoard_chart':
+          newState.cryptoBoard.chart.filters = assignNewFilterValue(action, newState.cryptoBoard.chart.filters);
+          break;
+
+        case 'Settings':
+          newState.settings[action.filterName] = action.newFilterValue;
           break;
 
         default:
-          console.warn('action.type switch defaulted with', action.type);
-    }
+          console.warn('action.forComponent(CHANGE_FILTERS) switch defaulted with:', action.forComponent);
+      }
+      break;
 
-    return newState;
-};
-
-// abstraction that handles filter value  update
-function assignNewFilterValue(action, objectToAssignTo) {
-  if(action.filterName instanceof Array) {
-    action.filterName.forEach((name, index) => {
-      objectToAssignTo.filters[name] = action.newFilterValue[index];
-    })
-  } else {
-    objectToAssignTo.filters[action.filterName] = action.newFilterValue; 
+    default:
+      console.warn('action.type switch defaulted with', action.type);
   }
-};
+
+  return newState;
+}

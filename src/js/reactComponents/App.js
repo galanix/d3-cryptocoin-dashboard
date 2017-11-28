@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -7,55 +9,59 @@ import TopNav from './Navigation/TopNav';
 import SideNav from './Navigation/SideNav';
 import Dashboard from './Dashboard/Dashboard';
 import Settings from './Settings/Settings';
-import SavedGraphs from './SavedGraphs/SavedGraphs.js';
+import SavedGraphs from './SavedGraphs/SavedGraphs';
 
 // EVENT DISPATCHERS
-import { 
-  handleDataRequest, 
-  handleMultipleDataReqeuests 
-} from "../reduxComponents/actions/update";
-import { filterChange } from "../reduxComponents/actions/change";
+import {
+  handleDataRequest,
+  handleMultipleDataReqeuests,
+} from '../reduxComponents/actions/update';
+
+import { filterChange } from '../reduxComponents/actions/change';
 
 // UI THEME EFFECTS
-import templateScript from "../template"; // jQuery
+import templateScript from '../template'; // jQuery
 
 // REDUX BOILIER PLATE
 function mapStateToProps(state) {
   return {
-    appData: state
+    appData: state,
   };
 }
 function mapDispatchToProps(dispatch) {
   return {
-    update: (url, display, componentToUpdate) => dispatch(handleDataRequest(url, display, componentToUpdate)),
-    updateAll: (urls, componentToUpdate, createDataCollection) => dispatch(handleMultipleDataReqeuests(urls, componentToUpdate, createDataCollection)),
-    change: (newFilterValue, filterName, componentToUpdate) => dispatch(filterChange(newFilterValue, filterName, componentToUpdate))
+    update: (url, display, componentToUpdate) =>
+      dispatch(handleDataRequest(url, display, componentToUpdate)),
+    updateAll: (urls, componentToUpdate, createDataCollection) =>
+      dispatch(handleMultipleDataReqeuests(urls, componentToUpdate, createDataCollection)),
+    change: (newFilterValue, filterName, componentToUpdate) =>
+      dispatch(filterChange(newFilterValue, filterName, componentToUpdate)),
   };
 }
 
 class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      baseLocation: "/"
-    };    
-  }
   componentDidMount() {
     templateScript();
+  }
+  componentWillMount() {
     this.setState({
-      baseLocation: this.props.location.pathname
+      baseLocation: this.props.location.pathname,
     });
+
+    this.update = this.props.update.bind(this);
+    this.change = this.props.change.bind(this);
+    this.updateAll = this.props.updateAll.bind(this);
   }
   render() {
     // routing
-    const baseLocation = this.state.baseLocation;
+    const { baseLocation } = this.state;
     const mainPagePath = baseLocation;
-    const settingsPagePath = baseLocation + "settings";
-    const savedGraphsPagePath = baseLocation + "saved_graphs";
+    const settingsPagePath = `${baseLocation}settings`;
+    const savedGraphsPagePath = `${baseLocation}saved_graphs`;
 
     return (
       <div className="main_container">
-        <SideNav 
+        <SideNav
           mainPagePath={mainPagePath}
           settingsPagePath={settingsPagePath}
           savedGraphsPagePath={savedGraphsPagePath}
@@ -63,34 +69,35 @@ class App extends React.Component {
         <TopNav />
         <div className="right_col" role="main">
           <Switch>
-            <Route 
-              exact path={mainPagePath}
+            <Route
+              exact
+              path={mainPagePath}
               render={() => (
                 <Dashboard
-                  update={this.props.update.bind(this)}
-                  change={this.props.change.bind(this)}
-                  data={this.props.appData}                                                                                    
+                  update={this.update}
+                  change={this.change}
+                  data={this.props.appData}
                 />
               )}
             />
-            <Route 
+            <Route
               path={settingsPagePath}
               render={() => (
-                <Settings 
+                <Settings
                   displayComponent={this.props.appData.settings.displayComponent}
-                  change={this.props.change.bind(this)}
+                  change={this.change}
                 />
               )}
             />
-            <Route 
+            <Route
               path={savedGraphsPagePath}
               render={() => (
-                <SavedGraphs 
-                  update={this.props.update.bind(this)}
-                  updateAll={this.props.updateAll.bind(this)}
+                <SavedGraphs
+                  update={this.update}
+                  updateAll={this.updateAll}
                   linkToGraphCreation={mainPagePath}
                   graphCollection={this.props.appData.savedGraphs}
-                  margin={this.props.appData.cryptoBoard.chart.margin}                      
+                  margin={this.props.appData.cryptoBoard.chart.margin}
                 />
               )}
             />
@@ -99,6 +106,14 @@ class App extends React.Component {
       </div>
     );
   }
+}
+
+App.propTypes = {
+  update: PropTypes.func,
+  change: PropTypes.func,
+  updateAll: PropTypes.func,
+  appData: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));
