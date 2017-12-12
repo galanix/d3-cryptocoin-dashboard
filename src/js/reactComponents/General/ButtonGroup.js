@@ -34,7 +34,7 @@ class ButtonGroup extends React.Component {
     // if button group only allows one at a time
     if (
       !this.props.areMultipleActiveBtnsAllowed
-      && target !== this.state.activeBtn
+      && (this.state && target !== this.state.activeBtn)
     ) {
       if (this.state.activeBtn) {
         this.state.activeBtn.classList.remove('active');
