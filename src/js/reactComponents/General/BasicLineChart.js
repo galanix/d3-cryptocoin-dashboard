@@ -12,6 +12,9 @@ export default class BasicLineChart extends React.Component {
       isMessageVisible: false,
     };
   }
+  componentDidMount() {
+    this.showMessage();
+  }
   hideMessage() {
     this.setState({
       isMessageVisible: false,
@@ -23,6 +26,10 @@ export default class BasicLineChart extends React.Component {
     });
   }
   buildLine(dataset) {
+    if (!this.props.hasErrorOccured) {
+      this.hideMessage();
+    }
+
     if (!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
       return;
     }
@@ -60,6 +67,9 @@ export default class BasicLineChart extends React.Component {
     });
   }
   updateLine(dataset) {
+    if (!this.props.hasErrorOccured) {
+      this.hideMessage();
+    }    
     // because we expect an array
     if (!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
       return;
@@ -113,7 +123,11 @@ export default class BasicLineChart extends React.Component {
     return (
       <div className="graph">
         <svg ref={(svg) => { this.svg = svg; }} />
-        <Message msg="Wait, please" isMessageVisible={this.state.isMessageVisible} />
+        <Message
+          color={this.props.hasErrorOccured ? '#c9302c' : '#2A3F54' }
+          msg={this.props.hasErrorOccured ? 'Error has occurred' : 'Wait, please'}
+          isMessageVisible={this.state.isMessageVisible}
+        />
       </div>
     );
   }

@@ -7,7 +7,8 @@ import Dropdown from '../../General/Dropdown';
 import CalendarWidget from '../../General/CalendarWidget';
 import ButtonGroup from '../../General/ButtonGroup';
 import LineChart from './children/AugmentedBasicLineChart';
-import Message from '../../General/Message';
+// import Message from '../../General/Message';
+import ErrorMessage from '../../General/ErrorMessage';
 
 // HELPER FUNCTIONS
 import { formProperDateFormat } from '../../../helperFunctions';
@@ -20,6 +21,7 @@ class BitcoinHistoryGraph extends React.Component {
       isFormHighlighted: false,
       isErrorMessageVisible: false,
       isActiveBtnDisplayed: true,
+      hasFetchFailed: false,
     };
 
     this.createURL = this.createURL.bind(this);
@@ -51,6 +53,17 @@ class BitcoinHistoryGraph extends React.Component {
     }
 
     this.hideError();
+
+    let hasFetchFailed = false;
+    if (Object.keys(this.props.model.data.bpi).length === 0) {
+      hasFetchFailed = true;
+    }
+
+    if (hasFetchFailed !== this.state.hasFetchFailed) {
+      this.setState({
+        hasFetchFailed,
+      });
+    }
 
     // transforms a string into a Date object
     // create an array(dataset) from an object(data)
@@ -176,15 +189,17 @@ class BitcoinHistoryGraph extends React.Component {
     });
   }
   saveChangesAndRerender(newFilterValue, filterName) {
-    console.log(this.createURL());
-    this.chart.showMessage();
-    this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
-    this.props.update(this.createURL(), this.state.componentToUpdate)
-      .then(() => {
-        this.renderGraph(true);
-        this.chart.hideMessage();
-      })
-      .catch(err => console.warn(err));
+    this.setState({
+      hasFetchFailed: false,
+    }, () => {
+      this.chart.showMessage();
+      this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
+      this.props.update(this.createURL(), this.state.componentToUpdate)
+        .then(() => {
+          this.renderGraph(true);
+        })
+        .catch(err => console.warn(err));
+    });
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -218,31 +233,43 @@ class BitcoinHistoryGraph extends React.Component {
                 { dataValue: 'UAH' },
               ]}
             />
-            <div className="well" style={{ overflow: 'auto' }}>
-              <CalendarWidget
-                isFormHighlighted={this.state.isFormHighlighted}
-                formCSSClasses="calendar-date form-horizontal"
-                name="start"
-                id="start"
-                inputIcon="fa fa-calendar"
-                placeholder={startPlaceholder}
-                onWidgetChange={this.onWidgetChange}
-              />
-              <CalendarWidget
-                isFormHighlighted={this.state.isFormHighlighted}
-                formCSSClasses="calendar-date form-horizontal"
-                name="end"
-                id="end"
-                inputIcon="fa fa-calendar"
-                placeholder={endPlaceholder}
-                onWidgetChange={this.onWidgetChange}
-              />
-              <Message
-                isMessageVisible={this.state.isErrorMessageVisible}
-                CSSClasses="error"
-                msg="Error: 'From' value is later then 'To'"
-              />
+
+            <div className="well">
+              <div className="InputFormContainer">
+                <div className="row">
+                  <div className="col-md-6 col-sm-6 col-xs-12">
+                    <CalendarWidget
+                      isFormHighlighted={this.state.isFormHighlighted}
+                      formCSSClasses="calendar-date form-horizontal"
+                      name="start"
+                      id="start"
+                      inputIcon="fa fa-calendar"
+                      placeholder={startPlaceholder}
+                      onWidgetChange={this.onWidgetChange}
+                    />
+                  </div>
+                  <div className="col-md-6 col-sm-6 col-xs-12">
+                    <CalendarWidget
+                      isFormHighlighted={this.state.isFormHighlighted}
+                      formCSSClasses="calendar-date form-horizontal"
+                      name="end"
+                      id="end"
+                      inputIcon="fa fa-calendar"
+                      placeholder={endPlaceholder}
+                      onWidgetChange={this.onWidgetChange}
+                    />
+                  </div>
+                </div>
+                <ErrorMessage
+                  isMessageVisible={this.state.isErrorMessageVisible}
+                  hasErrorOccured={this.state.hasFetchFailed}
+                  CSSClasses="error"
+                  msg="Error: Invalid input"
+                />
+              </div>
+              <div className="clearfix" />
             </div>
+
             <ButtonGroup
               onClickHandler={this.timelineFilterChange}
               classesCSS="well btn-group full-width"
@@ -275,12 +302,14 @@ class BitcoinHistoryGraph extends React.Component {
               ]}
             />
           </div>
-          <LineChart
-            ref={(lineChart) => { this.chart = lineChart; }}
-            model={this.props.model}
-            signs={this.props.signs}
-            graphId="historical-data"
-          />
+          <div className="col-lg-12 col-md-12 col-sm-12">
+            <LineChart
+              ref={(lineChart) => { this.chart = lineChart; }}
+              model={this.props.model}
+              signs={this.props.signs}
+              graphId="historical-data"
+            />
+          </div>
         </section>
       </div>
     );
