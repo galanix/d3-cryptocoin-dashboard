@@ -46,7 +46,7 @@ a.active:hover {
 
 .graph {
     position: relative;
-    zoom: 100% !important;    
+    zoom: 100% !important;
 }
 
 svg {
@@ -165,6 +165,8 @@ svg {
     overflow: hidden;
     .graph {
         display: inline-block !important;
+        width: 500px;
+        height: 300px;
     }
     button.active {
         color: #E9EDEF;
@@ -232,6 +234,8 @@ svg {
     overflow: hidden;
     .graph {
         display: inline-block !important;
+        width: 500px;
+        height: 300px;
     }
     .message.error {
         text-align: left;
@@ -436,9 +440,8 @@ svg {
         }
         .modal-window {            
             .graph {
-                width: 100%;
-                overflow-x: scroll;
-                overflow-y: hidden;
+                width: 300px;
+                overflow: auto;  
             }
             .btn-group_container,
             .controll-group {
