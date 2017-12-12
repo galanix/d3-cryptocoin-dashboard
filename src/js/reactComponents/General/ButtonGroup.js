@@ -2,6 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 class ButtonGroup extends React.Component {
+  constructor() {
+    super();
+    this.state = {};
+  }
   componentWillReceiveProps(newProps) {
     if (!newProps.isActiveBtnDisplayed) {
       if (!!this.state && !!this.state.activeBtn) {
@@ -31,11 +35,12 @@ class ButtonGroup extends React.Component {
     }
 
     // we should deal with active(selected) class
-    // if button group only allows one at a time
+    // if button group only allows one at a time    
     if (
       !this.props.areMultipleActiveBtnsAllowed
-      && (this.state && target !== this.state.activeBtn)
+      && (target !== this.state.activeBtn)
     ) {
+      console.log(this.state);
       if (this.state.activeBtn) {
         this.state.activeBtn.classList.remove('active');
       }

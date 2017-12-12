@@ -78,7 +78,8 @@ export default function Filters(props) {
           <h4>Table Length</h4>
           <ButtonGroup 
             onClickHandler={props.changeTableLength}
-            classesCSS="btn-group"                                     
+            classesCSS="btn-group"
+            isActiveBtnDisplayed                            
             buttons={[
               { classesCSS: "active", attrs: { "data-value": "100" }, textValue: "Top 100" },
               { textValue: "All", attrs: { "data-value": "0" } }

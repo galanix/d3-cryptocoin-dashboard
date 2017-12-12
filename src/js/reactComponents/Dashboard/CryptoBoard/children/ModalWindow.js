@@ -177,6 +177,7 @@ export default class ModalWindow extends React.Component {
             <Dropdown
               classesCSS={{ dropdown: 'dropdown_chart-currency', button: 'btn-success' }}
               defaultDataValue={this.props.model.filters.currency}
+              isActiveBtnDisplayed
               onClickHandler={this.changeCurrencyFilter}
               titleText="Currency"
               options={[
@@ -193,9 +194,10 @@ export default class ModalWindow extends React.Component {
               <h4>Categories</h4>
               <ButtonGroup 
                 classesCSS="btn-group category"
+                isActiveBtnDisplayed
                 onClickHandler={this.changeComparisionField}
                 buttons={[
-                  { classesCSS:'active', textValue: 'Price' },
+                  { classesCSS: 'active', textValue: 'Price' },
                   { textValue: 'Volume(24h)' },
                   { textValue: 'Market Cap' },
                   { textValue: '%1h' },
@@ -209,6 +211,7 @@ export default class ModalWindow extends React.Component {
               <ButtonGroup
                 classesCSS="btn-group type"
                 onClickHandler={this.changeChartType}
+                isActiveBtnDisplayed
                 buttons={[
                   { classesCSS: 'active', attrs: { 'data-type': 'bar'}, textValue: 'Bar' },
                   { attrs: { 'data-type': 'hbar'}, textValue: 'Horizontal Bar' },
