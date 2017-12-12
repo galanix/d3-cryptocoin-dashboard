@@ -108,6 +108,15 @@ svg {
     h2 {
         margin-top: 25px;
     }
+    .count {
+        overflow-x: hidden;
+    }
+    @media screen and (max-width: 1020px) {
+        .current-price-bar,
+        h2 {
+            margin-top: 10px;
+        }
+    }
     .tile_stats_count {
         margin-bottom: 0;
         padding-bottom: 0;
@@ -116,6 +125,11 @@ svg {
         font-style: italic;
         font-weight: bold;
     }
+    @media screen and (max-width: 1200px) {
+        .count {
+            font-size: 32px;
+        }
+    }    
     @media screen and (max-width: 500px) {
         text-align: center;
         header {

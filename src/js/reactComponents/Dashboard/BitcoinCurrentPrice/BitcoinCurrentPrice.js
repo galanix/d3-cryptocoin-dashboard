@@ -62,18 +62,18 @@ class BitcoinCurrentPrice extends React.Component {
       <div className="col-md-12 col-sm-12 col-xs-12">
         <section id="bitcoin-current-price" className="row tile_count x_panel">
           <Header
-            classesCSS="col-md-6 col-sm-12 col-xs-12"
+            classesCSS="col-md-6 col-sm-12 col-xs-12 component-title"
             titleText="Current Price For Bitcoin"
           />
           <CurrencyBlock
-            classesCSS="current-price-in-USD"
+            classesCSS="current-price-bar"
             text="United States Dollars:"
             currencyValue={rateUSD}
             sign={this.props.signs.USD}
             renderChange={this.renderChangeUSD}
           />
           <CurrencyBlock
-            classesCSS="current-price-in-EUR"
+            classesCSS="current-price-bar"
             text="European Union Euro:"
             currencyValue={rateEUR}
             sign={this.props.signs.EUR}
