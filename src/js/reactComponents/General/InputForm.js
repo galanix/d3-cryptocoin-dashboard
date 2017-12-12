@@ -21,37 +21,35 @@ export default class InputForm extends React.Component {
     }
   }
   render() {
-    return (
-      <div className="col-md-6 col-sm-12 col-xs-12">
-        <form
-          className={this.props.formCSSClasses}
-          onSubmit={evt => this.handleSubmit(evt)}
-        >
-          <fieldset>
-            <div className="control-group">
-              <div className="controls">
-                <div className="input-prepend input-group">                                                    
-                  <span 
-                    className="add-on input-group-addon"
-                    ref={span => this.span = span}
-                  >
-                    <i className={this.props.inputIcon} aria-hidden="true"></i>
-                  </span>
-                  <input                                        
-                    ref={input => this.input = input}
-                    id={this.props.id}
-                    className="form-control"
-                    type="text"
-                    style={{"width" : "150px"}}                    
-                    name={this.props.inputName}
-                    placeholder={this.props.placeholder}                    
-                  />
-                </div>
+    return (      
+      <form
+        className={this.props.formCSSClasses}
+        onSubmit={evt => this.handleSubmit(evt)}
+      >
+        <fieldset>
+          <div className="control-group">
+            <div className="controls">
+              <div className="input-prepend input-group">                                                    
+                <span 
+                  className="add-on input-group-addon"
+                  ref={span => this.span = span}
+                >
+                  <i className={this.props.inputIcon} aria-hidden="true"></i>
+                </span>
+                <input                                        
+                  ref={input => this.input = input}
+                  id={this.props.id}
+                  className="form-control"
+                  type="text"
+                  style={{"width" : "150px"}}
+                  name={this.props.inputName}
+                  placeholder={this.props.placeholder}                    
+                />
               </div>
             </div>
-          </fieldset>       
-        </form>
-      </div>
+          </div>
+        </fieldset>       
+      </form>
     );
   }
 }
