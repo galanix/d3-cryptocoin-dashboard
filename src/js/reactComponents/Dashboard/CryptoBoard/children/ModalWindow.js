@@ -90,7 +90,7 @@ export default class ModalWindow extends React.Component {
       hashTable: JSON.parse(JSON.stringify(this.props.hashTable)), // do I need this?      
       filters: Object.assign({}, this.props.model.filters),
       currentSign: this.props.currentSign,
-      actionSubtype: "add", // for reducer
+      actionSubtype: 'add', // for reducer
       url: this.props.createURL(this.props.limit, this.props.model.filters.currency), // for updating data
       id: Math.random().toString(36).slice(2) // randomly generated string, used as unique identifier
     };
@@ -163,27 +163,30 @@ export default class ModalWindow extends React.Component {
     return (
       <div>
         <button
-          id="modal-button"
-          className={`btn ${this.state.buttonIsDisabled ? "disabled" : ""}`}
+          id='modal-button'
+          className={`btn btn-dark ${this.state.buttonIsDisabled ? 'disabled' : ''}`}
           onClick={this.openModalWindow}
         >
           Visualize
         </button>
-        <section ref={section => this.modalWindow = section} className="modal-window col-md-12 col-sm-12 col-xs-12">
+        <section
+          ref={(section) => { this.modalWindow = section; }}
+          className="modal-window col-md-12 col-sm-12 col-xs-12"
+        >
           <div className="well">
             <Dropdown
-              classesCSS={{ dropdown: "dropdown_chart-currency", button: "btn-success" }}
+              classesCSS={{ dropdown: 'dropdown_chart-currency', button: 'btn-success' }}
               defaultDataValue={this.props.model.filters.currency}
               onClickHandler={this.changeCurrencyFilter}
               titleText="Currency"
               options={[
-                { dataValue: "USD" },
-                { dataValue: "EUR" },
-                { dataValue: "UAH" },
-                { dataValue: "RUB" },
-                { dataValue: "BTC" },
-                { dataValue: "LTC" },
-                { dataValue: "ETH" }
+                { dataValue: 'USD' },
+                { dataValue: 'EUR' },
+                { dataValue: 'UAH' },
+                { dataValue: 'RUB' },
+                { dataValue: 'BTC' },
+                { dataValue: 'LTC' },
+                { dataValue: 'ETH' }
               ]}
             />
             <div className="btn-group_container">
@@ -192,12 +195,12 @@ export default class ModalWindow extends React.Component {
                 classesCSS="btn-group category"
                 onClickHandler={this.changeComparisionField}
                 buttons={[
-                  { classesCSS:"active", textValue: "Price" },
-                  { textValue: "Volume(24h)" },
-                  { textValue: "Market Cap" },
-                  { textValue: "%1h" },
-                  { textValue: "%24h" },
-                  { textValue: "%7d" }
+                  { classesCSS:'active', textValue: 'Price' },
+                  { textValue: 'Volume(24h)' },
+                  { textValue: 'Market Cap' },
+                  { textValue: '%1h' },
+                  { textValue: '%24h' },
+                  { textValue: '%7d' }
                 ]}
               />
             </div>
@@ -207,46 +210,47 @@ export default class ModalWindow extends React.Component {
                 classesCSS="btn-group type"
                 onClickHandler={this.changeChartType}
                 buttons={[
-                  { classesCSS: "active", attrs: { "data-type": "bar"}, textValue: "Bar" },
-                  { attrs: { "data-type": "hbar"}, textValue: "Horizontal Bar" },
-                  { attrs: { "data-type": "pie"}, textValue: "Pie" },
-                  { attrs: { "data-type": "pie-donut"}, textValue: "Donut" },
-                  { attrs: { "data-type": "line"}, textValue: "Line"},                                            
-                  { attrs: { "data-type": "line-scatter"}, textValue: "Scatter Plot"},
-                  { attrs: { "data-type": "line-area"}, textValue: "Area Plot"},
+                  { classesCSS: 'active', attrs: { 'data-type': 'bar'}, textValue: 'Bar' },
+                  { attrs: { 'data-type': 'hbar'}, textValue: 'Horizontal Bar' },
+                  { attrs: { 'data-type': 'pie'}, textValue: 'Pie' },
+                  { attrs: { 'data-type': 'pie-donut'}, textValue: 'Donut' },
+                  { attrs: { 'data-type': 'line'}, textValue: 'Line'},                                            
+                  { attrs: { 'data-type': 'line-scatter'}, textValue: 'Scatter Plot'},
+                  { attrs: { 'data-type': 'line-area'}, textValue: 'Area Plot'},
                 ]}
               />
             </div>
           </div>
-          <ButtonGroup 
+          <ButtonGroup
             classesCSS="controll-group"
-            onClickHandler = {this.handleControllBtnClick}
+            onClickHandler={this.handleControllBtnClick}
             buttons={[
               {
-                classesCSS: "btn-danger",
-                id:"cancel-button",
-                textValue: "Hide" },
+                classesCSS: 'btn-danger',
+                id: 'cancel-button',
+                textValue: 'Hide'
+              },
               {
-                classesCSS: `btn-success  ${this.state.buttonIsDisabled ? "disabled" : ""}`,
-                id: "build-button",
-                textValue: "Build Chart" },
+                classesCSS: `btn-success  ${this.state.buttonIsDisabled ? 'disabled' : ''}`,
+                id: 'build-button',
+                textValue: 'Build Chart'
+              },
               {
-                classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? "disabled" : ""}`,
-                id:"save-graph-button",
+                classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? 'disabled' : ''}`,
+                id: 'save-graph-button',
                 textValue: [
-                  "Save graph ",
+                  'Save graph ',
                   <span
                     key="state-of-button"
                     className="fa fa-check"
-                    style={{'display': `${this.state.chartIsSaved ? 'inline' : 'none'}`}}
-                  >
-                  </span>
-                ]
+                    style={{ display: `${this.state.chartIsSaved ? 'inline' : 'none'}` }}
+                  />,
+                ],
               },
             ]}
           />
           <Chart
-            ref={chart => this.chart = chart}
+            ref={(chart) => { this.chart = chart; }}
             hashTable={this.props.hashTable}
             currentSign={this.props.currentSign}
             margin={this.props.model.margin}
