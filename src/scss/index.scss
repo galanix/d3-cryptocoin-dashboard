@@ -53,6 +53,14 @@ svg {
     box-sizing: content-box;    
 }
 
+.input-group {
+    margin-bottom: 0;
+}
+
+.InputFormContainer {
+    position: relative;
+}
+
 .message {
     position: absolute;
     margin: auto;
@@ -71,8 +79,11 @@ svg {
 
 .message.error {
     color: $danger;
+    font-size: 12px;
     position: static;
-    font-size: 12px;    
+    padding-top: 10px;
+    text-align: left;
+
 }
 
 .x_title h2 {
@@ -151,6 +162,7 @@ svg {
 */
 
 #history {
+    overflow: hidden;
     .graph {
         display: inline-block !important;
     }
@@ -165,7 +177,12 @@ svg {
             padding-left: 8px;
             padding-right: 8px;
         }
-    }    
+    }
+    @media screen and (max-width: 480px) {
+        .calendar-date {
+            margin-top: 10px !important;
+        }
+    }
     @media screen and (max-width: 500px) {
         text-align: center;
         h2 {
@@ -180,9 +197,8 @@ svg {
             }
         }
         .graph {
-            width: 100% !important;
-            overflow-x: scroll;
-            overflow-y: hidden;
+            width: 300px;
+            overflow: auto;        
         }
     }
 
@@ -213,6 +229,7 @@ svg {
 // }
 
 #currency-pair {
+    overflow: hidden;
     .graph {
         display: inline-block !important;
     }
@@ -224,8 +241,11 @@ svg {
         margin-top: 6px;
     }
     .InputFormContainer {
-        text-align: center;
-    }    
+        text-align: left;
+        .btn {
+            // margin-left: 10px;
+        }      
+    }     
     .toggle-graphs {
         margin-top: 16px;
     
@@ -251,10 +271,14 @@ svg {
             width: 100%;
             font-size: 24px;
         }
-        .graph {            
-            overflow-x: scroll;
-            overflow-y: hidden;
-            width: 100%;
+        .graph {
+            width: 300px;
+            overflow: auto;        
+        }
+        .InputFormContainer {
+            .btn {
+                 margin-top: 10px;
+            }
         }
     }
 }
@@ -404,8 +428,7 @@ svg {
     @media screen and (max-width: 500px) {
         text-align: center;
         h2 {
-            width: 100%;
-            font-size: 20px;
+            width: 100%;            
         }
         #modal-button {
             padding: 8px 14px;
