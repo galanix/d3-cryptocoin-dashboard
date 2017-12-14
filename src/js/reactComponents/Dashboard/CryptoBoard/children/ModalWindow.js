@@ -10,7 +10,7 @@ export default class ModalWindow extends React.Component {
   constructor() {
     super();
     this.state = {
-        componentsToUpdate: ['CryptoBoard_chart', 'SavedGraphs'],            
+        componentsToUpdate: ['CryptoBoard__chart', 'SavedGraphs'],            
         propertiesCSS: [ 'paddingTop', 'PaddingBottom', 'maxHeight', 'minHeight' ],
         buttonIsDisabled: false,
         chartIsNotBuilt: true, // make 'save graph' button unclickable when chart is not yet built
@@ -80,19 +80,19 @@ export default class ModalWindow extends React.Component {
     }
   }
   saveGraph() {
-    if(this.state.chartIsNotBuilt || this.state.chartIsSaved) {
+    if (this.state.chartIsNotBuilt || this.state.chartIsSaved) {
       return;
     }
 
-    const hashTable = this.props.hashTable;
-    const ids = Object.keys(hashTable);
+    // const { hashTable } = this.props;
+    // const ids = Object.keys(hashTable);
     const newCollectionItem = {
-      hashTable: JSON.parse(JSON.stringify(this.props.hashTable)), // do I need this?      
+      hashTable: JSON.parse(JSON.stringify(this.props.hashTable)), // do I need this?
       filters: Object.assign({}, this.props.model.filters),
       currentSign: this.props.currentSign,
       actionSubtype: 'add', // for reducer
       url: this.props.createURL(this.props.limit, this.props.model.filters.currency), // for updating data
-      id: Math.random().toString(36).slice(2) // randomly generated string, used as unique identifier
+      id: Math.random().toString(36).slice(2), // randomly generated string, used as unique identifier
     };
  
     this.setState({ chartIsSaved: true }); // to prevent duplication
@@ -101,11 +101,11 @@ export default class ModalWindow extends React.Component {
   changeCurrencyFilter(target) {
     const filterNames = ['currency'];
     const newFilterValues = [target.getAttribute('data-value')];
-    const {comparisionField, currency} = this.props.model.filters;
+    const { comparisionField, currency } = this.props.model.filters;
     const componentToUpdate = this.state.componentsToUpdate[0];
 
-    if(currency !== newFilterValues[0]) {
-      if(
+    if (currency !== newFilterValues[0]) {
+      if (
         comparisionField.indexOf('price') !== -1
         || comparisionField.indexOf('volume_24h') !== -1
         || comparisionField.indexOf('market_cap') !== -1
@@ -213,13 +213,13 @@ export default class ModalWindow extends React.Component {
                 onClickHandler={this.changeChartType}
                 isActiveBtnDisplayed
                 buttons={[
-                  { classesCSS: 'active', attrs: { 'data-type': 'bar'}, textValue: 'Bar' },
-                  { attrs: { 'data-type': 'hbar'}, textValue: 'Horizontal Bar' },
-                  { attrs: { 'data-type': 'pie'}, textValue: 'Pie' },
-                  { attrs: { 'data-type': 'pie-donut'}, textValue: 'Donut' },
-                  { attrs: { 'data-type': 'line'}, textValue: 'Line'},                                            
-                  { attrs: { 'data-type': 'line-scatter'}, textValue: 'Scatter Plot'},
-                  { attrs: { 'data-type': 'line-area'}, textValue: 'Area Plot'},
+                  { classesCSS: 'active', attrs: { 'data-type': 'bar' }, textValue: 'Bar' },
+                  { attrs: { 'data-type': 'hbar' }, textValue: 'Horizontal Bar' },
+                  { attrs: { 'data-type': 'pie' }, textValue: 'Pie' },
+                  { attrs: { 'data-type': 'pie-donut' }, textValue: 'Donut' },
+                  { attrs: { 'data-type': 'line' }, textValue: 'Line' },
+                  { attrs: { 'data-type': 'line-scatter' }, textValue: 'Scatter Plot' },
+                  { attrs: { 'data-type': 'line-area' }, textValue: 'Area Plot' },
                 ]}
               />
             </div>
@@ -227,16 +227,17 @@ export default class ModalWindow extends React.Component {
           <ButtonGroup
             classesCSS="controll-group"
             onClickHandler={this.handleControllBtnClick}
+            isActiveDisabled
             buttons={[
               {
                 classesCSS: 'btn-danger',
                 id: 'cancel-button',
-                textValue: 'Hide'
+                textValue: 'Hide',
               },
               {
                 classesCSS: `btn-success  ${this.state.buttonIsDisabled ? 'disabled' : ''}`,
                 id: 'build-button',
-                textValue: 'Build Chart'
+                textValue: 'Build Chart',
               },
               {
                 classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? 'disabled' : ''}`,
