@@ -1,6 +1,69 @@
 import { formProperDateFormat } from '../helperFunctions';
 
-const today = new Date();
+function restorePrevSessionFilterValues(forComponent) {
+  const prevSavedFilterValue = JSON.parse(localStorage.getItem(forComponent));
+  const today = new Date();
+  let defaultValues;
+
+  switch (forComponent) {
+    case 'BitcoinHistoryGraph':
+      defaultValues = {
+        currency: 'USD',
+        end: formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+        start: formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()),
+        timeline: 'less-than-3-month',
+        timelineBtnGroup: '1-month',
+      };
+      break;
+    case 'CurrencyPairGraph':
+      defaultValues = {
+        pairName: 'BTCLTC',
+        hours: 2,
+        dataPoints: 120, // === 1 min
+        currentDivisor: 0.0167,
+        frequency: '1 min',
+      };
+      break;
+    case 'CryptoBoard__table':
+      defaultValues = {
+        currency: 'USD',
+        limit: 100,
+        marketCap: '0',
+        price: '0',
+        volume_24h: '0',
+        sortTableValue: 'market_cap_',
+      };
+      break;
+    case 'CryptoBoard__chart':
+      defaultValues = {
+        currency: 'USD',
+        type: 'bar',
+        comparisionField: 'price_usd',
+      };
+      break;
+    case 'Settings':
+      defaultValues = {
+        BitcoinCurrentPrice: true,
+        BitcoinHistoryGraph: true,
+        CurrencyPairGraph: true,
+        CryptoBoard: true,
+      };
+      break;
+    default:
+      defaultValues = {};
+  }
+
+  if (!prevSavedFilterValue) {
+    return defaultValues;
+  }
+
+  const filterValues = {};
+  Object.keys(defaultValues).forEach((prop) => {
+    filterValues[prop] = prevSavedFilterValue[prop] || defaultValues[prop];
+  });
+
+  return filterValues;
+}
 
 // object that stores all of the raw data needed for app's initialization
 
@@ -13,22 +76,17 @@ const model = {
       RUB: '&#8381;',
     },
   },
-  currentPrice: {
+  BitcoinCurrentPrice: {
     url: 'https://api.coindesk.com/v1/bpi/currentprice.json',
     updateFrequency: 60000,
     data: {},
-  }, // data for BitcoinCurrentPrice component
-  history: {
+  },
+  BitcoinHistoryGraph: {
     url: 'https://api.coindesk.com/v1/bpi/historical/close.json',
     margin: {
       top: 60, right: 60, bottom: 60, left: 60,
     },
-    filters: {
-      currency: 'USD',
-      end: formProperDateFormat(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-      start: formProperDateFormat(today.getFullYear(), today.getMonth(), today.getDate()),
-      currentTimeline: 'less-than-3-month',
-    },
+    filters: restorePrevSessionFilterValues('BitcoinHistoryGraph'),
     ticksLevel: 3, // used by recursive function to calc ticks
     xTicksFormat: {
       'from-all-time-to-year': '%Y',
@@ -36,18 +94,12 @@ const model = {
       'less-than-3-month': '%e\'%b',
     },
     data: {},
-  }, // data for BitcoinHistoryGraph component
-  currencyPair: {
+  },
+  CurrencyPairGraph: {
     margin: {
       top: 60, right: 60, bottom: 60, left: 60,
     },
-    filters: {
-      pairName: 'BTCLTC',
-      hours: 2,
-      dataPoints: 120, // === 1 min
-      currentDivisor: 0.0167,
-      frequency: '1 min',
-    },
+    filters: restorePrevSessionFilterValues('CurrencyPairGraph'),
     dataPointDivisors: { // to get data_point we need to divide hours by these values
       '1 min': 0.0167, // (1 / 60)
       '5 mins': 0.0833, // (5 / 60)
@@ -60,18 +112,12 @@ const model = {
       '24 hours': 24,
     },
     data: {},
-  }, // data for CurrencyPairGraph component
-  cryptoBoard: {
+  },
+  CryptoBoard: {
     url: 'https://api.coinmarketcap.com/v1/ticker/',
     table: {
       data: {},
-      filters: {
-        currency: 'USD',
-        limit: 100,
-        marketCap: '0',
-        price: '0',
-        volume_24h: '0',
-      },
+      filters: restorePrevSessionFilterValues('CryptoBoard__table'),
       filterValues: {
         marketCap: {
           0: 'All',
@@ -105,23 +151,13 @@ const model = {
       margin: {
         left: 40, top: 30, right: 80, bottom: 50,
       }, // margin left is redetermined dynamically
-      filters: {
-        currency: 'USD',
-        type: 'bar',
-        comparisionField: 'price_usd',
-      },
+      filters: restorePrevSessionFilterValues('CryptoBoard__chart'),
     },
-  }, // data for CryptoBoard component
-  settings: {
-    displayComponent: JSON.parse(window.localStorage.getItem('displayComponent')) || {
-      BitcoinCurrentPrice: true,
-      BitcoinHistoryGraph: true,
-      CurrencyPairGraph: true,
-      CryptoBoard: true,
-    },
+  },
+  Settings: {
+    displayComponent: restorePrevSessionFilterValues('Settings'),
   }, // data for Settings component
-  savedGraphs: JSON.parse(window.localStorage.getItem('savedGraphs')) || [], // data for SavedGraphs component
+  SavedGraphs: JSON.parse(window.localStorage.getItem('savedGraphs')) || [], // data for SavedGraphs component
 };
-
 
 export default model;
