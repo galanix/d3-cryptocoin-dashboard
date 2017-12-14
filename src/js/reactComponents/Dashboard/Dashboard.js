@@ -9,13 +9,13 @@ import CryptoBoard from './CryptoBoard/CryptoBoard';
 
 function Dashboard(props) {
   // object that tells whether component should render or not
-  const { displayComponent } = props.data.settings;
+  const { displayComponent } = props.data.Settings;
   return (
     <div className="row">
       { displayComponent.BitcoinCurrentPrice ?
         <BitcoinCurrentPrice
           update={props.update}
-          model={props.data.currentPrice}
+          model={props.data.BitcoinCurrentPrice}
           signs={props.data.general.currencySigns}
         />
         : null
@@ -24,7 +24,7 @@ function Dashboard(props) {
         <BitcoinHistoryGraph
           update={props.update}
           change={props.change}
-          model={props.data.history}
+          model={props.data.BitcoinHistoryGraph}
           signs={props.data.general.currencySigns}
         />
         : null
@@ -33,7 +33,7 @@ function Dashboard(props) {
         <CurrencyPairGraph
           update={props.update}
           change={props.change}
-          model={props.data.currencyPair}
+          model={props.data.CurrencyPairGraph}
         />
         : null
       }
@@ -41,7 +41,7 @@ function Dashboard(props) {
         <CryptoBoard
           update={props.update}
           change={props.change}
-          model={props.data.cryptoBoard}
+          model={props.data.CryptoBoard}
           signs={props.data.general.currencySigns}
         />
         : null
