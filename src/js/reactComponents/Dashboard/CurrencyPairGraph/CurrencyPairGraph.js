@@ -184,7 +184,7 @@ class CurrencyPairGraph extends React.Component {
                     formCSSClasses="form-horizontal form-label-left input_mask"
                     formId="hours-input"
                     inputName="hours"
-                    placeholder="2 Hours"
+                    placeholder={`${this.props.model.filters.hours} Hours`}
                     inputIcon="fa fa-clock-o"
                     onSubmitHandler={this.hoursFilterChange}
                   />
