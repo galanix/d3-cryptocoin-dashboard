@@ -249,7 +249,7 @@ function LineChartHOC(BaseComponent) {
       this.setState({ lineGraph });
     }
     determineTicks(dataset) {
-      const xTicksFormat = this.props.model.xTicksFormat[this.props.model.filters.currentTimeline];
+      const xTicksFormat = this.props.model.xTicksFormat[this.props.model.filters.timeline];
       const { ticksLevel } = this.props.model;
 
       // outputs an array of evenly distributed values between prevSm and prevLg

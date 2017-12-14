@@ -118,7 +118,7 @@ class BitcoinHistoryGraph extends React.Component {
       if (yearDiff > 0) {
         timeline = 'from-all-time-to-year';
       }
-      const filterNames = ['currentTimeline', filterName];
+      const filterNames = ['timeline', filterName];
       const newFilterValues = [timeline, dateStr];
       this.saveChangesAndRerender(newFilterValues, filterNames);
       this.setState({
@@ -128,15 +128,15 @@ class BitcoinHistoryGraph extends React.Component {
       this.showError();
     }
   }
-  timelineFilterChange(target) {    
+  timelineFilterChange(target) {
     if (target.tagName !== 'BUTTON') {
       return;
     }
-    const btnValue = target.getAttribute('data-timeline'); // button value
+    const btnTimelineValue = target.getAttribute('data-timeline'); // button value
     const today = new Date(); // endDate
     const startDate = new Date();
     let timeline; // each of 6 buttons fall under 3 periods
-    switch (btnValue) {
+    switch (btnTimelineValue) {
       case 'all-time':
         startDate.setFullYear(2010);
         startDate.setMonth(7);
@@ -164,9 +164,9 @@ class BitcoinHistoryGraph extends React.Component {
         timeline = 'less-than-3-month';
         break;
       default:
-        console.warn('unknown timeline: ', btnValue);
+        console.warn('unknown timeline: ', btnTimelineValue);
     }
-    const filterNames = ['currentTimeline', 'start', 'end'];
+    const filterNames = ['timeline', 'timelineBtnGroup', 'start', 'end'];
     const startFilterValue = formProperDateFormat(
       startDate.getFullYear(),
       startDate.getMonth() + 1,
@@ -179,6 +179,7 @@ class BitcoinHistoryGraph extends React.Component {
     );
     const newFilterValues = [
       timeline,
+      btnTimelineValue,
       startFilterValue,
       endFilterValue,
     ];
@@ -209,7 +210,7 @@ class BitcoinHistoryGraph extends React.Component {
   render() {
     const startPlaceholder = `From: ${this.props.model.filters.start}`;
     const endPlaceholder = `To: ${this.props.model.filters.end}`;
-
+    const { timelineBtnGroup } = this.props.model.filters;
     return (
       <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
         <section id="history" className="row x_panel">
@@ -276,27 +277,27 @@ class BitcoinHistoryGraph extends React.Component {
               isActiveBtnDisplayed={this.state.isActiveBtnDisplayed}
               buttons={[{
                   attrs: { 'data-timeline': 'all-time' },
-                  classesCSS: 'btn-success',
+                  classesCSS: `btn-success ${timelineBtnGroup === 'all-time' ? 'active' : ''}`,
                   textValue: 'All time',
                 }, {
                   attrs: { 'data-timeline': '1-year' },
-                  classesCSS: 'btn-success',
+                  classesCSS: `btn-success ${timelineBtnGroup === '1-year' ? 'active' : ''}`,
                   textValue: 'Year',
                 }, {
                   attrs: { 'data-timeline': '6-month' },
-                  classesCSS: 'btn-success',
+                  classesCSS: `btn-success ${timelineBtnGroup === '6-month' ? 'active' : ''}`,
                   textValue: '6 months',
                 }, {
                   attrs: { 'data-timeline': '3-month' },
-                  classesCSS: 'btn-success',
+                  classesCSS: `btn-success ${timelineBtnGroup === '3-month' ? 'active' : ''}`,
                   textValue: '3 months',
                 }, {
                   attrs: { 'data-timeline': '1-month' },
-                  classesCSS: 'btn-success active',
+                  classesCSS: `btn-success ${timelineBtnGroup === '1-month' ? 'active' : ''}`,
                   textValue: '1 month',
                 }, {
                   attrs: { 'data-timeline': '1-week' },
-                  classesCSS: 'btn-success',
+                  classesCSS: `btn-success ${timelineBtnGroup === '1-week' ? 'active' : ''}`,
                   textValue: 'week',
                 },
               ]}
