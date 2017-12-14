@@ -17,7 +17,7 @@ import {
   handleMultipleDataReqeuests,
 } from '../reduxComponents/actions/update';
 
-import { filterChange } from '../reduxComponents/actions/change';
+import filterChange from '../reduxComponents/actions/change';
 
 // UI THEME EFFECTS
 import templateScript from '../template'; // jQuery
@@ -84,7 +84,7 @@ class App extends React.Component {
               path={settingsPagePath}
               render={() => (
                 <Settings
-                  displayComponent={this.props.appData.settings.displayComponent}
+                  displayComponent={this.props.appData.Settings.displayComponent}
                   change={this.change}
                 />
               )}
@@ -96,8 +96,8 @@ class App extends React.Component {
                   update={this.update}
                   updateAll={this.updateAll}
                   linkToGraphCreation={mainPagePath}
-                  graphCollection={this.props.appData.savedGraphs}
-                  margin={this.props.appData.cryptoBoard.chart.margin}
+                  graphCollection={this.props.appData.SavedGraphs}
+                  margin={this.props.appData.CryptoBoard.chart.margin}
                 />
               )}
             />
