@@ -1,5 +1,5 @@
 import React from 'react';
-import PropType from 'prop-type';
+import PropType from 'prop-types';
 
 export default function Message(props) {
   return (
@@ -15,7 +15,8 @@ export default function Message(props) {
   );
 }
 
-Message.PropType = {
+Message.propTypes = {
+  color: PropType.string,
   msg: PropType.string,
   CSSClasses: PropType.string,
   isMessageVisible: PropType.bool,
