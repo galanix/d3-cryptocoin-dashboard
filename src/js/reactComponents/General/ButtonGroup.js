@@ -34,20 +34,21 @@ class ButtonGroup extends React.Component {
       return;
     }
 
+    if (!this.props.isActiveDisabled) {
     // we should deal with active(selected) class
-    // if button group only allows one at a time    
-    if (
-      !this.props.areMultipleActiveBtnsAllowed
-      && (target !== this.state.activeBtn)
-    ) {
-      console.log(this.state);
-      if (this.state.activeBtn) {
-        this.state.activeBtn.classList.remove('active');
-      }
+    // if button group only allows one at a time
+      if (
+        !this.props.areMultipleActiveBtnsAllowed
+        && (target !== this.state.activeBtn)
+      ) {
+        if (this.state.activeBtn) {
+          this.state.activeBtn.classList.remove('active');
+        }
 
-      this.setState({
-        activeBtn: target,
-      }, () => this.state.activeBtn.classList.add('active'));
+        this.setState({
+          activeBtn: target,
+        }, () => this.state.activeBtn.classList.add('active'));
+      }
     }
 
     this.props.onClickHandler(target);
