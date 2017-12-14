@@ -1,20 +1,9 @@
 import React from 'react';
+import * as d3 from 'd3-format';
+// import d3 from 'd3-format';
 
 export default class Table extends React.Component {
-  // data-sort-by values are properties in a single item of dataset
-  constructor() {
-    super();
-    this.state = {
-      name: 'name',
-      marketCap: 'market_cap_',
-      price: 'price_',
-      availableSupply: 'available_supply',
-      volume: '24h_volume_',
-      percentChange_1Hour: 'percent_change_1h',
-      percentChange_24Hours: 'percent_change_24h',
-      percentChange_7Days: 'percent_change_7d',
-    }
-  }
+  // data-sort-by values are properties in a single item of datase
   generateTH(colVal, textVal) {
     return (
       <th data-sort-by={colVal} key={colVal}>
@@ -25,16 +14,17 @@ export default class Table extends React.Component {
   }
   render() {
     const thElements = {
-      'Name': this.state.name,
-      'Market Cap': this.state.marketCap,
-      'Price': this.state.price,
-      'Circulating Supply': this.state.availableSupply,
-      'Volume(24h)': this.state.volume,
-      '%1h': this.state.percentChange_1Hour,
-      '%24h': this.state.percentChange_24Hours,
-      '%7d': this.state.percentChange_7Days,
+      Name: 'name',
+      'Market Cap': 'market_cap_',
+      Price: 'price_',
+      'Circulating Supply': 'available_supply',
+      'Volume(24h)': '24h_volume_',
+      '%1h': 'percent_change_1h',
+      '%24h': 'percent_change_24h',
+      '%7d': 'percent_change_7d',
     };
 
+    const formatGroupedThousands = d3.format(",.2f");
     return (
       <div className="row">
         <div className="col-xs-12">
@@ -43,7 +33,7 @@ export default class Table extends React.Component {
               <thead>
                 <tr onClick={evt => this.props.sortTable(evt)} >
                   <th>
-                    <i className="fa fa-check"></i>
+                    <i className="fa fa-check" />
                   </th>
                   <th>#</th>
 
@@ -55,19 +45,19 @@ export default class Table extends React.Component {
                 {this.props.dataset.map((item, index) => (
                   <tr key={index}>
                     <td data-toggle="button">
-                      <button 
-                        className={`btn btn-xs btn-dark ${(!this.props.hashTable || !this.props.hashTable[item.id]) ? "" : "active"}`}
+                      <button
+                        className={`btn btn-xs btn-dark ${(!this.props.hashTable || !this.props.hashTable[item.id]) ? '' : 'active'}`}
                         data-currency-id={item.id}
                       >
-                        <span className="fa fa-check"></span>
+                        <span className="fa fa-check" />
                       </button>
                     </td>
                     <td>{index + 1}</td>
                     <td>{item.name}</td>
-                    <td>{item["market_cap_" + this.props.currency.toLowerCase()]}</td>
-                    <td>{(+item["price_" + this.props.currency.toLowerCase()]).toFixed(5)}</td>
-                    <td>{item.available_supply}</td>
-                    <td>{item["24h_volume_" + this.props.currency.toLowerCase()]}</td>
+                    <td>{formatGroupedThousands(item[`market_cap_${this.props.currency.toLowerCase()}`])}</td>
+                    <td>{formatGroupedThousands(item[`price_${this.props.currency.toLowerCase()}`])}</td>
+                    <td>{formatGroupedThousands(item.available_supply)}</td>
+                    <td>{formatGroupedThousands(item[`24h_volume_${this.props.currency.toLowerCase()}`])}</td>
                     <td>{item.percent_change_1h}</td>
                     <td>{item.percent_change_24h}</td>
                     <td>{item.percent_change_7d}</td>

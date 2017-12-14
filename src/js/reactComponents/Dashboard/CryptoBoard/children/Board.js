@@ -8,9 +8,8 @@ export default class Board extends React.Component {
     super();
 
     this.state = {
-      componentToUpdate: 'CryptoBoard_table',
+      componentToUpdate: 'CryptoBoard__table',
       // default values
-      sortValue: 'market_cap_',
       sortOrder: 'desc',
       iconJSX: <span className="fa fa-sort-desc"></span>,
     };
@@ -27,11 +26,13 @@ export default class Board extends React.Component {
     this.changeTableLength = this.changeFilter.bind(this, this.saveChanges, 'limit');
   }
   componentDidMount() {
-      const { limit, currency } = this.props.model.filters;
-      this.props.update(this.props.createURL(limit, currency), this.state.componentToUpdate)
-          .then(() => this.setState({
-              filteredData: this.props.model.data
-          }));
+    const { limit, currency } = this.props.model.filters;
+    this.props.update(this.props.createURL(limit, currency), this.state.componentToUpdate)
+      .then(() => this.setState({
+        filteredData: this.props.model.data,
+      }, () => {
+        this.sortTable();
+      }));
   }
   changeFilter(callback, filterName, target) { // generalized function that handles many similar filter values changes
     const newFilterValue = target.getAttribute('data-value');    
@@ -90,36 +91,43 @@ export default class Board extends React.Component {
     });
   }
   sortTable(evt) {
-    const target = evt.target;
-    let sortValue = target.getAttribute('data-sort-by');
-    if(target.tagName !== 'TH' || !sortValue) {
-      return;
+    let { sortTableValue } = this.props.model.filters;
+
+    if (evt) {
+      const { target } = evt;
+      sortTableValue = target.getAttribute('data-sort-by');
+      if (target.tagName !== 'TH' || !sortTableValue) {
+        return;
+      }
     }
-  
+
     // selected column(target) will have an icon that would tell the order of sorted data - asc / desc
-    let sortedDataset;
-    const dataset = [ ...this.props.model.data ]; // make a copy of current data
+    const dataset = [...this.props.model.data]; // make a copy of current data
     // wrap code with a function to prevent duplication
-    const saveSortedData = (sortedDataset, sortValue, sortOrder) => {
-      this.props.update(null, this.state.componentToUpdate, sortedDataset);
-      this.setState(prevState => ({
-        sortValue,
-        iconJSX: <span className={`fa fa-sort-${sortOrder}`}></span>,
-        filteredData: sortedDataset,
-      }), () => {
+    const saveSortedData = (newFilteredData, newSortTableValue, sortOrder) => {
+      this.props.change(newSortTableValue, 'sortTableValue', this.state.componentToUpdate);
+      this.props.update(null, this.state.componentToUpdate, newFilteredData);
+      this.setState({
+        iconJSX: <span className={`fa fa-sort-${sortOrder}`} />,
+        filteredData: newFilteredData,
+      }, () => {
         this.updateTable();
       });
     };
-    
-    if(this.state.sortValue === sortValue) {
-      // if the same th is clicked
-      // we just need to change order of the dataset
 
+    if (
+      this.props.model.filters.sortTableValue === sortTableValue
+      && !!evt
+    ) {
+      // check for object evt is important because if it is undefined
+      // then the TH was not clicked at all, so there's no previous TH
+
+      // if the same TH is clicked
+      // we just need to change order of the dataset
       this.setState(prevState => ({
         sortOrder: prevState.sortOrder === 'asc' ? 'desc' : 'asc',
       }), () => {
-        sortedDataset = dataset.reverse();
-        saveSortedData(sortedDataset, sortValue, this.state.sortOrder);
+        saveSortedData(dataset.reverse(), sortTableValue, this.state.sortOrder);
       });
     } else {
       this.setState({
@@ -127,42 +135,41 @@ export default class Board extends React.Component {
       }, () => {
         let ascending;
         let descending;
-        let prop = sortValue;
-        
-        if(
+        let prop = sortTableValue;
+
+        if (
           prop.indexOf('market_cap_') !== -1
           || prop.indexOf('24h_volume_') !== -1
           || prop.indexOf('price_') !== -1
         ) {
-          // prop/sortValue is not complete for these three values,
+          // prop/sortTableValue is not complete for these three values,
           // we need to add currently selected currency to it,
           // ex: price_ + 'USD'.toLowerCase() --> price_usd
           prop += this.props.model.filters.currency.toLowerCase();
         }
 
-        if(sortValue !== 'name') {
+        if (sortTableValue !== 'name') {
           // for numbers
           descending = (curr, next) => next[prop] - curr[prop];
           ascending = (curr, next) => curr[prop] - next[prop];
         } else {
-          // for strings          
+          // for strings
           descending = (curr, next) => next[prop].localeCompare(curr[prop]);
           ascending = (curr, next) => curr[prop].localeCompare(next[prop]);
         }
 
         const sortingMethod = this.state.sortedOrder === 'asc' ? ascending : descending;
-        sortedDataset = dataset.sort(sortingMethod);
-        saveSortedData(sortedDataset, sortValue, this.state.sortOrder);
+        saveSortedData(dataset.sort(sortingMethod), sortTableValue, this.state.sortOrder);
       });
     }
   }
   saveChanges() {
-    const {limit, currency} = this.props.model.filters;        
+    const { limit, currency } = this.props.model.filters;
 
     this.props.update(this.props.createURL(limit, currency), this.state.componentToUpdate)
       .then(() => {
         this.setState({
-          filteredData: this.props.model.data
+          filteredData: this.props.model.data,
         }, () => {
           this.updateTable();
         });
@@ -193,11 +200,11 @@ export default class Board extends React.Component {
         <Table
           dataset={this.state.filteredData || []}
           currency={this.props.model.filters.currency}
+          colToSort={this.props.model.filters.sortTableValue}
           onClickHandler={this.props.toggleCheckbox}
           sortTable={this.sortTable}
           hashTable={this.props.hashTable}
           sortOrderIcon={this.state.iconJSX}
-          colToSort={this.state.sortValue}
         />
       </div>
     );
