@@ -144,7 +144,11 @@ function LineChartHOC(BaseComponent) {
     toggleGraphs(id, active) {
       const svg = d3.select(this.svg);
       const graphs = this.state.graphs;
-  
+
+      if (!graphs) {
+        return;
+      }
+      
       svg
         .select('#graph-type--' + id)
         .transition()
