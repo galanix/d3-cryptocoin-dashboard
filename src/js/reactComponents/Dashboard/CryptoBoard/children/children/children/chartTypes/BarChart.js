@@ -1,6 +1,5 @@
 import React from 'react';
 import * as d3 from 'd3';
-import {attrs} from 'd3-selection-multi';
 
 import Legend from '../Legend.js';
 
