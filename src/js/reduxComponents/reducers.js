@@ -1,15 +1,28 @@
 import model from './model';
 
+
+// writes filter changes to the local storage
+function writeFilterToLocalStorage(forComponent, filterName, newFilterValue) {
+  const filtersObject = JSON.parse(localStorage.getItem(forComponent)) || {};
+
+  filtersObject[filterName] = newFilterValue;
+
+  localStorage.setItem(forComponent, JSON.stringify(filtersObject));
+}
+
 // abstraction that handles filter value  update
 function assignNewFilterValue(action, prevFilters) {
   const filters = JSON.parse(JSON.stringify(prevFilters));
+  const { forComponent, filterName, newFilterValue } = action;
 
-  if (action.filterName instanceof Array) {
-    action.filterName.forEach((name, index) => {
-      filters[name] = action.newFilterValue[index];
+  if (filterName instanceof Array) {
+    filterName.forEach((name, index) => {
+      filters[name] = newFilterValue[index];
+      writeFilterToLocalStorage(forComponent, name, newFilterValue[index]);
     });
   } else {
-    filters[action.filterName] = action.newFilterValue;
+    filters[filterName] = newFilterValue;
+    writeFilterToLocalStorage(forComponent, filterName, newFilterValue);
   }
   return filters;
 }
@@ -21,35 +34,35 @@ export default function reducers(state = model, action) {
     case 'UPDATE_DATA':
       switch (action.forComponent) { // action handling is slightly different throughout components
         case 'BitcoinCurrentPrice':
-          newState.currentPrice.data = action.data;
+          newState.BitcoinCurrentPrice.data = action.data;
           break;
 
         case 'BitcoinHistoryGraph':
-          newState.history.data = action.data;
+          newState.BitcoinHistoryGraph.data = action.data;
           break;
 
         case 'CurrencyPairGraph':
-          newState.currencyPair.data = action.data;
+          newState.CurrencyPairGraph.data = action.data;
           break;
 
-        case 'CryptoBoard_table':
-          newState.cryptoBoard.table.data = action.data;
+        case 'CryptoBoard__table':
+          newState.CryptoBoard.table.data = action.data;
           break;
 
-        case 'CryptoBoard_chart':
-          newState.cryptoBoard.chart.data = action.data;
+        case 'CryptoBoard__chart':
+          newState.CryptoBoard.chart.data = action.data;
           break;
 
         case 'SavedGraphs': {
           const { data } = action;
           if (data instanceof Array) {
-            newState.savedGraphs = data; // replace dataset
+            newState.SavedGraphs = data; // replace dataset
           } else if (data.actionSubtype === 'add') { // update already existing dataset
-            newState.savedGraphs.unshift(data);
+            newState.SavedGraphs.unshift(data);
           } else { // data.actionSubtype === 'delete'
-            newState.savedGraphs.splice(data.index, 1);
+            newState.SavedGraphs.splice(data.index, 1);
           }
-          window.localStorage.setItem('savedGraphs', JSON.stringify(newState.savedGraphs)); // to restore previously set dataset
+          window.localStorage.setItem('savedGraphs', JSON.stringify(newState.SavedGraphs)); // to restore previously set dataset
           break;
         }
         default:
@@ -59,23 +72,27 @@ export default function reducers(state = model, action) {
     case 'CHANGE_FILTERS':
       switch (action.forComponent) { // action handling is almost the same throughout components
         case 'BitcoinHistoryGraph':
-          newState.history.filters = assignNewFilterValue(action, newState.history.filters);
+          newState.BitcoinHistoryGraph.filters =
+            assignNewFilterValue(action, newState.BitcoinHistoryGraph.filters);
           break;
 
         case 'CurrencyPairGraph':
-          newState.currencyPair.filters = assignNewFilterValue(action, newState.currencyPair.filters);
+          newState.CurrencyPairGraph.filters =
+            assignNewFilterValue(action, newState.CurrencyPairGraph.filters);
           break;
 
-        case 'CryptoBoard_table':
-          newState.cryptoBoard.table.filters = assignNewFilterValue(action, newState.cryptoBoard.table.filters);
+        case 'CryptoBoard__table':
+          newState.CryptoBoard.table.filters =
+            assignNewFilterValue(action, newState.CryptoBoard.table.filters);
           break;
 
-        case 'CryptoBoard_chart':
-          newState.cryptoBoard.chart.filters = assignNewFilterValue(action, newState.cryptoBoard.chart.filters);
+        case 'CryptoBoard__chart':
+          newState.CryptoBoard.chart.filters =
+            assignNewFilterValue(action, newState.CryptoBoard.chart.filters);
           break;
 
         case 'Settings':
-          newState.settings[action.filterName] = action.newFilterValue;
+          newState.Settings[action.filterName] = action.newFilterValue;
           break;
 
         default:
