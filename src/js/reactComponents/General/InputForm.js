@@ -16,7 +16,7 @@ export default class InputForm extends React.Component {
   handleSubmit(evt) {
     evt.preventDefault();
 
-    if(typeof this.props.onSubmitHandler === 'function') {
+    if (typeof this.props.onSubmitHandler === 'function') {
       this.props.onSubmitHandler(evt);
     }
   }
@@ -36,15 +36,16 @@ export default class InputForm extends React.Component {
                 >
                   <i className={this.props.inputIcon} aria-hidden="true"></i>
                 </span>
-                <input                                        
+                <input
                   ref={input => this.input = input}
                   id={this.props.id}
                   className="form-control"
                   type="text"
-                  style={{"width" : "150px"}}
+                  style={{"width" : "140px"}}
                   name={this.props.inputName}
                   placeholder={this.props.placeholder}                    
                 />
+                {this.props.children}
               </div>
             </div>
           </div>

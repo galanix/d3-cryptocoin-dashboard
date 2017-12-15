@@ -54,7 +54,6 @@ class CurrencyPairGraph extends React.Component {
           this.renderGraphs(true);
         });
     });
-    
   }
   currencyFilterChange(target) {
     const filterName = 'pairName';
@@ -79,17 +78,21 @@ class CurrencyPairGraph extends React.Component {
   }
   hoursFilterChange(evt) {
     let { target } = evt;
+
     if (target.tagName === 'BUTTON') {
-      target = target.parentElement;
+      target = target.parentElement.parentElement;
+    } else if (target.tagName !== 'FORM') {
+      return;
     }
 
     const input = target.querySelector('input');
-    const hours = parseFloat(input.value);
+    const hours = parseFloat(input.value || input.placeholder);
 
     if (!hours) {
       this.showError();
       return;
     }
+
     this.hideError();
 
     const divisor = this.props.model.filters.currentDivisor;
@@ -143,6 +146,7 @@ class CurrencyPairGraph extends React.Component {
             classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
             titleText="Currency Pair"
           />
+
           <div className="col-md-12 col-sm-12 col-xs-12">
             <div className="well dropdown-group">
               <Dropdown
@@ -178,20 +182,27 @@ class CurrencyPairGraph extends React.Component {
             </div>
             <div className="well">
               <div className="InputFormContainer row">
-                <div className="col-md-6 col-sm-6 col-xs-12">
-                  <InputForm
-                    isFormHighlighted={this.state.isFormHighlighted}
-                    formCSSClasses="form-horizontal form-label-left input_mask"
-                    formId="hours-input"
-                    inputName="hours"
-                    placeholder={`${this.props.model.filters.hours} Hours`}
-                    inputIcon="fa fa-clock-o"
-                    onSubmitHandler={this.hoursFilterChange}
-                  />
-                </div>
-                <div className="col-md-6 col-sm-6 col-xs-12">
-                  <button className="btn" onClick={this.hoursFilterChange}>Apply</button>
-                </div>
+                <InputForm
+                  isFormHighlighted={this.state.isFormHighlighted}
+                  formCSSClasses="form-horizontal form-label-left input_mask"
+                  formId="hours-input"
+                  inputName="hours"
+                  placeholder={`${this.props.model.filters.hours} Hours`}
+                  inputIcon="fa fa-clock-o"
+                  onSubmitHandler={this.hoursFilterChange}
+                >
+                  <span className="input-group-btn">
+                    <button
+                      className="btn btn-info"
+                      onClick={(evt) => {
+                        evt.preventDefault();
+                        this.hoursFilterChange(evt);
+                      }}
+                    >
+                      Apply
+                    </button>
+                  </span>
+                </InputForm>
               </div>
               <ErrorMessage
                 isMessageVisible={this.state.isErrorMessageVisible}
@@ -223,7 +234,8 @@ class CurrencyPairGraph extends React.Component {
               />
             </div>
           </div>
-          <div className="col-md-6">
+
+          <div className="col-md-12 col-sm-12 col-xs-12 graph-container">
             <LineChart
               ref={(lineCharts) => { this.charts = lineCharts; }}
               hasErrorOccured={this.state.hasFetchFailed}
