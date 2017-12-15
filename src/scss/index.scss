@@ -23,7 +23,8 @@ html, body {
 }
 
 body {
-    overflow-x: hidden; 
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 a.active,
@@ -34,6 +35,18 @@ a.active:hover {
 
 .btn > span {
     white-space: pre;
+}
+
+.row {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+@media screen and (max-width: 500px) {
+    .right_col > .row {
+        margin-left: -20px;
+        margin-right: -30px;
+    }
 }
 
 .toggle {
@@ -140,7 +153,7 @@ svg {
         .count {
             font-size: 32px;
         }
-    }    
+    }
     @media screen and (max-width: 500px) {
         text-align: center;
         header {
@@ -162,9 +175,14 @@ svg {
 */
 
 #history {
-    overflow: hidden;
+    // overflow: hidden;
+    .graph-container {
+        height: 300px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        float: none;
+    }
     .graph {
-        display: inline-block !important;
         width: 500px;
         height: 300px;
     }
@@ -191,6 +209,12 @@ svg {
             width: 100%;
             font-size: 24px;
         }
+        .InputFormContainer {
+            text-align: center;
+            .calendar-date {
+                float: none;
+            }        
+        }
         .btn-group {
             .btn {
                 margin-top: 1px;
@@ -199,16 +223,17 @@ svg {
             }
         }
         .graph {
-            width: 300px;
-            overflow: auto;        
+            width: 80%;
+            min-width: 320px;
+            overflow-x: scroll;
+            overflow-y: hidden;
         }
-    }
-
+    }    
     input:focus {
         background: inherit;
     }
     .tooltip {
-        position: absolute;        
+        position: absolute;
         width: 120px;
         height: auto;
         padding: 5px 10px;
@@ -222,8 +247,10 @@ svg {
           margin-top: 2px;
           margin-bottom: 2px;
         }        
-    }    
+    }
 }
+
+
 /* < CURRENCY PAIR > */
 
 // path[id^="graph-type"] {
@@ -231,11 +258,17 @@ svg {
 // }
 
 #currency-pair {
-    overflow: hidden;
+    // overflow: hidden;
+    .graph-container {
+        height: 300px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        float: none;
+    }
     .graph {
-        display: inline-block !important;
         width: 500px;
         height: 300px;
+        overflow: auto;
     }
     .message.error {
         text-align: left;
@@ -245,11 +278,16 @@ svg {
         margin-top: 6px;
     }
     .InputFormContainer {
+        margin-bottom: -4px;
         text-align: left;
-        .btn {
-            // margin-left: 10px;
-        }      
+        padding-left: 10px;
+        .input-group-addon, .input-group-btn {
+            width: inherit;
+        }
     }     
+    .control-group {
+        display: inline-block !important;
+    }
     .toggle-graphs {
         margin-top: 16px;
     
@@ -276,13 +314,13 @@ svg {
             font-size: 24px;
         }
         .graph {
-            width: 300px;
-            overflow: auto;        
+            width: 80%;
+            min-width: 320px;
+            overflow-x: scroll;
+            overflow-y: hidden;  
         }
         .InputFormContainer {
-            .btn {
-                 margin-top: 10px;
-            }
+            text-align: center;
         }
     }
 }
