@@ -34,15 +34,17 @@ export default class BasicLineChart extends React.Component {
       return;
     }
 
-    let width = Math.round(this.svg.parentElement.getBoundingClientRect().width);
-    if (width > 600) {
-      width = 600;
-    } else if (width < 500) {
-      width = 500;
-    }
+    const width = 500;
+    const height = 300;
+    // let width = Math.round(this.svg.parentElement.getBoundingClientRect().width);
+    // if (width > 600) {
+    //   width = 600;
+    // } else if (width < 500) {
+    //   width = 500;
+    // }
 
     const { margin } = this.props.model;
-    const height = width * 0.6;
+    // const height = width * 0.6;
     const actualWidth = width - margin.left - margin.right;
     const actualHeight = height - margin.top - margin.bottom;
 
