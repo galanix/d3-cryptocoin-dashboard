@@ -164,7 +164,7 @@ export default class ModalWindow extends React.Component {
       <div>
         <button
           id='modal-button'
-          className={`btn btn-dark ${this.state.buttonIsDisabled ? 'disabled' : ''}`}
+          className={`btn btn-lg btn-warning ${this.state.buttonIsDisabled ? 'disabled' : ''}`}
           onClick={this.openModalWindow}
         >
           Visualize
