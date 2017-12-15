@@ -22,6 +22,8 @@ class BitcoinHistoryGraph extends React.Component {
       isErrorMessageVisible: false,
       isActiveBtnDisplayed: true,
       hasFetchFailed: false,
+      substanceForButtonGroup: [],
+      isBtnGroupPadded: false,
     };
 
     this.createURL = this.createURL.bind(this);
@@ -34,6 +36,12 @@ class BitcoinHistoryGraph extends React.Component {
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => this.renderGraph(false))
       .catch(err => console.warn('failed fetch', err));
+
+    this.provideButtonSubstance();
+
+    window.addEventListener('resize', () => {
+      this.provideButtonSubstance();
+    });
   }
   showError() {
     this.setState({
@@ -207,10 +215,64 @@ class BitcoinHistoryGraph extends React.Component {
     const { url } = this.props.model;
     return `${url}?start=${start}&end=${end}&currency=${currency}`;
   }
+  provideButtonSubstance() {
+    if (!this.btnGroup) {
+      return;
+    }
+
+    let additionalBtnClasses = 'btn btn-success';
+    const timelineVal = this.props.model.filters.timelineBtnGroup;
+    const btnGroupEl = this.btnGroup.container;
+    if (parseInt(getComputedStyle(btnGroupEl).width, 10) < 417) {
+      additionalBtnClasses += ' btn-sm';
+      if (!this.state.isBtnGroupPadded) {
+        btnGroupEl.style.paddingBottom = `${parseInt(getComputedStyle(btnGroupEl).paddingBottom, 10) + 4}px`;
+
+        this.setState({
+          isBtnGroupPadded: true,
+        });
+      }
+    } else {
+      if (this.state.isBtnGroupPadded) {
+        btnGroupEl.style.paddingBottom = `${parseInt(getComputedStyle(btnGroupEl).paddingBottom, 10) - 4}px`;
+
+        this.setState({
+          isBtnGroupPadded: false,
+        });
+      }
+    }
+
+    this.setState({
+      substanceForButtonGroup: [{
+        attrs: { 'data-timeline': 'all-time' },
+        classesCSS: `${additionalBtnClasses} ${timelineVal === 'all-time' ? 'active' : ''}`,
+        textValue: 'All time',
+      }, {
+        attrs: { 'data-timeline': '1-year' },
+        classesCSS: `${additionalBtnClasses} ${timelineVal === '1-year' ? 'active' : ''}`,
+        textValue: 'Year',
+      }, {
+        attrs: { 'data-timeline': '6-month' },
+        classesCSS: `${additionalBtnClasses} ${timelineVal === '6-month' ? 'active' : ''}`,
+        textValue: '6 months',
+      }, {
+        attrs: { 'data-timeline': '3-month' },
+        classesCSS: `${additionalBtnClasses} ${timelineVal === '3-month' ? 'active' : ''}`,
+        textValue: '3 months',
+      }, {
+        attrs: { 'data-timeline': '1-month' },
+        classesCSS: `${additionalBtnClasses} ${timelineVal === '1-month' ? 'active' : ''}`,
+        textValue: '1 month',
+      }, {
+        attrs: { 'data-timeline': '1-week' },
+        classesCSS: `${additionalBtnClasses} ${timelineVal === '1-week' ? 'active' : ''}`,
+        textValue: 'week',
+      }],
+    });
+  }
   render() {
     const startPlaceholder = `From: ${this.props.model.filters.start}`;
     const endPlaceholder = `To: ${this.props.model.filters.end}`;
-    const { timelineBtnGroup } = this.props.model.filters;
     return (
       <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
         <section id="history" className="row x_panel">
@@ -218,6 +280,7 @@ class BitcoinHistoryGraph extends React.Component {
             classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
             titleText="Bitcoin History"
           />
+
           <div className="col-md-12 col-sm-12 col-xs-12">
             <Dropdown
               onClickHandler={this.currencyFilterChange}
@@ -272,38 +335,15 @@ class BitcoinHistoryGraph extends React.Component {
             </div>
 
             <ButtonGroup
+              ref={(btnGroup) => { this.btnGroup = btnGroup; }}
               onClickHandler={this.timelineFilterChange}
               classesCSS="well btn-group full-width"
               isActiveBtnDisplayed={this.state.isActiveBtnDisplayed}
-              buttons={[{
-                  attrs: { 'data-timeline': 'all-time' },
-                  classesCSS: `btn-success ${timelineBtnGroup === 'all-time' ? 'active' : ''}`,
-                  textValue: 'All time',
-                }, {
-                  attrs: { 'data-timeline': '1-year' },
-                  classesCSS: `btn-success ${timelineBtnGroup === '1-year' ? 'active' : ''}`,
-                  textValue: 'Year',
-                }, {
-                  attrs: { 'data-timeline': '6-month' },
-                  classesCSS: `btn-success ${timelineBtnGroup === '6-month' ? 'active' : ''}`,
-                  textValue: '6 months',
-                }, {
-                  attrs: { 'data-timeline': '3-month' },
-                  classesCSS: `btn-success ${timelineBtnGroup === '3-month' ? 'active' : ''}`,
-                  textValue: '3 months',
-                }, {
-                  attrs: { 'data-timeline': '1-month' },
-                  classesCSS: `btn-success ${timelineBtnGroup === '1-month' ? 'active' : ''}`,
-                  textValue: '1 month',
-                }, {
-                  attrs: { 'data-timeline': '1-week' },
-                  classesCSS: `btn-success ${timelineBtnGroup === '1-week' ? 'active' : ''}`,
-                  textValue: 'week',
-                },
-              ]}
+              buttons={this.state.substanceForButtonGroup}
             />
           </div>
-          <div className="col-lg-12 col-md-12 col-sm-12">
+
+          <div className="col-lg-12 col-md-12 col-sm-12 graph-container">
             <LineChart
               ref={(lineChart) => { this.chart = lineChart; }}
               model={this.props.model}
