@@ -10,17 +10,53 @@ export default class BasicLineChart extends React.Component {
     super();
     this.state = {
       isMessageVisible: false,
+      width: 500,
+      height: 300,
     };
   }
   componentDidMount() {
     this.showMessage();
+    window.addEventListener('resize', () => {
+      console.log('resized');
+      if (this.state.isMessageVisible) {
+        // width of a message container depends on parent
+        // when page is resized
+        // parent's width may change
+        // but message's width won't, so
+        // the scroll can appear
+        // to prevent that we resize message
+        // by calling showMessge again
+        setTimeout(() => this.showMessage(), 301);
+        // at some breakpoints width of parent container will change due to relayout
+        // so we will need to recalc with twice
+        // to prevent that we will wait until the transition animation(.3s) is done
+        // and only than recalc
+      }
+    });
   }
   hideMessage() {
+    // graph is ready to be drawn,
+    // make more space for it
+    // by going to the default
+    // this will add scroll, if not enough space
+
+    this.svg.parentElement.style.width = this.state.width;
+
     this.setState({
       isMessageVisible: false,
     });
   }
   showMessage() {
+    // graph is not yet ready to be drawn
+    // but the scroll will already be present at this time
+    // make container smaller to hide scroll
+    // until graph is not drawn
+    // - 10 is there to make the scrollbar disappear;
+
+    const svgWrapper = this.svg.parentElement;
+    const widthVal = parseFloat(getComputedStyle(svgWrapper.parentElement).width) - 10;
+    svgWrapper.style.width = `${widthVal}px`;
+
     this.setState({
       isMessageVisible: true,
     });
@@ -33,18 +69,9 @@ export default class BasicLineChart extends React.Component {
     if (!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
       return;
     }
-
-    const width = 500;
-    const height = 300;
-    // let width = Math.round(this.svg.parentElement.getBoundingClientRect().width);
-    // if (width > 600) {
-    //   width = 600;
-    // } else if (width < 500) {
-    //   width = 500;
-    // }
-
+    
+    const { width, height } = this.state;
     const { margin } = this.props.model;
-    // const height = width * 0.6;
     const actualWidth = width - margin.left - margin.right;
     const actualHeight = height - margin.top - margin.bottom;
 
@@ -71,7 +98,7 @@ export default class BasicLineChart extends React.Component {
   updateLine(dataset) {
     if (!this.props.hasErrorOccured) {
       this.hideMessage();
-    }    
+    }
     // because we expect an array
     if (!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
       return;
@@ -124,7 +151,7 @@ export default class BasicLineChart extends React.Component {
   render() {
     return (
       <div className="graph">
-        <svg ref={(svg) => { this.svg = svg; }} />
+        <svg width="0" height="0" ref={(svg) => { this.svg = svg; }} />
         <Message
           color={this.props.hasErrorOccured ? '#c9302c' : '#2A3F54' }
           msg={this.props.hasErrorOccured ? 'Error has occurred' : 'Wait, please'}
