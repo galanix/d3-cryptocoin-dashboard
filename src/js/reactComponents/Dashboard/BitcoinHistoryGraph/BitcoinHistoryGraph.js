@@ -31,11 +31,12 @@ class BitcoinHistoryGraph extends React.Component {
     this.timelineFilterChange = this.timelineFilterChange.bind(this);
     this.currencyFilterChange = this.currencyFilterChange.bind(this);
     this.onWidgetChange = this.onWidgetChange.bind(this);
+    this.handleFetchError = this.handleFetchError.bind(this);
   }
   componentDidMount() {
     this.props.update(this.createURL(), this.state.componentToUpdate)
       .then(() => this.renderGraph(false))
-      .catch(err => console.warn('failed fetch', err));
+      .catch(this.handleFetchError);
 
     this.provideButtonSubstance();
 
@@ -43,13 +44,13 @@ class BitcoinHistoryGraph extends React.Component {
       this.provideButtonSubstance();
     });
   }
-  showError() {
+  showInputError() {
     this.setState({
       isErrorMessageVisible: true,
       isFormHighlighted: true,
     });
   }
-  hideError() {
+  hideInputError() {
     this.setState({
       isErrorMessageVisible: false,
       isFormHighlighted: false,
@@ -59,9 +60,9 @@ class BitcoinHistoryGraph extends React.Component {
     if (!this.props.model.data) {
       return;
     }
-
-    this.hideError();
-
+    
+    // if request was not caught by .catch() immediately
+    // and proceeded
     let hasFetchFailed = false;
     if (Object.keys(this.props.model.data.bpi).length === 0) {
       hasFetchFailed = true;
@@ -72,6 +73,12 @@ class BitcoinHistoryGraph extends React.Component {
         hasFetchFailed,
       });
     }
+
+    // if request did not fail
+    // then data passed was legit
+    // remove error from input element
+    // that was from previous unsuccessful request
+    this.hideInputError();
 
     // transforms a string into a Date object
     // create an array(dataset) from an object(data)
@@ -133,7 +140,7 @@ class BitcoinHistoryGraph extends React.Component {
         isActiveBtnDisplayed: false,
       });
     } else {
-      this.showError();
+      this.showInputError();
     }
   }
   timelineFilterChange(target) {
@@ -197,18 +204,21 @@ class BitcoinHistoryGraph extends React.Component {
       isActiveBtnDisplayed: true,
     });
   }
-  saveChangesAndRerender(newFilterValue, filterName) {
+  saveChangesAndRerender(newFilterValue, filterName) {    
+    this.chart.showMessage();
+    this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
+    this.props.update(this.createURL(), this.state.componentToUpdate)
+      .then(() => {
+        this.renderGraph(true);
+      })
+      .catch(this.handleFetchError);
+  }
+  handleFetchError(err) {
     this.setState({
-      hasFetchFailed: false,
-    }, () => {
-      this.chart.showMessage();
-      this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
-      this.props.update(this.createURL(), this.state.componentToUpdate)
-        .then(() => {
-          this.renderGraph(true);
-        })
-        .catch(err => console.warn(err));
+      hasFetchFailed: true,
     });
+    console.log('failed fetch');
+    console.warn(err);
   }
   createURL() {
     const { start, end, currency } = this.props.model.filters;
@@ -226,7 +236,7 @@ class BitcoinHistoryGraph extends React.Component {
     if (parseInt(getComputedStyle(btnGroupEl).width, 10) < 417) {
       additionalBtnClasses += ' btn-sm';
       if (!this.state.isBtnGroupPadded) {
-        btnGroupEl.style.paddingBottom = `${parseInt(getComputedStyle(btnGroupEl).paddingBottom, 10) + 4}px`;
+        btnGroupEl.style.paddingBottom = `${parseInt(getComputedStyle(btnGroupEl).paddingBottom, 10) + 5}px`;
 
         this.setState({
           isBtnGroupPadded: true,
@@ -234,7 +244,7 @@ class BitcoinHistoryGraph extends React.Component {
       }
     } else {
       if (this.state.isBtnGroupPadded) {
-        btnGroupEl.style.paddingBottom = `${parseInt(getComputedStyle(btnGroupEl).paddingBottom, 10) - 4}px`;
+        btnGroupEl.style.paddingBottom = `${parseInt(getComputedStyle(btnGroupEl).paddingBottom, 10) - 5}px`;
 
         this.setState({
           isBtnGroupPadded: false,
@@ -277,7 +287,7 @@ class BitcoinHistoryGraph extends React.Component {
       <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
         <section id="history" className="row x_panel">
           <Header
-            classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
+            classesCSS="col-md-12 col-sm-12 col-xs-12 x_title component-title"
             titleText="Bitcoin History"
           />
 
@@ -299,9 +309,9 @@ class BitcoinHistoryGraph extends React.Component {
             />
 
             <div className="well">
-              <div className="InputFormContainer">
+              <div className="InputFormContainer row">
                 <div className="row">
-                  <div className="col-md-6 col-sm-6 col-xs-12">
+                  <div className="col-xs-6 calendar-wrapper">
                     <CalendarWidget
                       isFormHighlighted={this.state.isFormHighlighted}
                       formCSSClasses="calendar-date form-horizontal"
@@ -312,7 +322,7 @@ class BitcoinHistoryGraph extends React.Component {
                       onWidgetChange={this.onWidgetChange}
                     />
                   </div>
-                  <div className="col-md-6 col-sm-6 col-xs-12">
+                  <div className="col-xs-6 calendar-wrapper">
                     <CalendarWidget
                       isFormHighlighted={this.state.isFormHighlighted}
                       formCSSClasses="calendar-date form-horizontal"
@@ -326,7 +336,6 @@ class BitcoinHistoryGraph extends React.Component {
                 </div>
                 <ErrorMessage
                   isMessageVisible={this.state.isErrorMessageVisible}
-                  hasErrorOccured={this.state.hasFetchFailed}
                   CSSClasses="error"
                   msg="Error: Invalid input"
                 />
@@ -346,6 +355,7 @@ class BitcoinHistoryGraph extends React.Component {
           <div className="col-lg-12 col-md-12 col-sm-12 graph-container">
             <LineChart
               ref={(lineChart) => { this.chart = lineChart; }}
+              hasErrorOccured={this.state.hasFetchFailed}
               model={this.props.model}
               signs={this.props.signs}
               graphId="historical-data"

@@ -44,16 +44,12 @@ class CurrencyPairGraph extends React.Component {
     this.charts.toggleGraphs(id, active);
   }
   saveChangesAndRerender(newFilterValue, filterName) {
-    this.setState({
-      hasFetchFailed: false,
-    }, () => {
-      this.charts.showMessage();
-      this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
-      this.props.update(this.createURL(), this.state.componentToUpdate)
-        .then(() => {
-          this.renderGraphs(true);
-        });
-    });
+    this.charts.showMessage();
+    this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
+    this.props.update(this.createURL(), this.state.componentToUpdate)
+      .then(() => {
+        this.renderGraphs(true);
+      });
   }
   currencyFilterChange(target) {
     const filterName = 'pairName';
@@ -89,11 +85,11 @@ class CurrencyPairGraph extends React.Component {
     const hours = parseFloat(input.value || input.placeholder);
 
     if (!hours) {
-      this.showError();
+      this.showInputError();
       return;
     }
 
-    this.hideError();
+    this.hideInputError();
 
     const divisor = this.props.model.filters.currentDivisor;
     const dataPoints = Math.floor(hours / divisor);
@@ -106,13 +102,13 @@ class CurrencyPairGraph extends React.Component {
 
     this.saveChangesAndRerender(newFilterValues, filterNames);
   }
-  showError() {
+  showInputError() {
     this.setState({
       isErrorMessageVisible: true,
       isFormHighlighted: true,
     });
   }
-  hideError() {
+  hideInputError() {
     this.setState({
       isErrorMessageVisible: false,
       isFormHighlighted: false,
@@ -130,6 +126,12 @@ class CurrencyPairGraph extends React.Component {
       });
     }
 
+    // if request did not fail
+    // then data passed was legit
+    // remove error from input element
+    // that was from previous unsuccessful request
+    this.hideInputError();
+
     if (isModuleBeingUpdated) {
       // substitute dataset and update current graphs
       this.charts.updateLine(this.props.model.data);
@@ -143,7 +145,7 @@ class CurrencyPairGraph extends React.Component {
       <div className="col-lg-6 col-md-12 col-sm-12 col-xs-12">
         <section id="currency-pair" className="row x_panel">
           <Header
-            classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
+            classesCSS="col-md-12 col-sm-12 col-xs-12 x_title component-title"
             titleText="Currency Pair"
           />
 
