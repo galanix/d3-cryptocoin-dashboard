@@ -6,83 +6,98 @@ import ButtonGroup from '../../../../General/ButtonGroup';
 export default function Filters(props) {
   return (
     <section className="table-filters col-md-12 col-sm-12 col-xs-12">
-      <div className="well dropdown-group">
-        <Dropdown 
+      <div className="well dropdown-group row">
+        <Dropdown
           onClickHandler={props.filterByMarketCap}
-          classesCSS={{ dropdown: "dropdown_market-cap", button: "btn-success" }}                              
+          classesCSS={{
+            container: 'col-md-3 col-xs-6 col-sm-6 col-lg-3 market-cap-filter',
+            button: 'btn-success',
+          }}
           titleText="Market Cap"
           defaultDataValue={props.filters.marketCap}
           options={[
-            { dataValue: "0", textValue: "All" },
-            { dataValue: "1", textValue: "$1 Billion+" },
-            { dataValue: "2", textValue: "$100 Million - $1 Billion" },
-            { dataValue: "3", textValue: "$10 Million - $100 Million" },
-            { dataValue: "4", textValue: "$1 Million - $10 Million" },
-            { dataValue: "5", textValue: "$100k - $1 Million" },
-            { dataValue: "6", textValue: "$0 - $100k" },
+            { dataValue: '0', textValue: 'All' },
+            { dataValue: '1', textValue: '$1 Billion+' },
+            { dataValue: '2', textValue: '$100 Million - $1 Billion' },
+            { dataValue: '3', textValue: '$10 Million - $100 Million' },
+            { dataValue: '4', textValue: '$1 Million - $10 Million' },
+            { dataValue: '5', textValue: '$100k - $1 Million' },
+            { dataValue: '6', textValue: '$0 - $100k' },
           ]}
         />
-        <Dropdown 
+        <Dropdown
           onClickHandler={props.filterByPrice}
-          classesCSS={{ dropdown: "dropdown_price", button: "btn-success" }}
+          classesCSS={{
+            container: 'col-md-3 col-xs-6 col-sm-6 col-lg-3 price-filter',
+            button: 'btn-success',
+          }}
           titleText="Price"
           defaultDataValue={props.filters.price}
           options={[
-            { dataValue: "0", textValue: "All" },
-            { dataValue: "1", textValue: "$100+" },
-            { dataValue: "2", textValue: "$1 - $100" },
-            { dataValue: "3", textValue: "$0.01 - $1" },
-            { dataValue: "4", textValue: "$0.0001 - $0.01" },
-            { dataValue: "5", textValue: "$0 - $0.0001" },
+            { dataValue: '0', textValue: 'All' },
+            { dataValue: '1', textValue: '$100+' },
+            { dataValue: '2', textValue: '$1 - $100' },
+            { dataValue: '3', textValue: '$0.01 - $1' },
+            { dataValue: '4', textValue: '$0.0001 - $0.01' },
+            { dataValue: '5', textValue: '$0 - $0.0001' },
           ]}
         />
-        <Dropdown 
+        <Dropdown
           onClickHandler={props.filterByVolume_24h}
-          classesCSS={{ dropdown: "dropdown_volume-24h", button: "btn-success" }}
+          classesCSS={{
+            container: 'col-md-3 col-xs-6 col-sm-6 col-lg-3 volume-24h-filter',
+            button: 'btn-success',
+          }}
           titleText="Volume(24 hours)"
           defaultDataValue={props.filters.volume_24h}
           options={[
-            { dataValue: "0", textValue: "All" },
-            { dataValue: "1", textValue: "$10 Million+" },
-            { dataValue: "2", textValue: "$1 Million+" },
-            { dataValue: "3", textValue: "$100k+" },
-            { dataValue: "4", textValue: "$10k+" },
-            { dataValue: "5", textValue: "$1k+" },
+            { dataValue: '0', textValue: 'All' },
+            { dataValue: '1', textValue: '$10 Million+' },
+            { dataValue: '2', textValue: '$1 Million+' },
+            { dataValue: '3', textValue: '$100k+' },
+            { dataValue: '4', textValue: '$10k+' },
+            { dataValue: '5', textValue: '$1k+' },
           ]}
         />
-        <button 
-          id="reset_dropdown-group" 
-          className="btn btn-danger"
-          onClick={props.clearFilters}
-        >
-          Reset
-        </button>
+        <div className="col-md-3 col-xs-6 col-sm-6 col-lg-3 reset-btn-container">
+          <h4>Reset filters</h4>
+          <button
+            id="reset-filters"
+            className="btn btn-danger"
+            onClick={props.clearFilters}
+          >
+            Reset
+          </button>
+        </div>
       </div>
-      <div className="well full_width">
-        <Dropdown 
+      <div className="well">
+        <Dropdown
           onClickHandler={props.changeTableCurrency}
-          classesCSS={{ dropdown: "dropdown_table-currency", button: "btn-success" }}
-          titleText="Currency"                              
+          classesCSS={{
+            container: 'table-currency-filter',
+            button: 'btn-success',
+          }}
+          titleText="Currency"
           defaultDataValue={props.filters.currency}
           options={[
-            { dataValue: "USD" },
-            { dataValue: "EUR" },
-            { dataValue: "UAH" },
-            { dataValue: "RUB" },
-            { dataValue: "BTC" },
-            { dataValue: "LTC" },
-            { dataValue: "ETH" },
+            { dataValue: 'USD' },
+            { dataValue: 'EUR' },
+            { dataValue: 'UAH' },
+            { dataValue: 'RUB' },
+            { dataValue: 'BTC' },
+            { dataValue: 'LTC' },
+            { dataValue: 'ETH' },
           ]}
         />
-        <div className="table-length">
+        <div className="table-length-filter">
           <h4>Table Length</h4>
-          <ButtonGroup 
+          <ButtonGroup
             onClickHandler={props.changeTableLength}
             classesCSS="btn-group"
-            isActiveBtnDisplayed                            
+            isActiveBtnDisplayed
             buttons={[
-              { classesCSS: "active", attrs: { "data-value": "100" }, textValue: "Top 100" },
-              { textValue: "All", attrs: { "data-value": "0" } }
+              { classesCSS: 'active', attrs: { 'data-value': '100' }, textValue: 'Top 100' },
+              { textValue: 'All', attrs: { 'data-value': '0' } },
             ]}
           />
         </div>
