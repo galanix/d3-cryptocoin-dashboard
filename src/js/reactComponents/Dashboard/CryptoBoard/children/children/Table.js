@@ -24,12 +24,16 @@ export default class Table extends React.Component {
       '%7d': 'percent_change_7d',
     };
 
-    const formatGroupedThousands = d3.format(",.2f");
+    const formatToInt = d3.format(",.0f");
+    const formatToFloat = d3.format(",.2f");
     return (
       <div className="row">
         <div className="col-xs-12">
           <div className="table-responsive">
-            <table id="datatable-checkbox" className="table table-striped table-bordered bulk_action">
+            <table 
+              id="datatable-checkbox" 
+              className="table table-striped table-bordered bulk_action"
+            >
               <thead>
                 <tr onClick={evt => this.props.sortTable(evt)} >
                   <th>
@@ -54,10 +58,10 @@ export default class Table extends React.Component {
                     </td>
                     <td>{index + 1}</td>
                     <td>{item.name}</td>
-                    <td>{formatGroupedThousands(item[`market_cap_${this.props.currency.toLowerCase()}`])}</td>
-                    <td>{formatGroupedThousands(item[`price_${this.props.currency.toLowerCase()}`])}</td>
-                    <td>{formatGroupedThousands(item.available_supply)}</td>
-                    <td>{formatGroupedThousands(item[`24h_volume_${this.props.currency.toLowerCase()}`])}</td>
+                    <td>{formatToInt(item[`market_cap_${this.props.currency.toLowerCase()}`])}</td>
+                    <td>{formatToFloat(item[`price_${this.props.currency.toLowerCase()}`])}</td>
+                    <td>{formatToInt(item.available_supply)}</td>
+                    <td>{formatToInt(item[`24h_volume_${this.props.currency.toLowerCase()}`])}</td>
                     <td>{item.percent_change_1h}</td>
                     <td>{item.percent_change_24h}</td>
                     <td>{item.percent_change_7d}</td>
