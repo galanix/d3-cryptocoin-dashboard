@@ -81,10 +81,10 @@ export default class CryptoBoard extends React.Component {
         <div className="col-md-12 col-sm-12 col-xs-12">
           <section id="board-of-crypto-currencies" className="row x_panel">
             <Header 
-              classesCSS="col-md-12 col-sm-12 col-xs-12 x_title"
+              classesCSS="col-md-12 col-sm-12 col-xs-12 x_title component-title"
               titleText="Table of Currencies"
             />
-            <ModalWindow 
+            <ModalWindow
               ref={mw => this.ModalWindow = mw}
               currentSign={this.props.signs[this.props.model.chart.filters.currency]}
               model={this.props.model.chart}
