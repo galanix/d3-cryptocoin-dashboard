@@ -49,6 +49,20 @@ a.active:hover {
     }
 }
 
+.component-title {
+    h2 {
+        font-size: 30px;
+        float: none;
+        @media screen and (max-width: 768px) {    
+            width: 100% !important;
+            text-align: center;            
+        }
+        @media screen and (max-width: 500px) {
+            font-size: 25px;
+        }
+    }
+}
+
 .toggle {
     padding-bottom: 16px;
 }
@@ -97,10 +111,6 @@ svg {
     padding-top: 10px;
     text-align: left;
 
-}
-
-.x_title h2 {
-    font-size: 30px;
 }
 
 /*
@@ -153,7 +163,7 @@ svg {
         .count {
             font-size: 32px;
         }
-    }
+    }    
     @media screen and (max-width: 500px) {
         text-align: center;
         header {
@@ -197,24 +207,11 @@ svg {
             padding-left: 8px;
             padding-right: 8px;
         }
-    }
-    @media screen and (max-width: 480px) {
-        .calendar-date {
-            margin-top: 10px !important;
-        }
-    }
-    @media screen and (max-width: 500px) {
+    }    
+    @media screen and (max-width: 768px) {
         text-align: center;
-        h2 {
-            width: 100%;
-            font-size: 24px;
-        }
-        .InputFormContainer {
-            text-align: center;
-            .calendar-date {
-                float: none;
-            }        
-        }
+    }
+    @media screen and (max-width: 500px) {                
         .btn-group {
             .btn {
                 margin-top: 1px;
@@ -224,9 +221,26 @@ svg {
         }
         .graph {
             width: 80%;
-            min-width: 320px;
+            // min-width: 300px;
             overflow-x: scroll;
             overflow-y: hidden;
+        }
+    }    
+    @media screen and (max-width: 550px) {
+        .InputFormContainer {
+            text-align: center;
+            padding-left: 0;
+        }
+        .input-group {
+            margin-left: 5%;
+        }        
+        .calendar-wrapper {
+            width: 100%;
+            .calendar-date {                
+                &:last-child {
+                    margin-top: 10px !important;                    
+                }                
+            }
         }
     }    
     input:focus {
@@ -253,12 +267,7 @@ svg {
 
 /* < CURRENCY PAIR > */
 
-// path[id^="graph-type"] {
-//     transition: opacity .6s ease-in;
-// }
-
 #currency-pair {
-    // overflow: hidden;
     .graph-container {
         height: 300px;
         overflow-x: auto;
@@ -284,7 +293,7 @@ svg {
         .input-group-addon, .input-group-btn {
             width: inherit;
         }
-    }     
+    }
     .control-group {
         display: inline-block !important;
     }
@@ -308,19 +317,21 @@ svg {
         max-width: 200px;
     }    
     @media screen and (max-width: 500px) {
-        text-align: center;
-        h2 {
-            width: 100%;
-            font-size: 24px;
-        }
+        text-align: center;    
         .graph {
             width: 80%;
-            min-width: 320px;
+            // min-width: 300px;
             overflow-x: scroll;
             overflow-y: hidden;  
         }
         .InputFormContainer {
             text-align: center;
+            padding-left: 0;
+        }
+    }
+    @media screen and (max-width: 400px) {
+        .form-control {
+            width: 100px !important;
         }
     }
 }
@@ -330,6 +341,10 @@ svg {
 /* < CRYPTOBOARD > */
 
 #board-of-crypto-currencies {
+    .table-responsive {
+        max-height: 90vh;
+        overflow-y: auto !important;
+    }
     table  {
         th[data-sort-by]:hover {
             color: $info_darker;
@@ -343,36 +358,76 @@ svg {
         }
         h4 {
             margin-bottom:  3px;
-            padding-right: 3px;
+            padding-right: 3px;        
         }
+
         .dropdown-group {
-            .dropdown_container {
+            text-align: center;
+            .dropdown_container, 
+            .reset-btn-container {
                 h4 {
                   display: block;                 
                 }
-            }       
-            .dropdown_container {
-                margin-left: 50px;
             }
-            .dropdown_container:first-child {
-                margin-left: 0;
+            @media screen and (max-width: 500px) {
+                .dropdown_container,
+                .reset-btn-container {
+                    width: 100%;
+                    h4 {
+                        font-size: 20px;
+                    }
+                    .btn { // just a copy of btn-lg styling
+                        padding: 10px 16px;
+                        font-size: 18px;
+                        line-height: 1.3333333;
+                        border-radius: 6px;    
+                    }
+                }
             }
-            #reset_dropdown-group {
-                margin-left: 50px;
-            }            
         }
-        .dropdown_container {
+
+        .well {
+            text-align: center !important;
+        }
+        .table-currency-filter,
+        .table-length-filter {
+            text-align: center;
             display: inline-block;            
-            min-width: 100px;
-            margin-left: 25px;
-        }
-        .table-length {
-            display: inline-block;
-            margin-left: 50px;
+            h4 {
+                display: block;
+            }
             .btn-group {
                 margin-bottom: 5px;
             }     
         }        
+        .table-length-filter {
+            margin-left: 50px;
+        }
+        .table-currency-filter {
+            margin-right: 50px;            
+        }        
+        @media screen and (max-width: 570px) {
+            .table-currency-filter,
+            .table-length-filter {
+                display: block;
+                h4 {
+                    font-size: 20px;
+                }
+                .btn {
+                    padding: 10px 16px;
+                    font-size: 18px;
+                    line-height: 1.3333333;
+                    border-radius: 6px;    
+                }
+            }
+            .table-currency-filter {
+                margin-right: 0;
+            }
+            .table-length-filter {
+                margin-left: 0;
+            }
+        }
+        
     }       
     .modal-window {
         overflow: hidden;
@@ -428,19 +483,7 @@ svg {
         }
     }    
     @media screen and (max-width: 720px) {
-        text-align: center;
-        .table-filters {
-            .dropdown-group {
-                #reset_dropdown-group {
-                    margin-top: 15px;
-                    margin-left: 0 !important;
-                }
-                .dropdown_container {
-                    display: block;
-                    margin-left: 0 !important;
-                }
-            }
-        }
+        text-align: center;     
     }
     @media screen and (max-width: 660px) {
         .modal-window {
@@ -457,10 +500,9 @@ svg {
     }
     @media screen and (max-width: 570px) {
         .table-filters {
-            .table-length {
+            .table-length-filter {
                 text-align: center;
-                display: block;
-                margin-left: 0 !important;
+                display: block;                
             }
             h4 {
                 display: block;
@@ -469,9 +511,6 @@ svg {
     }
     @media screen and (max-width: 500px) {
         text-align: center;
-        h2 {
-            width: 100%;            
-        }
         #modal-button {
             padding: 8px 14px;
             font-size: 16px;            
