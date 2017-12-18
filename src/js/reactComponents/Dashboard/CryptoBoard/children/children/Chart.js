@@ -18,7 +18,7 @@ export default class Chart extends React.Component {
     this.state = {
       duration: 300,
       maxWidth: 600,
-      minWidth: 450,   
+      minWidth: 450,
       prevType: 'bar',
       chartIsRendered: false,      
     };
@@ -28,112 +28,138 @@ export default class Chart extends React.Component {
     this.recalc = this.recalc.bind(this);
   }
   componentDidMount() {
-    if(this.props.immediateRender) {
+    if (this.props.immediateRender) {
       this.renderChart(this.props.type, this.props.comparisionField);
-    }   
+    }
 
     window.addEventListener('resize', () => {
-      if(this.state.chartIsRendered) {
+      if (this.state.chartIsRendered) {
         setTimeout(() => {
           this.renderChart(this.state.prevType, this.state.prevComparisonField, true);
         }, this.state.duration);
       }
     });
-  } 
+  }
+  refreshData() {
+    // we are provided with hashTable
+    // based on which we can build a graph
+    // but we do not know when was this hashTable created
+    // data in it may be outdated
+    // so we need to use given hashTable as a base
+    // fetch new data and return new fresh version of hashTable
+    return new Promise((resolve, reject) => {
+      let freshHashTable = {};
+      const hashTableItemIds = Object.keys(this.props.hashTable);
+      fetch(this.props.url)
+        .then(res => res.json())
+        .then((dataset) => {
+          hashTableItemIds.forEach((id) => {
+            const foundItem = dataset.find((item => item.id === id));
+            if (foundItem) {
+              foundItem.color = this.props.hashTable[id].color;
+              freshHashTable[id] = foundItem;
+            }
+          });
+          resolve(freshHashTable);
+        })
+        .catch(err => reject(err));
+    });
+  }
   renderChart(type, comparisionField, reMountForcefully) {
-    if(!this.svgDiv) {
+    // we need to update data!!!
+    if (!this.svgDiv) {
       return;
     }
 
-    if(!this.state.chartIsRendered) { // for resize event handler
+    if (!this.state.chartIsRendered) { // for resize event handler
       this.setState({ chartIsRendered: true });
-    }    
+    }
 
     let ChartJSX = null;
     let width = Math.round(this.svgDiv.getBoundingClientRect().width);
     const { maxWidth, minWidth } = this.state;
 
-    if(width > maxWidth) {
+    if (width > maxWidth) {
       width = maxWidth;
     }
-    if(width < minWidth) {
+    if (width < minWidth) {
       width = minWidth;
     }
 
     const height = Math.round(width / 2);
-    const hashTable = this.props.hashTable;
-    const keys = Object.keys(hashTable);
-    const dataset = keys.map(key => hashTable[key]);
-    const colorValues = keys.map(key => hashTable[key].color);
-    const color = d3.scaleOrdinal(colorValues);
-    const props = {
-      dataset,
-      width,
-      height,
-      // minWidth,
-      // maxWidth,
-      comparisionField,
-      type,
-      color: color.bind(this),
-      margin: this.props.margin,
-      currentSign: this.props.currentSign,
-      determineSign: this.determineSign,
-      drawCurrencySign: this.drawCurrencySign,
-      didPropsUpdate: this.didPropsUpdate,
-      recalc: this.recalc,
-    };
-
-    switch(type) {
-      case 'pie':
-      case 'pie-donut':
-        ChartJSX = ( <PieChart {...props} /> );
-        break;
-
-      case 'bar':
-        ChartJSX = ( <BarChart {...props} /> );
-        break;
-
-      case 'hbar':
-        ChartJSX = ( <HBarChart {...props} /> );
-        break;
-
-      case 'line':
-      case 'line-scatter':
-      case 'line-area':
-        ChartJSX = ( <LineChart {...props} /> );
-        break;
-
-      default:
-        console.warn('chart has not been rendered');
-    }
+    // refreshData is an async operation
+    this.refreshData().then((hashTable) => {
+      const keys = Object.keys(hashTable);
+      const dataset = keys.map(key => hashTable[key]);
+      const colorValues = keys.map(key => hashTable[key].color);
+      const color = d3.scaleOrdinal(colorValues);
+      const props = {
+        dataset,
+        width,
+        height,
+        comparisionField,
+        type,
+        color: color.bind(this),
+        margin: this.props.margin,
+        currentSign: this.props.currentSign,
+        determineSign: this.determineSign,
+        drawCurrencySign: this.drawCurrencySign,
+        didPropsUpdate: this.didPropsUpdate,
+        recalc: this.recalc,
+      };
   
-    const callback = () => {
-      this.setState({        
-        ChildChartJSX: ChartJSX,
-        prevType: type, // type and comparisionField are for resize function
-        prevComparisonField: comparisionField,        
-      });
-    };
-
-    if(this.state.prevType !== type || reMountForcefully) {
-      this.setState({
-        ChildChartJSX: null
-      }, callback);
-    } else {
-      callback();
-    }
+      switch (type) {
+        case 'pie':
+        case 'pie-donut':
+          ChartJSX = (<PieChart {...props} />);
+          break;
+  
+        case 'bar':
+          ChartJSX = (<BarChart {...props} />);
+          break;
+  
+        case 'hbar':
+          ChartJSX = (<HBarChart {...props} />);
+          break;
+  
+        case 'line':
+        case 'line-scatter':
+        case 'line-area':
+          ChartJSX = (<LineChart {...props} />);
+          break;
+  
+        default:
+          console.warn('chart has not been rendered');
+      }
+    
+      const callback = () => {
+        this.setState({
+          ChildChartJSX: ChartJSX,
+          prevType: type, // type and comparisionField are for resize function
+          prevComparisonField: comparisionField,
+        });
+      };
+  
+      if (this.state.prevType !== type || reMountForcefully) {
+        this.setState({
+          ChildChartJSX: null,
+        }, callback);
+      } else {
+        callback();
+      }
+    });
   }
   determineSign(comparisionField) {
-    if(!comparisionField) {
+    if (!comparisionField) {
       return '';
     }
 
-    if(
+    if (
       comparisionField.indexOf('price') === -1
       && comparisionField.indexOf('24h_volume') === -1
       && comparisionField.indexOf('market_cap') === -1
     ) {
-        return '%';
+      return '%';
     }
 
     return this.props.currentSign;
@@ -143,7 +169,7 @@ export default class Chart extends React.Component {
     const sign = this.determineSign(comparisionField);
     const yAxis = g.select('g.axis--' + pos.axis);
     
-    if(!yAxis.select('g.currency-sign').node()) {
+    if (!yAxis.select('g.currency-sign').node()) {
       yAxis.append('g')
         .attr('class', 'currency-sign')
         .append('text')
