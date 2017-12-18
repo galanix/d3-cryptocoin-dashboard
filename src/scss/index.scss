@@ -42,6 +42,12 @@ a.active:hover {
     margin-left: 0;
 }
 
+.input-group {
+    input, span {
+        transition: border-color 150ms linear;
+    }
+}
+
 @media screen and (max-width: 500px) {
     .right_col > .row {
         margin-left: -20px;
@@ -243,8 +249,11 @@ svg {
             }
         }
     }    
-    input:focus {
-        background: inherit;
+    input {
+        transition: background-color 200ms ease-in;
+    }
+    input:focus {        
+        background-color: inherit;
     }
     .tooltip {
         position: absolute;
@@ -454,7 +463,8 @@ svg {
     th {
         text-align: center;
        
-        .fa {
+        .fa-sort-asc,
+        .fa-sort-desc {
             position: relative;
             right: 5px;
         }
