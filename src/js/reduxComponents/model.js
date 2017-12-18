@@ -41,12 +41,17 @@ function restorePrevSessionFilterValues(forComponent) {
         comparisionField: 'price_usd',
       };
       break;
-    case 'Settings':
+    case 'Settings__componentsToDisplay':
       defaultValues = {
         BitcoinCurrentPrice: true,
         BitcoinHistoryGraph: true,
         CurrencyPairGraph: true,
         CryptoBoard: true,
+      };
+      break;
+    case 'Settings__filterSettings':
+      defaultValues = {
+        shouldFiltersBeSavedToLocalStorage: true,
       };
       break;
     default:
@@ -155,8 +160,9 @@ const model = {
     },
   },
   Settings: {
-    displayComponent: restorePrevSessionFilterValues('Settings'),
-  }, // data for Settings component
+    displayComponent: restorePrevSessionFilterValues('Settings__componentsToDisplay'),
+    shouldFiltersBeSavedToLocalStorage: restorePrevSessionFilterValues('Settings__filterSettings'),
+  },
   SavedGraphs: JSON.parse(window.localStorage.getItem('savedGraphs')) || [], // data for SavedGraphs component
 };
 
