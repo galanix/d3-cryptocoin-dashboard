@@ -46,27 +46,32 @@ export default class Table extends React.Component {
                 </tr>
               </thead>
               <tbody onClick={evt => this.props.onClickHandler(evt)}>
-                {this.props.dataset.map((item, index) => (
-                  <tr key={index}>
-                    <td data-toggle="button">
-                      <button
-                        className={`btn btn-xs btn-dark ${(!this.props.hashTable || !this.props.hashTable[item.id]) ? '' : 'active'}`}
-                        data-currency-id={item.id}
-                      >
-                        <span className="fa fa-check" />
-                      </button>
-                    </td>
-                    <td>{index + 1}</td>
-                    <td>{item.name}</td>
-                    <td>{formatToInt(item[`market_cap_${this.props.currency.toLowerCase()}`])}</td>
-                    <td>{formatToFloat(item[`price_${this.props.currency.toLowerCase()}`])}</td>
-                    <td>{formatToInt(item.available_supply)}</td>
-                    <td>{formatToInt(item[`24h_volume_${this.props.currency.toLowerCase()}`])}</td>
-                    <td>{item.percent_change_1h}</td>
-                    <td>{item.percent_change_24h}</td>
-                    <td>{item.percent_change_7d}</td>
-                  </tr>
-                  ))}
+                {
+                  this.props.dataset instanceof Array ?
+                    this.props.dataset.map((item, index) => (
+                      <tr key={index}>
+                        <td data-toggle="button">
+                          <button
+                            className={`btn btn-xs btn-dark ${(!this.props.hashTable || !this.props.hashTable[item.id]) ? '' : 'active'}`}
+                            data-currency-id={item.id}
+                          >
+                            <span className="fa fa-check" />
+                          </button>
+                        </td>
+                        <td>{index + 1}</td>
+                        <td>{item.name}</td>
+                        <td>{formatToInt(item[`market_cap_${this.props.currency.toLowerCase()}`])}</td>
+                        <td>{formatToFloat(item[`price_${this.props.currency.toLowerCase()}`])}</td>
+                        <td>{formatToInt(item.available_supply)}</td>
+                        <td>{formatToInt(item[`24h_volume_${this.props.currency.toLowerCase()}`])}</td>
+                        <td>{item.percent_change_1h}</td>
+                        <td>{item.percent_change_24h}</td>
+                        <td>{item.percent_change_7d}</td>
+                      </tr>
+                    ))
+                    :
+                    null
+                }
               </tbody>
             </table>
           </div>
