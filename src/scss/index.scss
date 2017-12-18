@@ -637,6 +637,7 @@ svg {
     .fa-times {
         display: inline;
         margin: 10px 10px 0 0;
+        transition: color 200ms ease-in-out;
     }
     .fa-times:hover {
         cursor: pointer;
