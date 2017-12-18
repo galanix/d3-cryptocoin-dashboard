@@ -18,9 +18,8 @@ class BitcoinHistoryGraph extends React.Component {
     super();
     this.state = {
       componentToUpdate: 'BitcoinHistoryGraph',
-      isFormHighlighted: false,
       isErrorMessageVisible: false,
-      isActiveBtnDisplayed: true,
+      isActiveBtnDisplayed: !!(localStorage.getItem('isActiveBtnDisplayed')),
       hasFetchFailed: false,
       substanceForButtonGroup: [],
       isBtnGroupPadded: false,
@@ -47,20 +46,18 @@ class BitcoinHistoryGraph extends React.Component {
   showInputError() {
     this.setState({
       isErrorMessageVisible: true,
-      isFormHighlighted: true,
     });
   }
   hideInputError() {
     this.setState({
       isErrorMessageVisible: false,
-      isFormHighlighted: false,
     });
   }
   renderGraph(componentIsUpdated) {
     if (!this.props.model.data) {
       return;
     }
-    
+
     // if request was not caught by .catch() immediately
     // and proceeded
     let hasFetchFailed = false;
@@ -138,6 +135,8 @@ class BitcoinHistoryGraph extends React.Component {
       this.saveChangesAndRerender(newFilterValues, filterNames);
       this.setState({
         isActiveBtnDisplayed: false,
+      }, () => {
+        localStorage.setItem('isActiveBtnDisplayed', '');
       });
     } else {
       this.showInputError();
@@ -202,9 +201,11 @@ class BitcoinHistoryGraph extends React.Component {
     this.saveChangesAndRerender(newFilterValues, filterNames);
     this.setState({
       isActiveBtnDisplayed: true,
+    }, () => {
+      localStorage.setItem('isActiveBtnDisplayed', true);
     });
   }
-  saveChangesAndRerender(newFilterValue, filterName) {    
+  saveChangesAndRerender(newFilterValue, filterName) {
     this.chart.showMessage();
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
     this.props.update(this.createURL(), this.state.componentToUpdate)
@@ -231,7 +232,7 @@ class BitcoinHistoryGraph extends React.Component {
     }
 
     let additionalBtnClasses = 'btn btn-success';
-    const timelineVal = this.props.model.filters.timelineBtnGroup;
+    const timelineVal = this.state.isActiveBtnDisplayed ? this.props.model.filters.timelineBtnGroup : '';
     const btnGroupEl = this.btnGroup.container;
     if (parseInt(getComputedStyle(btnGroupEl).width, 10) < 417) {
       additionalBtnClasses += ' btn-sm';
@@ -313,24 +314,24 @@ class BitcoinHistoryGraph extends React.Component {
                 <div className="row">
                   <div className="col-xs-6 calendar-wrapper">
                     <CalendarWidget
-                      isFormHighlighted={this.state.isFormHighlighted}
                       formCSSClasses="calendar-date form-horizontal"
                       name="start"
                       id="start"
                       inputIcon="fa fa-calendar"
                       placeholder={startPlaceholder}
                       onWidgetChange={this.onWidgetChange}
+                      isFormInputInvalid={this.state.isErrorMessageVisible}
                     />
                   </div>
                   <div className="col-xs-6 calendar-wrapper">
                     <CalendarWidget
-                      isFormHighlighted={this.state.isFormHighlighted}
                       formCSSClasses="calendar-date form-horizontal"
                       name="end"
                       id="end"
                       inputIcon="fa fa-calendar"
                       placeholder={endPlaceholder}
                       onWidgetChange={this.onWidgetChange}
+                      isFormInputInvalid={this.state.isErrorMessageVisible}
                     />
                   </div>
                 </div>

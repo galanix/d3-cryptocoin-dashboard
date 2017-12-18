@@ -15,7 +15,6 @@ class CurrencyPairGraph extends React.Component {
     this.state = {
       componentToUpdate: 'CurrencyPairGraph',
       isErrorMessageVisible: false,
-      isFormHighlighted: false,
       hasFetchFailed: false,
     };
     this.currencyFilterChange = this.currencyFilterChange.bind(this);
@@ -105,13 +104,11 @@ class CurrencyPairGraph extends React.Component {
   showInputError() {
     this.setState({
       isErrorMessageVisible: true,
-      isFormHighlighted: true,
     });
   }
   hideInputError() {
     this.setState({
       isErrorMessageVisible: false,
-      isFormHighlighted: false,
     });
   }
   renderGraphs(isModuleBeingUpdated) {
@@ -185,13 +182,13 @@ class CurrencyPairGraph extends React.Component {
             <div className="well">
               <div className="InputFormContainer row">
                 <InputForm
-                  isFormHighlighted={this.state.isFormHighlighted}
                   formCSSClasses="form-horizontal form-label-left input_mask"
                   formId="hours-input"
                   inputName="hours"
                   placeholder={`${this.props.model.filters.hours} Hours`}
                   inputIcon="fa fa-clock-o"
                   onSubmitHandler={this.hoursFilterChange}
+                  isFormInputInvalid={this.state.isErrorMessageVisible}
                 >
                   <span className="input-group-btn">
                     <button

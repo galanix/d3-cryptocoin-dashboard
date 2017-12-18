@@ -1,27 +1,29 @@
 import React from 'react';
 
 export default class InputForm extends React.Component {
-  componentDidMount() {
-    this.span.style.transition = 'border-color .15s linear';
-    this.input.style.transition = 'border-color .15s linear';    
-  }
-  showError() {
-    this.input.style.borderColor = '#c9302c';
-    this.span.style.borderColor = '#c9302c';
-  }
-  hideError() {
-    this.input.style.borderColor = '#ccc';
-    this.span.style.borderColor = '#ccc';
+  constructor() {
+    super();
+    this.state = {
+      errorColor: '#c9302c',
+      normalColor: '#ccc',
+    };
   }
   handleSubmit(evt) {
     evt.preventDefault();
 
+    console.log(this.props.onSubmitHandler);
     if (typeof this.props.onSubmitHandler === 'function') {
       this.props.onSubmitHandler(evt);
     }
   }
+  getBorderColor() {
+    return this.props.isFormInputInvalid ?
+      this.state.errorColor
+      :
+      this.state.normalColor;
+  }
   render() {
-    return (      
+    return (
       <form
         className={this.props.formCSSClasses}
         onSubmit={evt => this.handleSubmit(evt)}
@@ -29,27 +31,32 @@ export default class InputForm extends React.Component {
         <fieldset>
           <div className="control-group">
             <div className="controls">
-              <div className="input-prepend input-group">                                                    
-                <span 
+              <div className="input-prepend input-group">
+                <span
                   className="add-on input-group-addon"
-                  ref={span => this.span = span}
+                  style={{
+                    borderColor: this.getBorderColor(),
+                  }}
                 >
-                  <i className={this.props.inputIcon} aria-hidden="true"></i>
+                  <i className={this.props.inputIcon} aria-hidden="true" />
                 </span>
                 <input
-                  ref={input => this.input = input}
+                  ref={(input) => { this.input = input; }}
                   id={this.props.id}
                   className="form-control"
                   type="text"
-                  style={{"width" : "140px"}}
+                  style={{
+                    width: '140px',
+                    borderColor: this.getBorderColor(),
+                  }}
                   name={this.props.inputName}
-                  placeholder={this.props.placeholder}                    
+                  placeholder={this.props.placeholder}
                 />
                 {this.props.children}
               </div>
             </div>
           </div>
-        </fieldset>       
+        </fieldset>
       </form>
     );
   }

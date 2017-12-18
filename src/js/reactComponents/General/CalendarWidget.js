@@ -12,11 +12,15 @@ function CalendarWidgetHOC(BasicInputComponent) {
     componentDidMount() {
       this.initCalendar();
     }
-    onChangeHandler(selectedDates, dateStr, instance) {
+    handleSubmit(evt) {
+      this.submitInput(evt.target.value);
+    }
+    onChangeHandler(_selectedDates, dateStr) {
+      this.submitInput(dateStr);
+    }
+    submitInput(dateStr) {
       this.props.onWidgetChange({
-        selectedDates,
         dateStr,
-        instance,
         inputId: this.input.getAttribute('id'),
       });
       /*
