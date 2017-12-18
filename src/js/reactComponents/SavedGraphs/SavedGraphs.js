@@ -8,22 +8,22 @@ export default class SavedGraphs extends React.Component {
   constructor() {
     super();
     this.state = {
-        componentToUpdate: 'SavedGraphs',        
-        popUpId: "pop-up",        
-    }
-    this.confirmDeletion = this.confirmDeletion.bind(this);    
+      componentToUpdate: 'SavedGraphs',
+      popUpId: 'pop-up',
+    };
+    this.confirmDeletion = this.confirmDeletion.bind(this);
     this.selectChartForDeletion = this.selectChartForDeletion.bind(this);
   }
   componentDidMount() {
-    this.updateGraphCollectionData();
+    // this.updateGraphCollectionData();
   }
   confirmDeletion(e) {
-    const target = e.target;
-    if(target.tagName !== 'BUTTON') return;
+    const { target } = e;
+    if (target.tagName !== 'BUTTON') return;
 
     const outcome = e.target.getAttribute('data-variant');
 
-    switch(outcome) {
+    switch (outcome) {
       case 'confirm':
         this.deleteChart();
         break;
@@ -36,13 +36,24 @@ export default class SavedGraphs extends React.Component {
         console.warn('outcome switch defaulted with', outcome);
     }
   }
-  updateGraphCollectionData() {    
-    const graphCollection = this.props.graphCollection;    
+  updateGraphCollectionData() {
+    // collection of objects that are used to build graphs
+    // each is enough to build a graph
+    const { graphCollection } = this.props;
 
-    if(graphCollection.length === 0) {
+    if (graphCollection.length === 0) {
       return;
     }
 
+    const urlsToDatasetsHash = {};
+    graphCollection.forEach((item) => {
+      if (!urlsToDatasetsHash[item.url]) {
+        urlsToDatasetsHash[item.url] = [];
+      }
+      urlsToDatasetsHash[item.url].push(item);
+    });
+
+    // urls to dataset hash
     // this is done to make only one request per same url
     /*
      {
@@ -50,62 +61,57 @@ export default class SavedGraphs extends React.Component {
      },
     */
 
-    const updateDataset = {};
-    graphCollection.forEach(item => {
-      if(!updateDataset[item.url]) {
-        updateDataset[item.url] = [];
-      }
-      updateDataset[item.url].push(item);
-    });
+    const urls = Object.keys(urlsToDatasetsHash);
 
-    const urls = Object.keys(updateDataset);
-
-    this.props.updateAll(urls, this.state.componentToUpdate, this.createDataCollection(urls, updateDataset));    
+    this.props.updateAll(
+      urls,
+      this.state.componentToUpdate,
+      this.createDataCollection(urls, urlsToDatasetsHash),
+    );
   }
-  createDataCollection(urls, updateDataset) {
+  createDataCollection(urls, urlsToDatasetsHash) {
     const newGraphCollection = [];
-      return results => {
-        urls.forEach((url, index) => {
-        // iterate over unique urls
-        updateDataset[url].forEach(item => { // each url is mapped to an array of datasets that depend on it for data :
+    return (results) => {
+      urls.forEach((url, index) => {
+      // iterate over unique urls
+        urlsToDatasetsHash[url].forEach((item) => {
+          // each url is mapped to an array of datasets that depend on it for data :
           /*
           {
             [url]: [ ...datasets ]
           },
           */
           // iterate over datasets arrays
-          const ids = Object.keys(item.hashTable); // each dataset item is an array of objects { id: {...properties} }
+          const ids = Object.keys(item.hashTable);
+          // each dataset item is an array of objects { id: {...properties} }
           const newGraphItem = JSON.parse(JSON.stringify(item));
 
-          ids.forEach(id => { // iterate over ids
+          ids.forEach((id) => { // iterate over ids
             newGraphItem.hashTable[id] = results[index].find(d => d.id === id);
             // results do not have color props, we need to take them from old data
             newGraphItem.hashTable[id].color = item.hashTable[id].color;
           });
           newGraphCollection.push(newGraphItem);
-        });                       
+        });
       });
       return newGraphCollection;
-    }
-
+    };
   }
   selectChartForDeletion(e) {
-    const target = e.target;
-    if(target.tagName !== 'SPAN') return;
+    const { target } = e;
+    if (target.tagName !== 'SPAN') return;
 
     this.setState({ target });
   }
   deleteChart() {
-    const target = this.state.target;
-    
-    if(!target) return;
+    const { target } = this.state;
+
+    if (!target) return;
 
     const id = target.getAttribute('data-id');
-    const index = this.props.graphCollection.reduce((res, item, index) => {
-      if(item.id === id) {
-        res = index;
-      }
-      return res;
+    // reduce is an array method!
+    const index = this.props.graphCollection.reduce((res, item, idx) => {
+      return (item.id === id) ? idx : res;
     });
 
     // faking an item of graphCollection to prevent from searching 2 times
@@ -114,11 +120,11 @@ export default class SavedGraphs extends React.Component {
       index,
       actionSubtype: 'delete',
     };
-    
+
     this.props.update(null, this.state.componentToUpdate, itemToDelete);
   }
   render() {
-    const popUpId = this.state.popUpId;    
+    const { popUpId } = this.state;
     return (
       <section id="saved-graphs" className="row">
         <PopUp
@@ -128,26 +134,29 @@ export default class SavedGraphs extends React.Component {
           confirmAction={this.confirmDeletion}
         />
         { !!this.props.graphCollection && this.props.graphCollection.length !== 0 ?
-          <div className="gallery col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" onClick={this.selectChartForDeletion}>
+          <div 
+            className="gallery col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" 
+            onClick={this.selectChartForDeletion}
+          >
             { this.props.graphCollection.map(item => (
-                <div className="x_panel" key={item.id}>
-                  <span
-                    className="fa fa-times fa-2x"
-                    data-id={item.id}
-                    data-toggle="modal"
-                    data-target={"#" + popUpId}
-                  >
-                  </span>
-                  <Chart
-                    hashTable={item.hashTable}
-                    type={item.filters.type}
-                    comparisionField={item.filters.comparisionField}
-                    currentSign={item.currentSign}
-                    margin={this.props.margin}
-                    immediateRender
-                  />
-                </div>
-              ))  
+              <div className="x_panel" key={item.id}>
+                <span
+                  className="fa fa-times fa-2x"
+                  data-id={item.id}
+                  data-toggle="modal"
+                  data-target={`#${popUpId}`}
+                />
+                <Chart
+                  hashTable={item.hashTable}
+                  type={item.filters.type}
+                  comparisionField={item.filters.comparisionField}
+                  currentSign={item.currentSign}
+                  url={item.url}
+                  margin={this.props.margin}
+                  immediateRender
+                />
+              </div>
+              ))
             }
           </div>
           :

@@ -22,7 +22,7 @@ export default class ModalWindow extends React.Component {
     this.changeComparisionField = this.changeComparisionField.bind(this);
     this.changeChartType = this.changeChartType.bind(this);
   }
-  componentWillUnmount() {    
+  componentWillUnmount() {
     this.changeChartType();
   }
   openModalWindow() {
@@ -50,13 +50,13 @@ export default class ModalWindow extends React.Component {
   visualize() {
     if(this.state.buttonIsDisabled) return;
 
-    const {type, comparisionField} = this.props.model.filters;
+    const { type, comparisionField } = this.props.model.filters;
 
     this.chart.renderChart(type, comparisionField);
 
     this.setState({
       chartIsNotBuilt: false,
-      chartIsSaved: false
+      chartIsSaved: false,
     });
   }
   handleControllBtnClick(target) {
@@ -121,7 +121,7 @@ export default class ModalWindow extends React.Component {
             this.props.changeHashTableCurrency();
         });
     }
-}
+  }
   changeComparisionField(target) {
     const btnVal = target.textContent;
     const currency = this.props.model.filters.currency;
@@ -147,7 +147,7 @@ export default class ModalWindow extends React.Component {
       case '%7d':
         newFilterValue = 'percent_change_7d';
         break;
-      default: 
+      default:
         console.warn('switch of btnVal defaulted width', btnVal);
     }
 
@@ -155,7 +155,7 @@ export default class ModalWindow extends React.Component {
   }
   changeChartType(target) {
     const filterName = 'type';
-    const newFilterValue = !!target ? target.getAttribute('data-type') : 'bar'; // default - bar
+    const newFilterValue = target ? target.getAttribute('data-type') : 'bar'; // default - bar
 
     this.props.change(newFilterValue, filterName, this.state.componentsToUpdate[0]);
   }
@@ -163,7 +163,7 @@ export default class ModalWindow extends React.Component {
     return (
       <div>
         <button
-          id='modal-button'
+          id="modal-button"
           className={`btn btn-lg btn-warning ${this.state.buttonIsDisabled ? 'disabled' : ''}`}
           onClick={this.openModalWindow}
         >
@@ -187,7 +187,7 @@ export default class ModalWindow extends React.Component {
                 { dataValue: 'RUB' },
                 { dataValue: 'BTC' },
                 { dataValue: 'LTC' },
-                { dataValue: 'ETH' }
+                { dataValue: 'ETH' },
               ]}
             />
             <div className="btn-group_container">
@@ -258,6 +258,7 @@ export default class ModalWindow extends React.Component {
             hashTable={this.props.hashTable}
             currentSign={this.props.currentSign}
             margin={this.props.model.margin}
+            url={this.props.createURL(this.props.limit, this.props.model.filters.currency)}
           />
         </section>
       </div>
