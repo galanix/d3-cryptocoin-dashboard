@@ -43,8 +43,12 @@ a.active:hover {
 }
 
 .input-group {
+    margin-bottom: 0;
     input, span {
-        transition: border-color 150ms linear;
+        transition: border-color 250ms linear !important;
+    }
+    input:focus {
+        border-color: $success_darker !important;
     }
 }
 
@@ -83,11 +87,11 @@ a.active:hover {
 }
 
 svg {
-    box-sizing: content-box;    
+    box-sizing: content-box;
 }
 
 .input-group {
-    margin-bottom: 0;
+    
 }
 
 .InputFormContainer {
@@ -97,8 +101,10 @@ svg {
 .message {
     position: absolute;
     margin: auto;
-    top: 0; right: 0; bottom: 0; left: 0;
+    top: 0; bottom: 0; left: 0;
+    right: auto;
         
+    width: 500px;
     pointer-events: none;
     color: $dark;
     letter-spacing: 1px;
@@ -115,6 +121,7 @@ svg {
     font-size: 12px;
     position: static;
     padding-top: 10px;
+    margin-left: 10px;
     text-align: left;
 
 }
@@ -251,9 +258,6 @@ svg {
     }    
     input {
         transition: background-color 200ms ease-in;
-    }
-    input:focus {        
-        background-color: inherit;
     }
     .tooltip {
         position: absolute;
@@ -612,13 +616,23 @@ svg {
 
 /* < SETTINGS PAGE >  */
 
-#component-display {
+#settings {
     height: 100vh;
     span.title {
         font-size: 24px;
     }
     .btn {
       min-width: 52px;
+    }
+    .filter-settings > div {
+        padding-left: 10px;
+    }
+    .clear-all-btn-container {
+        margin-top: 10px;
+    }
+    .x_panel {
+        padding-top: 17px;
+        padding-bottom: 17px;
     }
 }
 
