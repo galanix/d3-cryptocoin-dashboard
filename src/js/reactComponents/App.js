@@ -85,6 +85,9 @@ class App extends React.Component {
               render={() => (
                 <Settings
                   displayComponent={this.props.appData.Settings.displayComponent}
+                  shouldFiltersBeSavedToLocalStorage={
+                    this.props.appData.Settings.shouldFiltersBeSavedToLocalStorage
+                  }
                   change={this.change}
                 />
               )}
