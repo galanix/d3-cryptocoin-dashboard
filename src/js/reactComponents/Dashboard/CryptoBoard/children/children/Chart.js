@@ -234,7 +234,7 @@ export default class Chart extends React.Component {
     return (
       <div ref={div => this.svgDiv = div} className="graph">
         <WordLengthTester 
-          ref={div => this.WordLengthTester = div}          
+          ref={div => this.WordLengthTester = div}
           fontSize="13px"
         />
         { this.state.ChildChartJSX }
