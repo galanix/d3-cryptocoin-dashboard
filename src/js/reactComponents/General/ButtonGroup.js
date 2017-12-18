@@ -2,10 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 class ButtonGroup extends React.Component {
-  constructor() {
-    super();
-    this.state = {};
-  }
   componentWillReceiveProps(newProps) {
     if (!newProps.isActiveBtnDisplayed) {
       if (!!this.state && !!this.state.activeBtn) {
@@ -14,13 +10,6 @@ class ButtonGroup extends React.Component {
           activeBtn: null,
         });
       }
-    }
-  }
-  componentDidMount() {
-    if (this.props.isActiveBtnDisplayed) {
-      this.setState({
-        activeBtn: this.container.querySelector('.active'),
-      });
     }
   }
   handleClick(evt) {
@@ -34,24 +23,35 @@ class ButtonGroup extends React.Component {
       return;
     }
 
-    if (!this.props.isActiveDisabled) {
-    // we should deal with active(selected) class
-    // if button group only allows one at a time
-      if (
-        !this.props.areMultipleActiveBtnsAllowed
-        && (target !== this.state.activeBtn)
-      ) {
-        if (this.state.activeBtn) {
-          this.state.activeBtn.classList.remove('active');
-        }
+    this.props.onClickHandler(target);
 
-        this.setState({
-          activeBtn: target,
-        }, () => this.state.activeBtn.classList.add('active'));
-      }
+    if (this.props.isActiveDisabled) {
+      return;
     }
 
-    this.props.onClickHandler(target);
+    if (!this.state || !this.state.activeBtn) {
+      this.setState({
+        activeBtn: this.container.querySelector('.active'),
+      }, () => this.changeSelectedBtn(target));
+    } else {
+      this.changeSelectedBtn(target);
+    }
+    // we should deal with active(selected) class
+    // if button group only allows one at a time
+  }
+  changeSelectedBtn(target) {
+    if (
+      !this.props.areMultipleActiveBtnsAllowed
+      && (target !== this.state.activeBtn)
+    ) {
+      if (this.state.activeBtn) {
+        this.state.activeBtn.classList.remove('active');
+      }
+
+      this.setState({
+        activeBtn: target,
+      }, () => this.state.activeBtn.classList.add('active'));
+    }
   }
   render() {
     return (
