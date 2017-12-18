@@ -5,6 +5,7 @@ module.exports = {
         "react/require-default-props": 0,
         "react/forbid-prop-types": 0,
         "react/sort-comp": 0,
+        "class-methods-use-this": 0,
     },
     "env": {
         "browser": true
