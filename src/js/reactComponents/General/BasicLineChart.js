@@ -13,26 +13,30 @@ export default class BasicLineChart extends React.Component {
       width: 500,
       height: 300,
     };
+    this.onResize = this.onResize.bind(this);
+  }
+  onResize() {
+    if (this.state.isMessageVisible) {
+      // width of a message container depends on parent
+      // when page is resized
+      // parent's width may change
+      // but message's width won't, so
+      // the scroll can appear
+      // to prevent that we resize message
+      // by calling showMessge again
+      setTimeout(() => this.showMessage(), 301);
+      // at some breakpoints width of parent container will change due to relayout
+      // so we will need to recalc with twice
+      // to prevent that we will wait until the transition animation(.3s) is done
+      // and only than recalc
+    }
   }
   componentDidMount() {
     this.showMessage();
-    window.addEventListener('resize', () => {
-      console.log('resized');
-      if (this.state.isMessageVisible) {
-        // width of a message container depends on parent
-        // when page is resized
-        // parent's width may change
-        // but message's width won't, so
-        // the scroll can appear
-        // to prevent that we resize message
-        // by calling showMessge again
-        setTimeout(() => this.showMessage(), 301);
-        // at some breakpoints width of parent container will change due to relayout
-        // so we will need to recalc with twice
-        // to prevent that we will wait until the transition animation(.3s) is done
-        // and only than recalc
-      }
-    });
+    window.addEventListener('resize', this.onResize);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onResize);
   }
   hideMessage() {
     // graph is ready to be drawn,
