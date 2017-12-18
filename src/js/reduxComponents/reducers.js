@@ -2,7 +2,16 @@ import model from './model';
 
 
 // writes filter changes to the local storage
-function writeFilterToLocalStorage(forComponent, filterName, newFilterValue) {
+function writeFilterToLocalStorage(
+  forComponent,
+  filterName,
+  newFilterValue,
+  shouldFiltersBeSavedToLocalStorage,
+) {
+  if (!shouldFiltersBeSavedToLocalStorage) {
+    return;
+  }
+
   const filtersObject = JSON.parse(localStorage.getItem(forComponent)) || {};
 
   filtersObject[filterName] = newFilterValue;
@@ -11,18 +20,28 @@ function writeFilterToLocalStorage(forComponent, filterName, newFilterValue) {
 }
 
 // abstraction that handles filter value  update
-function assignNewFilterValue(action, prevFilters) {
+function assignNewFilterValue(action, prevFilters, shouldFiltersBeSavedToLocalStorage) {
   const filters = JSON.parse(JSON.stringify(prevFilters));
   const { forComponent, filterName, newFilterValue } = action;
 
   if (filterName instanceof Array) {
     filterName.forEach((name, index) => {
       filters[name] = newFilterValue[index];
-      writeFilterToLocalStorage(forComponent, name, newFilterValue[index]);
+      writeFilterToLocalStorage(
+        forComponent,
+        name,
+        newFilterValue[index],
+        shouldFiltersBeSavedToLocalStorage,
+      );
     });
   } else {
     filters[filterName] = newFilterValue;
-    writeFilterToLocalStorage(forComponent, filterName, newFilterValue);
+    writeFilterToLocalStorage(
+      forComponent,
+      filterName,
+      newFilterValue,
+      shouldFiltersBeSavedToLocalStorage,
+    );
   }
   return filters;
 }
@@ -62,7 +81,8 @@ export default function reducers(state = model, action) {
           } else { // data.actionSubtype === 'delete'
             newState.SavedGraphs.splice(data.index, 1);
           }
-          window.localStorage.setItem('savedGraphs', JSON.stringify(newState.SavedGraphs)); // to restore previously set dataset
+          window.localStorage.setItem('savedGraphs', JSON.stringify(newState.SavedGraphs));
+          // to restore previously set dataset
           break;
         }
         default:
