@@ -24,14 +24,14 @@ export default class Table extends React.Component {
       '%7d': 'percent_change_7d',
     };
 
-    const formatToInt = d3.format(",.0f");
-    const formatToFloat = d3.format(",.2f");
+    const formatToInt = d3.format(',.0');
+    const formatToFloat = d3.format(',.2f');
     return (
       <div className="row">
         <div className="col-xs-12">
           <div className="table-responsive">
-            <table 
-              id="datatable-checkbox" 
+            <table
+              id="datatable-checkbox"
               className="table table-striped table-bordered bulk_action"
             >
               <thead>
@@ -49,7 +49,7 @@ export default class Table extends React.Component {
                 {
                   this.props.dataset instanceof Array ?
                     this.props.dataset.map((item, index) => (
-                      <tr key={index}>
+                      <tr key={Math.random().toString(36).slice(2)}>
                         <td data-toggle="button">
                           <button
                             className={`btn btn-xs btn-dark ${(!this.props.hashTable || !this.props.hashTable[item.id]) ? '' : 'active'}`}
