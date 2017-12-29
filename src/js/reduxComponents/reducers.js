@@ -93,22 +93,38 @@ export default function reducers(state = model, action) {
       switch (action.forComponent) { // action handling is almost the same throughout components
         case 'BitcoinHistoryGraph':
           newState.BitcoinHistoryGraph.filters =
-            assignNewFilterValue(action, newState.BitcoinHistoryGraph.filters);
+            assignNewFilterValue(
+              action,
+              newState.BitcoinHistoryGraph.filters,
+              newState.Settings.shouldFiltersBeSavedToLocalStorage,
+            );
           break;
 
         case 'CurrencyPairGraph':
           newState.CurrencyPairGraph.filters =
-            assignNewFilterValue(action, newState.CurrencyPairGraph.filters);
+            assignNewFilterValue(
+              action,
+              newState.CurrencyPairGraph.filters,
+              newState.Settings.shouldFiltersBeSavedToLocalStorage,
+            );
           break;
 
         case 'CryptoBoard__table':
           newState.CryptoBoard.table.filters =
-            assignNewFilterValue(action, newState.CryptoBoard.table.filters);
+            assignNewFilterValue(
+              action,
+              newState.CryptoBoard.table.filters,
+              newState.Settings.shouldFiltersBeSavedToLocalStorage,
+            );
           break;
 
         case 'CryptoBoard__chart':
           newState.CryptoBoard.chart.filters =
-            assignNewFilterValue(action, newState.CryptoBoard.chart.filters);
+            assignNewFilterValue(
+              action,
+              newState.CryptoBoard.chart.filters,
+              newState.Settings.shouldFiltersBeSavedToLocalStorage,
+            );
           break;
 
         case 'Settings':
