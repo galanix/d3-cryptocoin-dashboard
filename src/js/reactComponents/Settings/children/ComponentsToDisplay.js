@@ -34,10 +34,10 @@ export default class Settings extends React.Component {
         className="row"
         ref={(section) => { this.checkboxSection = section; }}
       >
-        <div className="col-md-12 col-sm-12 col-lg-6">
+        <div className="col-md-12 col-sm-12 col-lg-12">
           <h2>What components should be displayed</h2>
         </div>
-        <div className="col-md-12 col-sm-12 col-lg-6">
+        <div className="col-md-12 col-sm-12 col-xs-12 col-lg-6">
           <Checkbox
             isItemChecked={this.props.displayComponent.BitcoinCurrentPrice}
             jsHook="BitcoinCurrentPrice"
@@ -45,7 +45,7 @@ export default class Settings extends React.Component {
             onClickHandler={this.onClickHandler}
           />
         </div>
-        <div className="col-md-12 col-sm-12 col-lg-6">
+        <div className="col-md-12 col-sm-12 col-xs-12 col-lg-6">
           <Checkbox
             isItemChecked={this.props.displayComponent.BitcoinHistoryGraph}
             jsHook="BitcoinHistoryGraph"
@@ -53,7 +53,7 @@ export default class Settings extends React.Component {
             onClickHandler={this.onClickHandler}
           />
         </div>
-        <div className="col-md-12 col-sm-12 col-lg-6">
+        <div className="col-md-12 col-sm-12 col-xs-12 col-lg-6">
           <Checkbox
             isItemChecked={this.props.displayComponent.CurrencyPairGraph}
             jsHook="CurrencyPairGraph"
@@ -61,7 +61,7 @@ export default class Settings extends React.Component {
             onClickHandler={this.onClickHandler}
           />
         </div>
-        <div className="col-md-12 col-sm-12 col-lg-6">
+        <div className="col-md-12 col-sm-12 col-xs-12 col-lg-6">
           <Checkbox
             isItemChecked={this.props.displayComponent.CryptoBoard}
             jsHook="CryptoBoard"

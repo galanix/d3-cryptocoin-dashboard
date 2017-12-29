@@ -12,8 +12,11 @@ export default class Settings extends React.Component {
   }
   render() {
     return (
-      <div id="settings" className="row">
-        <div className="col-12 x_panel">
+      <section id="settings" className="row">
+        <div className="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <h1 className="component-main-title">Settings</h1>
+        </div>
+        <div className="col-lg-12 col-md-12 col-sm-12 col-xs-12 x_panel">
           <ComponentsToDisplay
             componentToUpdate={this.state.componentToUpdate}
             change={this.props.change}
@@ -21,14 +24,14 @@ export default class Settings extends React.Component {
           />
         </div>
 
-        <div className="col-12 filter-settings x_panel">
+        <div className="col-lg-12 col-md-12 col-sm-12 col-xs-12 filter-settings x_panel">
           <FilterSettings
             componentToUpdate={this.state.componentToUpdate}
             shouldFiltersBeSavedToLocalStorage={this.props.shouldFiltersBeSavedToLocalStorage}
             change={this.props.change}
           />
         </div>
-      </div>
+      </section>
     );
   }
 }

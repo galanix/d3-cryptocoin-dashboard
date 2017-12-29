@@ -134,10 +134,11 @@ export default class SavedGraphs extends React.Component {
           confirmAction={this.confirmDeletion}
         />
         { !!this.props.graphCollection && this.props.graphCollection.length !== 0 ?
-          <div 
-            className="gallery col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" 
+          <div
+            className="gallery col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-"
             onClick={this.selectChartForDeletion}
           >
+            <h1 className="component-main-title">Saved Graphs</h1>
             { this.props.graphCollection.map(item => (
               <div className="x_panel" key={item.id}>
                 <span
@@ -146,15 +147,17 @@ export default class SavedGraphs extends React.Component {
                   data-toggle="modal"
                   data-target={`#${popUpId}`}
                 />
-                <Chart
-                  hashTable={item.hashTable}
-                  type={item.filters.type}
-                  comparisionField={item.filters.comparisionField}
-                  currentSign={item.currentSign}
-                  url={item.url}
-                  margin={this.props.margin}
-                  immediateRender
-                />
+                <div className="graph-container">
+                  <Chart
+                    hashTable={item.hashTable}
+                    type={item.filters.type}
+                    comparisionField={item.filters.comparisionField}
+                    currentSign={item.currentSign}
+                    url={item.url}
+                    margin={this.props.margin}
+                    immediateRender
+                  />
+                </div>
               </div>
               ))
             }
