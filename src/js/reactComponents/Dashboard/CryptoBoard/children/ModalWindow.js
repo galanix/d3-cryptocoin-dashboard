@@ -26,29 +26,29 @@ export default class ModalWindow extends React.Component {
     this.changeChartType();
   }
   openModalWindow() {
-    if(this.state.buttonIsDisabled) return;
+    if (this.state.buttonIsDisabled) return;
 
-    const values = [ '19px', '19px', '2000px', '20px' ];
+    const values = ['50px', '19px', '2000px', '20px'];
 
     changeCSSProperties(this.state.propertiesCSS, values, this.modalWindow);
   }
   closeModalWindow() {
-     const values = [ '0', '0', '0', '0' ];
+    const values = ['0', '0', '0', '0'];
 
-     changeCSSProperties(this.state.propertiesCSS, values, this.modalWindow);
+    changeCSSProperties(this.state.propertiesCSS, values, this.modalWindow);
   }
   enableButton() {
     this.setState({
-      buttonIsDisabled: false
+      buttonIsDisabled: false,
     });
   }
   disableButton() {
     this.setState({
-      buttonIsDisabled: true
+      buttonIsDisabled: true,
     });
   }
   visualize() {
-    if(this.state.buttonIsDisabled) return;
+    if (this.state.buttonIsDisabled) return;
 
     const { type, comparisionField } = this.props.model.filters;
 
@@ -62,21 +62,21 @@ export default class ModalWindow extends React.Component {
   handleControllBtnClick(target) {
     const id = target.getAttribute('id');
 
-    switch(id) {
-    case 'cancel-button':
-      this.closeModalWindow();
-      break;
+    switch (id) {
+      case 'cancel-button':
+        this.closeModalWindow();
+        break;
 
-    case 'build-button':
-      this.visualize();
-      break;
-        
-    case 'save-graph-button':
-      this.saveGraph();
-      break;
+      case 'build-button':
+        this.visualize();
+        break;
 
-    default:
-      console.log('controll btn group defaulted with', id);
+      case 'save-graph-button':
+        this.saveGraph();
+        break;
+
+      default:
+        console.log('control btn group defaulted with', id);
     }
   }
   saveGraph() {
@@ -91,10 +91,12 @@ export default class ModalWindow extends React.Component {
       filters: Object.assign({}, this.props.model.filters),
       currentSign: this.props.currentSign,
       actionSubtype: 'add', // for reducer
-      url: this.props.createURL(this.props.limit, this.props.model.filters.currency), // for updating data
-      id: Math.random().toString(36).slice(2), // randomly generated string, used as unique identifier
+      url: this.props.createURL(this.props.limit, this.props.model.filters.currency), 
+      // url is for updating data
+      id: Math.random().toString(36).slice(2),
+      // randomly generated string, used as unique identifier
     };
- 
+
     this.setState({ chartIsSaved: true }); // to prevent duplication
     this.props.update(null, this.state.componentsToUpdate[1], newCollectionItem);    
   }
@@ -112,13 +114,13 @@ export default class ModalWindow extends React.Component {
       ) {
         // we need to change the last three chars as they represent currency
         filterNames.push('comparisionField');
-        newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());            
+        newFilterValues.push(comparisionField.substr(0, comparisionField.length - 3) + newFilterValues[0].toLowerCase());
       }
-    
+
       this.props.update(this.props.createURL(this.props.limit, newFilterValues[0]), componentToUpdate)
         .then(() => {
-            this.props.change(newFilterValues, filterNames, componentToUpdate);
-            this.props.changeHashTableCurrency();
+          this.props.change(newFilterValues, filterNames, componentToUpdate);
+          this.props.changeHashTableCurrency();
         });
     }
   }
@@ -160,6 +162,7 @@ export default class ModalWindow extends React.Component {
     this.props.change(newFilterValue, filterName, this.state.componentsToUpdate[0]);
   }
   render() {
+    const { currency, comparisionField, type } = this.props.model.filters;
     return (
       <div>
         <button
@@ -176,7 +179,7 @@ export default class ModalWindow extends React.Component {
           <div className="well">
             <Dropdown
               classesCSS={{ dropdown: 'dropdown_chart-currency', button: 'btn-success' }}
-              defaultDataValue={this.props.model.filters.currency}
+              defaultDataValue={currency}
               isActiveBtnDisplayed
               onClickHandler={this.changeCurrencyFilter}
               titleText="Currency"
@@ -192,17 +195,17 @@ export default class ModalWindow extends React.Component {
             />
             <div className="btn-group_container">
               <h4>Categories</h4>
-              <ButtonGroup 
+              <ButtonGroup
                 classesCSS="btn-group category"
                 isActiveBtnDisplayed
                 onClickHandler={this.changeComparisionField}
                 buttons={[
-                  { classesCSS: 'active', textValue: 'Price' },
-                  { textValue: 'Volume(24h)' },
-                  { textValue: 'Market Cap' },
-                  { textValue: '%1h' },
-                  { textValue: '%24h' },
-                  { textValue: '%7d' }
+                  { classesCSS: comparisionField === 'price' ? 'active' : '', textValue: 'Price' },
+                  { classesCSS: comparisionField === 'volume_24h' ? 'active' : '', textValue: 'Volume(24h)' },
+                  { classesCSS: comparisionField === `market_cap_${currency.toLowerCase()}` ? 'active' : '', textValue: 'Market Cap' },
+                  { classesCSS: comparisionField === 'percent_change_1h' ? 'active' : '', textValue: '%1h' },
+                  { classesCSS: comparisionField === 'percent_change_24h' ? 'active' : '', textValue: '%24h' },
+                  { classesCSS: comparisionField === 'percent_change_7d' ? 'active' : '', textValue: '%7d' },
                 ]}
               />
             </div>
@@ -213,13 +216,13 @@ export default class ModalWindow extends React.Component {
                 onClickHandler={this.changeChartType}
                 isActiveBtnDisplayed
                 buttons={[
-                  { classesCSS: 'active', attrs: { 'data-type': 'bar' }, textValue: 'Bar' },
-                  { attrs: { 'data-type': 'hbar' }, textValue: 'Horizontal Bar' },
-                  { attrs: { 'data-type': 'pie' }, textValue: 'Pie' },
-                  { attrs: { 'data-type': 'pie-donut' }, textValue: 'Donut' },
-                  { attrs: { 'data-type': 'line' }, textValue: 'Line' },
-                  { attrs: { 'data-type': 'line-scatter' }, textValue: 'Scatter Plot' },
-                  { attrs: { 'data-type': 'line-area' }, textValue: 'Area Plot' },
+                  { classesCSS: type === 'bar' ? 'active' : '', attrs: { 'data-type': 'bar' }, textValue: 'Bar' },
+                  { classesCSS: type === 'hbar' ? 'active' : '', attrs: { 'data-type': 'hbar' }, textValue: 'Horizontal Bar' },
+                  { classesCSS: type === 'pie' ? 'active' : '', attrs: { 'data-type': 'pie' }, textValue: 'Pie' },
+                  { classesCSS: type === 'pie-donut' ? 'active' : '', attrs: { 'data-type': 'pie-donut' }, textValue: 'Donut' },
+                  { classesCSS: type === 'line' ? 'active' : '', attrs: { 'data-type': 'line' }, textValue: 'Line' },
+                  { classesCSS: type === 'line-scatter' ? 'active' : '', attrs: { 'data-type': 'line-scatter' }, textValue: 'Scatter Plot' },
+                  { classesCSS: type === 'line-area' ? 'active' : '', attrs: { 'data-type': 'line-area' }, textValue: 'Area Plot' },
                 ]}
               />
             </div>
@@ -230,17 +233,17 @@ export default class ModalWindow extends React.Component {
             isActiveDisabled
             buttons={[
               {
-                classesCSS: 'btn-danger',
+                classesCSS: 'btn-lg btn-danger',
                 id: 'cancel-button',
                 textValue: 'Hide',
               },
               {
-                classesCSS: `btn-success  ${this.state.buttonIsDisabled ? 'disabled' : ''}`,
+                classesCSS: `btn-lg btn-success  ${this.state.buttonIsDisabled ? 'disabled' : ''}`,
                 id: 'build-button',
                 textValue: 'Build Chart',
               },
               {
-                classesCSS: `btn-info  ${this.state.chartIsNotBuilt ? 'disabled' : ''}`,
+                classesCSS: `btn-lg btn-info  ${this.state.chartIsNotBuilt ? 'disabled' : ''}`,
                 id: 'save-graph-button',
                 textValue: [
                   'Save graph ',
@@ -253,13 +256,15 @@ export default class ModalWindow extends React.Component {
               },
             ]}
           />
-          <Chart
-            ref={(chart) => { this.chart = chart; }}
-            hashTable={this.props.hashTable}
-            currentSign={this.props.currentSign}
-            margin={this.props.model.margin}
-            url={this.props.createURL(this.props.limit, this.props.model.filters.currency)}
-          />
+          <div className="graph-container">
+            <Chart
+              ref={(chart) => { this.chart = chart; }}
+              hashTable={this.props.hashTable}
+              currentSign={this.props.currentSign}
+              margin={this.props.model.margin}
+              url={this.props.createURL(this.props.limit, this.props.model.filters.currency)}
+            />
+          </div>
         </section>
       </div>
     );
