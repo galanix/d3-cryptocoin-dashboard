@@ -83,7 +83,7 @@ class SideNav extends React.Component {
                                     </a>
                                     <ul className="nav child_menu">
                                         <li>
-                                            <Link to={this.props.settingsPagePath}>Components</Link>
+                                            <Link to={this.props.settingsPagePath}>All Settings</Link>
                                         </li>
                                     </ul>
                                 </li>
