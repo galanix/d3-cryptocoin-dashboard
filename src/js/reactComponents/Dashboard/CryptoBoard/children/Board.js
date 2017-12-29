@@ -11,7 +11,8 @@ export default class Board extends React.Component {
       componentToUpdate: 'CryptoBoard__table',
       // default values
       sortOrder: 'desc',
-      iconJSX: <span className="fa fa-sort-desc"></span>,
+      iconJSX: <span className="fa fa-sort-desc" />,
+      isTablePreloaderShown: false,
     };
 
     this.saveChanges = this.saveChanges.bind(this);
@@ -19,11 +20,17 @@ export default class Board extends React.Component {
     this.clearFilters = this.clearFilters.bind(this);
     this.sortTable = this.sortTable.bind(this);
 
+    this.showPreloader = this.showPreloader.bind(this);
+    this.hidePreloader = this.hidePreloader.bind(this);
+
     this.filterByMarketCap = this.changeFilter.bind(this, this.updateTable, 'marketCap');
     this.filterByPrice = this.changeFilter.bind(this, this.updateTable, 'price');
     this.filterByVolume_24h = this.changeFilter.bind(this, this.updateTable, 'volume_24h');
     this.changeTableCurrency = this.changeFilter.bind(this, this.saveChanges, 'currency');
-    this.changeTableLength = this.changeFilter.bind(this, this.saveChanges, 'limit');
+    this.changeTableLength = (target) => {
+      this.showPreloader();
+      this.changeFilter(this.saveChanges, 'limit', target);
+    };
   }
   componentDidMount() {
     const { limit, currency } = this.props.model.filters;
@@ -34,11 +41,22 @@ export default class Board extends React.Component {
         this.sortTable();
       }));
   }
-  changeFilter(callback, filterName, target) { // generalized function that handles many similar filter values changes
-    const newFilterValue = target.getAttribute('data-value');    
+  showPreloader() {
+    this.setState({
+      isTablePreloaderShown: true,
+    });
+  }
+  hidePreloader() {
+    this.setState({
+      isTablePreloaderShown: false,
+    });
+  }
+  changeFilter(callback, filterName, target) {
+    // generalized function that handles many similar filter values changes
+    const newFilterValue = target.getAttribute('data-value');
 
     this.props.change(newFilterValue, filterName, this.state.componentToUpdate);
-    
+
     callback();
   }
   updateTable() {
@@ -205,6 +223,8 @@ export default class Board extends React.Component {
           sortTable={this.sortTable}
           hashTable={this.props.hashTable}
           sortOrderIcon={this.state.iconJSX}
+          isPreloaderShown={this.state.isTablePreloaderShown}
+          hidePreloader={this.hidePreloader}
         />
       </div>
     );
