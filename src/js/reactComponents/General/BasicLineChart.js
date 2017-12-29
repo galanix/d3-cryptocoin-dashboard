@@ -57,9 +57,9 @@ export default class BasicLineChart extends React.Component {
     // until graph is not drawn
     // - 10 is there to make the scrollbar disappear;
 
-    const svgWrapper = this.svg.parentElement;
-    const widthVal = parseFloat(getComputedStyle(svgWrapper.parentElement).width) - 10;
-    svgWrapper.style.width = `${widthVal}px`;
+    // const svgWrapper = this.svg.parentElement;
+    // const widthVal = parseFloat(getComputedStyle(svgWrapper.parentElement).width) - 10;
+    // svgWrapper.style.width = `${widthVal}px`;
 
     this.setState({
       isMessageVisible: true,
@@ -73,7 +73,7 @@ export default class BasicLineChart extends React.Component {
     if (!dataset || Object.prototype.toString.call(dataset) !== '[object Array]') {
       return;
     }
-    
+
     const { width, height } = this.state;
     const { margin } = this.props.model;
     const actualWidth = width - margin.left - margin.right;
